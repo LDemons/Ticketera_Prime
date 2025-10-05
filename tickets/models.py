@@ -20,14 +20,18 @@ class Categoria(models.Model):
         return self.nombre
 
 class Prioridad(models.Model):
+    NIVEL_CHOICES = [
+        ('MEDIO', 'Medio'),
+        ('ALTO', 'Alto'),
+        ('BAJO', 'Bajo'),
+    ]
     # Renombrado de Prioridades a Prioridad (singular) por convención de Django
     prioridad_id = models.BigAutoField(primary_key=True)
-    nombre = models.CharField(max_length=12)
-    nivel = models.IntegerField()
+    Tipo_Nivel = models.CharField(max_length=12, choices=NIVEL_CHOICES, default='MEDIO')
     sla_horas = models.IntegerField() # En el DDL era NOT NULL, si puede ser nulo, agrega null=True, blank=True
 
     def __str__(self):
-        return self.nombre
+        return self.Tipo_Nivel
 
 # --- Modelos con dependencias ---
 

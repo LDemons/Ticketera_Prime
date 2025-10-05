@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+
+{% block title %}Ticketera · Lista de Tickets{% endblock %}
+
+{% block content %}
+    <header class="header">
+        <h1 class="page-title">Tickets Activos</h1>
+        <div class="filters">
+            <div class="select">Todos los estados</div>
+            <div class="select">Recientes ▾</div>
+        </div>
+    </header>
+
+    <main class="list" aria-label="Lista de tickets">
+        
+        {% for ticket in tickets %}
+        <article class="ticket">
+            <div class="avatar avatar--R">{{ ticket.usuario_creador.nombre|first }}</div>
+            <div>
+                <div class="ticket-title">
+                    {{ ticket.titulo }} <span class="muted">#{{ ticket.ticket_id }}</span>
+                </div>
+                <div class="ticket-meta">
+                    <span>Solicitante: {{ ticket.usuario_creador.nombre }}</span>
+                    <span class="dot"></span>
+                    <span>Prioridad: 
+                        {% if ticket.prioridad.nombre == 'Alta' %}
+                            <b class="tag tag--high">{{ ticket.prioridad.nombre }}</b>
+                        {% elif ticket.prioridad.nombre == 'Media' %}
+                            <b class="tag tag--medium">{{ ticket.prioridad.nombre }}</b>
+                        {% else %}
+                            <b class="tag tag--low">{{ ticket.prioridad.nombre }}</b>
+                        {% endif %}
+                    </span>
+                </div>
+            </div>
+            <div class="ticket-actions">
+                <button class="btn-link">Abrir</button>
+            </div>
+        </article>
+        {% endfor %}
+
+    </main>
+{% endblock %}

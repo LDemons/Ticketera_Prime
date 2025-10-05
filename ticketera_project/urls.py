@@ -21,6 +21,7 @@ from tickets import views
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', views.dashboard_view, name='dashboard'),
+    path('tickets/', views.ticket_list_view, name='ticket_list'),
 ]
 
 
