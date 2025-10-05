@@ -12,35 +12,35 @@
       </div>
     </header>
 
-    <main class="dashboard">
+     <main class="dashboard">
       <section class="kpis">
         <article class="kpi">
           <div class="kpi-title">Abiertos</div>
-          <div class="kpi-value">128</div>
+          <div class="kpi-value">{{ tickets_abiertos }}</div>
           <div class="kpi-foot">
-            <span class="dot dot--blue"></span> Variación 24h
-            <strong>+8</strong>
+            <span class="dot dot--blue"></span> Total activos
           </div>
         </article>
+        
         <article class="kpi">
           <div class="kpi-title">En curso</div>
-          <div class="kpi-value">64</div>
+          <div class="kpi-value">{{ tickets_en_progreso }}</div>
           <div class="kpi-foot">
-            <span class="dot dot--green"></span> Asignados hoy
-            <strong>+21</strong>
+            <span class="dot dot--green"></span> Siendo atendidos
           </div>
         </article>
+
         <article class="kpi">
           <div class="kpi-title">SLA vencidos</div>
-          <div class="kpi-value alert">9</div>
+           <div class="kpi-value alert">{{ sla_vencidos }}</div>
           <div class="kpi-foot">
-            <span class="dot dot--red"></span> Últimas 24h
-            <strong>+3</strong>
+            <span class="dot dot--red"></span> Requieren atención
           </div>
         </article>
+
         <article class="kpi">
           <div class="kpi-title">Tiempo resp. prom.</div>
-          <div class="kpi-value">17m</div>
+           <div class="kpi-value">{{ tiempo_respuesta }}</div>
           <div class="kpi-foot">
             <span class="dot"></span> Meta: 20m
           </div>
