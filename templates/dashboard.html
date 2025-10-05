@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+
+{% block title %}Ticketera · Dashboard{% endblock %}
+
+{% block content %}
+    <header class="header">
+      <h1 class="page-title">Panel principal</h1>
+      <div class="filters">
+        <div class="select">Hoy</div>
+        <div class="select">Todos los grupos</div>
+        <div class="select">Todos los estados</div>
+      </div>
+    </header>
+
+    <main class="dashboard">
+      <section class="kpis">
+        <article class="kpi">
+          <div class="kpi-title">Abiertos</div>
+          <div class="kpi-value">128</div>
+          <div class="kpi-foot">
+            <span class="dot dot--blue"></span> Variación 24h
+            <strong>+8</strong>
+          </div>
+        </article>
+        <article class="kpi">
+          <div class="kpi-title">En curso</div>
+          <div class="kpi-value">64</div>
+          <div class="kpi-foot">
+            <span class="dot dot--green"></span> Asignados hoy
+            <strong>+21</strong>
+          </div>
+        </article>
+        <article class="kpi">
+          <div class="kpi-title">SLA vencidos</div>
+          <div class="kpi-value alert">9</div>
+          <div class="kpi-foot">
+            <span class="dot dot--red"></span> Últimas 24h
+            <strong>+3</strong>
+          </div>
+        </article>
+        <article class="kpi">
+          <div class="kpi-title">Tiempo resp. prom.</div>
+          <div class="kpi-value">17m</div>
+          <div class="kpi-foot">
+            <span class="dot"></span> Meta: 20m
+          </div>
+        </article>
+      </section>
+
+      </main>
+{% endblock %}

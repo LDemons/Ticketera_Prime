@@ -1,0 +1,268 @@
+/* ===================== */
+/* 1) Variables & base   */
+/* ===================== */
+:root{
+  --indigo-800:#2a0441; /* sidebar */
+  --lavender:#b9a7d3;   /* acento lateral */
+  --bg:#f4f6fb;         /* fondo app */
+  --card:#ffffff;
+  --line:#e7e8ee;
+  --text:#1f2430;
+  --muted:#6b6b7a;
+
+  --blue:#2f73d9;
+  --blue-100:#eaf1ff;
+  --green:#2fb171;
+  --red:#ea5573;
+  --orange:#ff9c5b;
+
+  --shadow:0 8px 24px rgba(22,22,26,.06);
+}
+
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0;
+  font:15px/1.35 system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Arial;
+  color:var(--text);
+  background:linear-gradient(90deg,var(--lavender) 0 90px, var(--bg) 90px 100%);
+}
+
+/* ===================== */
+/* 2) Elementos comunes  */
+/* ===================== */
+
+/* Sidebar (común) */
+.sidebar{
+  background:var(--indigo-800);
+  color:#fff;
+  padding:18px 14px;
+  display:flex; flex-direction:column; gap:14px;
+}
+.brand{display:flex;align-items:center;gap:10px}
+.logo{width:38px;height:38px;border-radius:10px;background:#fff;color:var(--indigo-800);display:grid;place-items:center;font-weight:800}
+.title b{display:block}
+.title small{opacity:.8}
+.nav-title{font-size:12px;opacity:.7;text-transform:uppercase;margin-top:8px}
+.nav,.nav-block{display:flex;flex-direction:column;gap:6px}
+.nav a,.nav-block a{
+  color:#fff;text-decoration:none;padding:10px 12px;border-radius:10px;transition:.2s background;
+}
+.nav a:hover,.nav-block a:hover{background:rgba(255,255,255,.08)}
+.nav a.active,.nav-block a.active{background:rgba(255,255,255,.16)}
+.divider{height:1px;background:rgba(255,255,255,.12);margin:8px 0}
+.search{margin-top:6px;padding:8px;border-radius:10px;background:rgba(255,255,255,.08)}
+.search input{border:none;outline:none;background:transparent;color:#fff;width:100%}
+
+/* --- Iconos SOLO en la sidebar --- */
+.sidebar .nav a,
+.sidebar .nav-block a {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.sidebar .nav a .ico,
+.sidebar .nav-block a .ico {
+  width: 18px;
+  height: 18px;
+  display: grid;
+  place-items: center;
+  flex: 0 0 18px;
+}
+
+.sidebar .nav svg,
+.sidebar .nav-block svg {
+  width: 18px;
+  height: 18px;
+  stroke: currentColor;
+  fill: none;          /* importante: no rellenar */
+  stroke-width: 2;
+}
+
+
+/* Header (común) */
+.header{
+  background:#fff; box-shadow:var(--shadow);
+  display:flex; align-items:center; justify-content:space-between;
+  padding:0 16px;
+}
+.page-title{margin:0; font-size:20px}
+.filters{display:flex; gap:8px}
+.select{padding:8px 12px;border:1px solid var(--line);border-radius:10px;background:#fff;cursor:pointer}
+.back{width:36px;height:36px;border:1px solid var(--line);border-radius:10px;background:#fff;cursor:pointer}
+
+/* Chips / pills / tags (común) */
+.pill{font-size:12px;padding:4px 8px;border-radius:999px;background:#eef0f6;border:1px solid var(--line)}
+.pill--time{background:#ffeede;color:#9a4c10;border-color:#ffd9bd}
+.tag{padding:4px 8px;border-radius:999px;font-size:12px;border:1px solid var(--line);background:#f5f6fb}
+.tag--high{background:#ffe8e8;color:#9e2330;border-color:#ffd1d1}
+.tag--medium{background:#fff4e6;color:#8a4b12;border-color:#ffd8b2}
+.tag--low{background:#eef7ff;color:#0b558a;border-color:#cfe4ff}
+.tag--new{background:#e5f0ff;color:#184ea8;border-color:#cddcff}
+.tag--progress{background:#e5f8ef;color:#1a6c46;border-color:#cdeedd}
+.tag--hold{background:#fff7e7;color:#8a5a12;border-color:#ffe6b8}
+
+.muted{color:var(--muted)}
+.small{font-size:13px}
+.sr{position:absolute;left:-9999px}
+
+/* ===================== */
+/* 3) Vista: LISTA       */
+/*    (.view-tickets)    */
+/* ===================== */
+
+/* Layout de la vista de lista + detalle */
+.app.view-tickets{
+  display:grid;
+  grid-template-columns: 280px 1fr 460px;
+  grid-template-rows: 64px 1fr;
+  grid-template-areas:
+    "sidebar header header"
+    "sidebar list   detail";
+  min-height:100vh;
+}
+.view-tickets .sidebar{grid-area:sidebar}
+.view-tickets .header{grid-area:header}
+.view-tickets .list{grid-area:list}
+.view-tickets .detail{grid-area:detail}
+
+/* Lista de tickets (componentes existentes) */
+.list{padding:16px;overflow:auto;display:flex;flex-direction:column;gap:12px}
+.bulk-bar{padding:8px 10px;border:1px dashed var(--line);background:#fff;border-radius:12px;color:var(--muted)}
+.ticket{
+  background:#fff;border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);
+  padding:12px;display:grid;grid-template-columns:34px 1fr auto;gap:12px
+}
+.avatar{width:34px;height:34px;border-radius:8px;display:grid;place-items:center;font-weight:700;color:#fff}
+.avatar--R{background:#4aa3d7}
+.avatar--C{background:#58b676}
+.avatar--S{background:#d58f44}
+.avatar--B{background:#c35656}
+.avatar--A{background:#c06bcf}
+.ticket-head{display:flex;gap:8px;flex-wrap:wrap}
+.ticket-title{margin:6px 0 4px;font-weight:700}
+.ticket-meta{display:flex;gap:14px;color:var(--muted);font-size:14px}
+.dot{width:4px;height:4px;border-radius:50%;background:var(--line);align-self:center}
+.ticket-actions{display:flex;gap:8px}
+.btn-icon,.btn-link{border:1px solid var(--line);border-radius:10px;background:#fff;cursor:pointer}
+.btn-icon{width:36px;height:36px;display:grid;place-items:center}
+.btn-link{padding:8px 12px}
+
+/* Panel de detalle */
+.detail{border-left:1px solid var(--line);background:#fafbff;display:flex;flex-direction:column}
+.detail-head{padding:14px 16px;display:flex;align-items:center;gap:10px;background:#fff;border-bottom:1px solid var(--line)}
+.user-name{font-weight:700}
+.detail-body{padding:16px;display:flex;flex-direction:column;gap:16px}
+.bubble{background:#5fb3cc;border-radius:14px;padding:12px;min-height:70px}
+.bubble--small{width:60%;height:46px}
+.composer{background:#fff;border:1px solid var(--line);border-radius:14px;padding:10px;margin:16px}
+.composer textarea{width:100%;border:none;outline:none;min-height:44px;font:inherit}
+
+/* ===================== */
+/* 4) Vista: DASHBOARD   */
+/*    (.view-dashboard)  */
+/* ===================== */
+
+/* Grid del dashboard */
+.app.view-dashboard{
+  display:grid;
+  grid-template-columns: 260px 1fr;
+  grid-template-rows: 64px 1fr;
+  grid-template-areas:
+    "sidebar header"
+    "sidebar main";
+  min-height:100vh;
+}
+.view-dashboard .sidebar{grid-area:sidebar}
+.view-dashboard .header{grid-area:header}
+.view-dashboard .dashboard{grid-area:main}
+
+/* Secciones del dashboard */
+.dashboard{
+  display:grid; gap:16px;
+  grid-template-columns: 2fr 1fr;
+  grid-template-areas:
+    "kpis kpis"
+    "charts charts"
+    "left right";
+  padding:16px;
+}
+
+.kpis{grid-area:kpis; display:grid; grid-template-columns:repeat(4,1fr); gap:12px}
+.cards{display:grid; gap:16px}
+.cards.two-col{grid-area:charts; grid-template-columns:1fr 1fr}
+.view-dashboard .cards.left{grid-area:left}
+.view-dashboard .cards.right{grid-area:right}
+
+.kpi{
+  background:#fff; border:1px solid var(--line); border-radius:14px; padding:14px; box-shadow:var(--shadow);
+}
+.kpi-title{font-size:13px; color:var(--muted)}
+.kpi-value{font-size:28px; font-weight:800; margin:6px 0}
+.kpi-value.alert{color:var(--red)}
+.kpi-foot{font-size:12px; color:var(--muted); display:flex; align-items:center; gap:6px}
+.dot{width:8px;height:8px;border-radius:8px;background:#cfd3db;display:inline-block}
+.dot--blue{background:var(--blue)}
+.dot--green{background:var(--green)}
+.dot--red{background:var(--red)}
+
+.card{
+  background:#fff; border:1px solid var(--line); border-radius:14px; box-shadow:var(--shadow);
+}
+.card-head{display:flex; align-items:center; justify-content:space-between; padding:12px 14px; border-bottom:1px solid var(--line)}
+.card h2{margin:0; font-size:16px}
+
+/* Gráfico de barras simple */
+.bars{display:grid; grid-template-columns:repeat(12,1fr); gap:8px; padding:16px}
+.bars > div{
+  height:120px; background:linear-gradient(180deg, var(--blue) 0, var(--blue-100) 100%);
+  border-radius:8px 8px 2px 2px; transform-origin:bottom; transform:scaleY(var(--v));
+  border:1px solid #dbe5ff;
+}
+.axis{padding:0 16px 14px; color:var(--muted); font-size:12px}
+
+/* Progreso SLA */
+.progress{padding:10px 14px 14px}
+.progress-row{display:grid; grid-template-columns:110px 1fr 52px; align-items:center; gap:10px; margin:10px 0}
+.progress-row .bar{height:10px; background:#eef0f6; border-radius:999px; overflow:hidden}
+.progress-row .bar i{display:block; height:100%; width:var(--p); background:linear-gradient(90deg,var(--green),#9be1c2)}
+
+/* Tabla lista (reutilizable) */
+.table{padding:6px 10px 12px}
+.thead,.trow{display:grid; grid-template-columns:100px 1fr 180px 120px 140px 120px; gap:10px; align-items:center}
+.thead{font-weight:700; color:#475569; border-bottom:1px solid var(--line); padding:8px 0}
+.trow{padding:10px 0; border-bottom:1px dashed var(--line)}
+.trow.warn{background:#fff7f8}
+
+/* Acciones rápidas / listas */
+.activity{list-style:none;margin:0;padding:10px 14px 14px;display:flex;flex-direction:column;gap:10px}
+.quick{padding:12px 14px 16px; display:flex; flex-direction:column; gap:8px}
+.btn{padding:10px 12px; border:1px solid var(--line); border-radius:10px; background:#fff; cursor:pointer}
+.btn:hover{background:#f7f8fd}
+
+/* ===================== */
+/* 5) Responsivo (ambas) */
+/* ===================== */
+@media (max-width:1200px){
+  .kpis{grid-template-columns:repeat(2,1fr)}
+  .cards.two-col{grid-template-columns:1fr}
+  .dashboard{grid-template-areas:"kpis" "charts" "left" "right"; grid-template-columns:1fr}
+  .app.view-tickets{
+    grid-template-columns:260px 1fr;
+    grid-template-areas:
+      "sidebar header"
+      "sidebar list";
+  }
+  .view-tickets .detail{display:none}
+}
+@media (max-width:760px){
+  .app.view-dashboard{
+    grid-template-columns:1fr; grid-template-areas:"header" "main";
+  }
+  .app.view-tickets{
+    grid-template-columns:1fr; grid-template-areas:"header" "list";
+  }
+  .sidebar{display:none}
+  .thead,.trow{grid-template-columns:90px 1fr 120px 110px 120px 100px}
+}
