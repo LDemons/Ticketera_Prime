@@ -12,7 +12,6 @@
     </header>
 
     <main class="list" aria-label="Lista de tickets">
-        
         {% for ticket in tickets %}
         <article class="ticket">
             <div class="avatar avatar--R">{{ ticket.usuario_creador.nombre|first }}</div>
@@ -23,16 +22,12 @@
                 <div class="ticket-meta">
                     <span>Solicitante: {{ ticket.usuario_creador.nombre }}</span>
                     <span class="dot"></span>
-                    <span>
-                    <b>Prioridad:</b>
-                    {% if ticket.prioridad.Tipo_Nivel == 'ALTO' %}
-                        <b class="tag tag--high">{{ ticket.prioridad.Tipo_Nivel }}</b>
-                    {% elif ticket.prioridad.Tipo_Nivel == 'MEDIO' %}
-                        <b class="tag tag--medium">{{ ticket.prioridad.Tipo_Nivel }}</b>
-                    {% else %}
-                        <b class="tag tag--low">{{ ticket.prioridad.Tipo_Nivel }}</b>
-                    {% endif %}
-                </span>
+                    <span>Prioridad:
+                        {% if ticket.prioridad.Tipo_Nivel == 'ALTO' %}<b class="tag tag--high">ALTO</b>
+                        {% elif ticket.prioridad.Tipo_Nivel == 'MEDIO' %}<b class="tag tag--medium">MEDIO</b>
+                        {% else %}<b class="tag tag--low">BAJO</b>
+                        {% endif %}
+                    </span>
                 </div>
             </div>
             <div class="ticket-actions">
@@ -40,6 +35,26 @@
             </div>
         </article>
         {% endfor %}
-
     </main>
-{% endblock %}
+
+    {% if ticket_seleccionado %}
+    <aside class="detail" aria-label="Detalle del ticket">
+        <div class="detail-head">
+            <div class="avatar avatar--R">{{ ticket_seleccionado.usuario_creador.nombre|first }}</div>
+            <div>
+                <div class="user-name">{{ ticket_seleccionado.usuario_creador.nombre }}</div>
+                <div class="muted small">Estado: <b>{{ ticket_seleccionado.get_estado_display }}</b></div>
+            </div>
+        </div>
+        <div class="detail-body">
+            <div class="bubble">
+                <p><strong>{{ ticket_seleccionado.titulo }}</strong></p>
+                <p>{{ ticket_seleccionado.descripcion }}</p>
+            </div>
+        </div>
+        <div class="composer">
+            <textarea placeholder="Escribe una respuesta…"></textarea>
+        </div>
+    </aside>
+    {% endif %}
+    {% endblock %}

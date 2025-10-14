@@ -15,3 +15,4 @@ class TicketForm(forms.ModelForm):
             'prioridad': forms.Select(attrs={'class': 'form-select'}),
             'categoria': forms.Select(attrs={'class': 'form-select'}),
         }
+

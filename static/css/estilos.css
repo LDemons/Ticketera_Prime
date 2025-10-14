@@ -123,6 +123,7 @@ body{
     "sidebar list   detail";
   min-height:100vh;
   overflow: hidden; /* Evita que el contenedor principal se desplace */
+  transition: grid-template-columns 0.3s ease-in-out;
 }
 .view-tickets .sidebar{grid-area:sidebar}
 .view-tickets .header{grid-area:header}
@@ -251,13 +252,13 @@ body{
   .kpis{grid-template-columns:repeat(2,1fr)}
   .cards.two-col{grid-template-columns:1fr}
   .dashboard{grid-template-areas:"kpis" "charts" "left" "right"; grid-template-columns:1fr}
-  .app.view-tickets{
-    grid-template-columns:260px 1fr;
+   .app.view-tickets {
+    grid-template-columns: 260px 1fr 380px; /* Ajustamos las columnas */
     grid-template-areas:
-      "sidebar header"
-      "sidebar list";
+      "sidebar header header"
+      "sidebar list   detail";
   }
-  .view-tickets .detail{display:none}
+
 }
 @media (max-width:760px){
   .app.view-dashboard{
@@ -270,4 +271,47 @@ body{
   .thead,.trow{grid-template-columns:90px 1fr 120px 110px 120px 100px}
 }
 
+.btn-link {
+    text-decoration: none; /* Elimina el subrayado */
+    color: var(--text);      /* Usa el color de texto principal */
+}
 
+.btn-link:hover {
+    background: #f7f8fd;   /* Mantiene el efecto hover que ya tenías */
+}
+
+
+/* ===================================== */
+/* 6) Funcionalidad Sidebar Toggle (Final) */
+/* ===================================== */
+
+.sidebar-toggle {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: white;
+    border-radius: 50%;
+    cursor: pointer;
+    width: 32px;
+    height: 32px;
+    position: absolute;
+    top: 18px;
+    right: -16px;
+    z-index: 1000;
+    display: grid;
+    place-items: center;
+}
+
+.sidebar {
+    overflow: hidden; /* Oculta el texto de la sidebar cuando se encoge */
+}
+
+/* --- ESTADO OCULTO --- */
+/* Esta es la parte clave. Redefine la grilla cuando la sidebar está oculta */
+.app.sidebar-collapsed.view-dashboard {
+    grid-template-columns: 0 1fr;
+}
+.app.sidebar-collapsed.view-tickets {
+    grid-template-columns: 0 1fr 460px;
+}
+
+/* ===================================== */

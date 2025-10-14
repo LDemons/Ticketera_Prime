@@ -1,0 +1,23 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>{% block title %}Ticketera{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'css/estilos.css' %}" />
+    <style>
+        /* Estilos solo para esta vista centrada */
+        body {
+            background: var(--bg); /* Un fondo simple, sin el gradiente lateral */
+            display: grid;
+            place-items: center; /* Esto centra el contenido vertical y horizontalmente */
+            min-height: 100vh;
+        }
+    </style>
+</head>
+<body>
+    {% block content %}
+    {% endblock %}
+</body>
+</html>
