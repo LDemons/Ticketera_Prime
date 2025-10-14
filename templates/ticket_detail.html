@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+
+{% block title %}Ticket #{{ ticket.ticket_id }}{% endblock %}
+
+{% block content %}
+    <header class="header">
+        <div>
+            <h1 class="page-title">{{ ticket.titulo }}</h1>
+            <p class="small muted">Abierto por {{ ticket.usuario_creador.nombre }} el {{ ticket.fecha_creacion }}</p>
+        </div>
+        <div class="filters">
+            <a href="{% url 'ticket_list' %}" class="btn-link">← Volver al listado</a>
+        </div>
+    </header>
+    <main class="list" style="padding: 20px;">
+        <article class="ticket" style="grid-template-columns: 1fr; gap: 20px;">
+            <div>
+                <h3>Descripción del Problema</h3>
+                <p>{{ ticket.descripcion }}</p>
+            </div>
+
+            <div class="ticket-meta" style="border-top: 1px solid #e7e8ee; padding-top: 15px;">
+                <span><b>Estado:</b> {{ ticket.get_estado_display }}</span>
+                <span class="dot"></span>
+                <span>
+                    <b>Prioridad:</b>
+                    {% if ticket.prioridad.Tipo_Nivel == 'ALTO' %}
+                        <b class="tag tag--high">{{ ticket.prioridad.Tipo_Nivel }}</b>
+                    {% elif ticket.prioridad.Tipo_Nivel == 'MEDIO' %}
+                        <b class="tag tag--medium">{{ ticket.prioridad.Tipo_Nivel }}</b>
+                    {% else %}
+                        <b class="tag tag--low">{{ ticket.prioridad.Tipo_Nivel }}</b>
+                    {% endif %}
+                </span>
+                <span class="dot"></span>
+                <span><b>Categoría:</b> {{ ticket.categoria.nombre }}</span>
+            </div>
+        </article>
+    </main>
+{% endblock %}

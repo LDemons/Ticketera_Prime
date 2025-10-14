@@ -23,19 +23,20 @@
                 <div class="ticket-meta">
                     <span>Solicitante: {{ ticket.usuario_creador.nombre }}</span>
                     <span class="dot"></span>
-                    <span>Prioridad: 
-                        {% if ticket.prioridad.nombre == 'Alta' %}
-                            <b class="tag tag--high">{{ ticket.prioridad.nombre }}</b>
-                        {% elif ticket.prioridad.nombre == 'Media' %}
-                            <b class="tag tag--medium">{{ ticket.prioridad.nombre }}</b>
-                        {% else %}
-                            <b class="tag tag--low">{{ ticket.prioridad.nombre }}</b>
-                        {% endif %}
-                    </span>
+                    <span>
+                    <b>Prioridad:</b>
+                    {% if ticket.prioridad.Tipo_Nivel == 'ALTO' %}
+                        <b class="tag tag--high">{{ ticket.prioridad.Tipo_Nivel }}</b>
+                    {% elif ticket.prioridad.Tipo_Nivel == 'MEDIO' %}
+                        <b class="tag tag--medium">{{ ticket.prioridad.Tipo_Nivel }}</b>
+                    {% else %}
+                        <b class="tag tag--low">{{ ticket.prioridad.Tipo_Nivel }}</b>
+                    {% endif %}
+                </span>
                 </div>
             </div>
             <div class="ticket-actions">
-                <button class="btn-link">Abrir</button>
+                <a href="{% url 'ticket_detail' ticket.ticket_id %}" class="btn-link">Abrir</a>
             </div>
         </article>
         {% endfor %}
