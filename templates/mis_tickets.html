@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+
+{% block title %}Ticketera · Mis Tickets{% endblock %}
+
+{% block content %}
+    <header class="header">
+        <h1 class="page-title">Mis Tickets Creados</h1>
+    </header>
+
+    <main class="list" aria-label="Mis tickets">
+
+        <div class="card" style="margin-bottom: 20px;">
+            <div class="card-head">
+                <h2>Crear un Nuevo Ticket</h2>
+            </div>
+            <form method="post" style="padding: 15px;">
+                {% csrf_token %}
+                {{ form.as_p }}
+                <button type="submit" class="btn-link" style="background: var(--indigo-800); color: #fff;">Enviar Ticket</button>
+            </form>
+        </div>
+
+        {% for ticket in tickets %}
+        <article class="ticket">
+            <div class="avatar avatar--R">{{ ticket.usuario_creador.nombre|first }}</div>
+            <div>
+                <div class="ticket-title">
+                    {{ ticket.titulo }}
+                </div>
+                <div class="ticket-meta">
+                    <span>Creado: {{ ticket.fecha_creacion }}</span>
+                    <span class="dot"></span>
+                    <span>Estado: <b>{{ ticket.get_estado_display }}</b></span>
+                    <span class="dot"></span>
+                    <span>Prioridad:
+                        {% if ticket.prioridad.Tipo_Nivel == 'ALTO' %}
+                            <b class="tag tag--high">{{ ticket.prioridad.Tipo_Nivel }}</b>
+                        {% elif ticket.prioridad.Tipo_Nivel == 'MEDIO' %}
+                            <b class="tag tag--medium">{{ ticket.prioridad.Tipo_Nivel }}</b>
+                        {% else %}
+                            <b class="tag tag--low">{{ ticket.prioridad.Tipo_Nivel }}</b>
+                        {% endif %}
+                    </span>
+                </div>
+            </div>
+            <div class="ticket-actions">
+                <a href="{% url 'ticket_detail' ticket.ticket_id %}" class="btn-link">Ver Detalles</a>
+            </div>
+        </article>
+        {% empty %}
+        <div class="bulk-bar">
+            No has creado ningún ticket todavía. ¡Usa el formulario de arriba para empezar!
+        </div>
+        {% endfor %}
+
+    </main>
+{% endblock %}
