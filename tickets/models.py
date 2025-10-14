@@ -96,3 +96,13 @@ class AsignacionTicket(models.Model):
 
     def __str__(self):
         return f"Asignación de {self.ticket} a {self.usuario_asignado}"
+    
+class Comentario(models.Model):
+    comentario_id = models.BigAutoField(primary_key=True)
+    ticket = models.ForeignKey(Ticket, on_delete=models.CASCADE, related_name='comentarios')
+    autor = models.ForeignKey(Usuario, on_delete=models.PROTECT)
+    contenido = models.TextField()
+    fecha_creacion = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Comentario de {self.autor.nombre} en Ticket #{self.ticket.ticket_id}"

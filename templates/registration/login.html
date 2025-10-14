@@ -1,0 +1,35 @@
+{% extends 'base_fullscreen.html' %}
+
+{% block title %}Iniciar Sesión{% endblock %}
+
+{% block content %}
+<div class="card" style="width: 100%; max-width: 400px;">
+    <div class="card-head" style="text-align: center; display: block; border-bottom: none; padding-bottom: 0;">
+        <div class="brand" style="display: inline-flex; color: var(--text); margin-bottom: 15px;">
+            <div class="logo">T</div>
+            <div class="title">
+                <b>Ticketera</b>
+                <small>Helpdesk</small>
+            </div>
+        </div>
+        <h2 style="margin: 0;">Iniciar Sesión</h2>
+    </div>
+
+    {% if form.errors %}
+        <p style="padding: 0 15px; color: var(--red); text-align: center;">Tu usuario o contraseña son incorrectos.</p>
+    {% endif %}
+
+    <form method="post" style="padding: 15px;">
+        {% csrf_token %}
+        <p>
+            <label for="id_username">Usuario:</label>
+            <input type="text" name="username" autofocus autocapitalize="none" autocomplete="username" maxlength="150" required id="id_username" style="width: 100%; padding: 8px; border: 1px solid var(--line); border-radius: 8px; margin-top: 5px;">
+        </p>
+        <p>
+            <label for="id_password">Contraseña:</label>
+            <input type="password" name="password" autocomplete="current-password" required id="id_password" style="width: 100%; padding: 8px; border: 1px solid var(--line); border-radius: 8px; margin-top: 5px;">
+        </p>
+        <button type="submit" class="btn-link" style="background: var(--indigo-800); color: #fff; width: 100%; margin-top: 10px;">Entrar</button>
+    </form>
+</div>
+{% endblock %}
