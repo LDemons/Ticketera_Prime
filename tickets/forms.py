@@ -1,6 +1,6 @@
 # tickets/forms.py
 from django import forms
-from .models import Ticket
+from .models import Ticket, AsignacionTicket, Usuario, Rol, Comentario
 
 class TicketForm(forms.ModelForm):
     class Meta:
@@ -16,3 +16,61 @@ class TicketForm(forms.ModelForm):
             'categoria': forms.Select(attrs={'class': 'form-select'}),
         }
 
+class AsignacionTicketForm(forms.ModelForm):
+    
+    # 1. Definimos el campo, pero con un queryset vacío.
+    #    No consultamos la BD aquí.
+    usuario_asignado = forms.ModelChoiceField(
+        queryset=Usuario.objects.none(), # Empezamos con un queryset vacío
+        label="Asignar a Técnico",
+        widget=forms.Select(attrs={'class': 'form-select'})
+    )
+
+    class Meta:
+        model = AsignacionTicket
+        fields = ['usuario_asignado', 'comentarios']
+        widgets = {
+            'comentarios': forms.Textarea(attrs={'class': 'form-input', 'rows': 3, 'placeholder': 'Añade un comentario (opcional)...'}),
+        }
+
+    # 2. Usamos __init__ para llenar el queryset dinámicamente
+    #    Este código SÍ se ejecuta cada vez que el formulario se usa,
+    #    no cuando el servidor arranca.
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs) # Llamamos al __init__ original
+        
+        try:
+            # Buscamos el rol. ¡Asegúrate de que el nombre 'Técnico' exista en tu BD!
+            rol_tecnico = Rol.objects.get(nombre='TI')
+            # Asignamos el queryset filtrado al campo
+            self.fields['usuario_asignado'].queryset = Usuario.objects.filter(rol=rol_tecnico)
+        except Rol.DoesNotExist:
+            # Si el rol no existe, el queryset simplemente quedará vacío
+            # (Usuario.objects.none()), pero la app no se romperá.
+            self.fields['usuario_asignado'].queryset = Usuario.objects.none()
+
+class GestionTicketForm(forms.ModelForm):
+    """
+    Un formulario para que el técnico gestione un ticket.
+    """
+    
+    # Traemos los ESTADO_CHOICES del modelo Ticket
+    # Excluimos 'ABIERTO' porque un ticket gestionado ya no puede volver a "Abierto"
+    ESTADOS_TECNICO = [choice for choice in Ticket.ESTADO_CHOICES if choice[0] != 'ABIERTO']
+
+    # 1. Creamos un campo para actualizar el estado del Ticket
+    estado = forms.ChoiceField(
+        choices=ESTADOS_TECNICO,
+        widget=forms.Select(attrs={'class': 'form-select'})
+    )
+    
+    # 2. Usamos el ModelForm para el campo 'contenido' del Comentario
+    class Meta:
+        model = Comentario
+        fields = ['contenido']
+        widgets = {
+            'contenido': forms.Textarea(attrs={'class': 'form-input', 'rows': 4, 'placeholder': 'Añade una respuesta o nota interna...'}),
+        }
+        labels = {
+            'contenido': 'Añadir Comentario/Respuesta',
+        }
