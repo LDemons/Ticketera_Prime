@@ -1,7 +1,7 @@
 # tickets/views.py
 from django.shortcuts import render, redirect
 from .models import Ticket, Usuario, AsignacionTicket, Comentario
-from django.shortcuts import get_object_or_404
+from django.shortcuts import render, redirect, get_object_or_404, reverse
 from django.contrib.auth.decorators import login_required 
 from .forms import TicketForm, AsignacionTicketForm, GestionTicketForm, ComentarioForm
 from django.utils import timezone
