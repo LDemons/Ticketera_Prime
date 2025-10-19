@@ -6,13 +6,26 @@
     <header class="header">
         <h1 class="page-title">{{ view_title|default:"Mis Asignaciones" }}</h1>
         <div class="filters">
-            <div class="select">Todos los estados</div>
-            <div class="select">Recientes ▾</div>
+            <div class="select">
+                <label for="estado-select" class="sr">Filtrar por estado:</label>
+                <select id="estado-select" onchange="window.location.href=this.value;">
+                    <option value="?orden={{ orden_actual }}" {% if estado_actual == 'todos' %}selected{% endif %}>Todos los estados</option>
+                    {% for value, display in estados_posibles %}
+                    <option value="?estado={{ value }}&orden={{ orden_actual }}" {% if estado_actual == value %}selected{% endif %}>{{ display }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="select">
+                <label for="orden-select" class="sr">Ordenar por:</label>
+                <select id="orden-select" onchange="window.location.href=this.value;">
+                    <option value="?estado={{ estado_actual }}&orden=reciente" {% if orden_actual == 'reciente' %}selected{% endif %}>Recientes primero</option>
+                    <option value="?estado={{ estado_actual }}&orden=antiguo" {% if orden_actual == 'antiguo' %}selected{% endif %}>Antiguos primero</option>
+                </select>
+            </div>
         </div>
-    </header>
+        </header>
 
     <main class="list" aria-label="Mis tickets asignados">
-
         {% for ticket in tickets %}
         <article class="ticket">
             <div class="avatar avatar--R">{{ ticket.usuario_creador.nombre|first }}</div>
@@ -37,7 +50,7 @@
                 </div>
             </div>
             <div class="ticket-actions">
-                <a href="{% url 'gestionar_ticket' ticket.ticket_id %}" class="btn-link">Gestionar</a>
+                 <a href="{% url 'gestionar_ticket' ticket.ticket_id %}?estado={{ estado_actual }}&orden={{ orden_actual }}" class="btn-link">Gestionar</a>
             </div>
         </article>
         {% empty %}
@@ -45,6 +58,5 @@
             No tienes ningún ticket asignado actualmente.
         </div>
         {% endfor %}
-
     </main>
 {% endblock %}

@@ -6,8 +6,22 @@
     <header class="header">
         <h1 class="page-title">Tickets Activos</h1>
         <div class="filters">
-            <div class="select">Todos los estados</div>
-            <div class="select">Recientes ▾</div>
+            <div class="select">
+                <label for="estado-select" class="sr">Filtrar por estado:</label>
+                <select id="estado-select" onchange="window.location.href=this.value;">
+                    <option value="?orden={{ orden_actual }}" {% if estado_actual == 'todos' %}selected{% endif %}>Todos los estados</option>
+                    {% for value, display in estados_posibles %}
+                    <option value="?estado={{ value }}&orden={{ orden_actual }}" {% if estado_actual == value %}selected{% endif %}>{{ display }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="select">
+                <label for="orden-select" class="sr">Ordenar por:</label>
+                <select id="orden-select" onchange="window.location.href=this.value;">
+                    <option value="?estado={{ estado_actual }}&orden=reciente" {% if orden_actual == 'reciente' %}selected{% endif %}>Recientes primero</option>
+                    <option value="?estado={{ estado_actual }}&orden=antiguo" {% if orden_actual == 'antiguo' %}selected{% endif %}>Antiguos primero</option>
+                </select>
+            </div>
         </div>
     </header>
 
@@ -32,7 +46,7 @@
                 </div>
             </div>
             <div class="ticket-actions">
-                <a href="{% url 'ticket_detail' ticket.ticket_id %}" class="btn-link">Abrir</a>
+                <a href="{% url 'ticket_detail' ticket.ticket_id %}?estado={{ estado_actual }}&orden={{ orden_actual }}" class="btn-link">Abrir</a>
             </div>
         </article>
         {% endfor %}
@@ -54,7 +68,7 @@
             </div>
         </div>
 
-        <form class="composer" method="POST" action="{% url 'ticket_detail' ticket_seleccionado.ticket_id %}">
+        <form class="composer" method="POST" action="{% url 'ticket_detail' ticket_seleccionado.ticket_id %}?estado={{ estado_actual }}&orden={{ orden_actual }}">
             {% csrf_token %}
             
             <div style="padding: 10px;">
