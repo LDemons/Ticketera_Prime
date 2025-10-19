@@ -274,7 +274,7 @@ def mis_tickets_view(request, ticket_id=None):
 
 
 @login_required
-def mis_asignaciones_view(request):
+def mis_asignaciones_view(request, ticket_id=None):
     # --- BLOQUE DE PERMISO ---
     try:
         usuario = Usuario.objects.get(email=request.user.email)
@@ -286,102 +286,92 @@ def mis_asignaciones_view(request):
 
     tecnico_actual = usuario 
 
-    # --- LÓGICA DE FILTRADO Y ORDENAMIENTO ---
-    estado_filtro = request.GET.get('estado', '') # '' significa 'todos'
-    orden = request.GET.get('orden', 'reciente') # 'reciente' por defecto
+    # Variables para el contexto
+    ticket_seleccionado = None
+    comentarios = Comentario.objects.none()
+    form_gestion = None
 
-    # Query base (SOLO tickets asignados al técnico)
+    # --- LÓGICA POST (Solo si hay ticket_id en la URL) ---
+    if request.method == 'POST' and ticket_id:
+        # Buscamos el ticket que se está gestionando
+        # Añadimos seguridad extra: verificamos que esté asignado a este técnico
+        ticket_para_gestionar = get_object_or_404(
+            Ticket, 
+            pk=ticket_id, 
+            asignacionticket__usuario_asignado=tecnico_actual
+        )
+        
+        form_gestion_post = GestionTicketForm(request.POST)
+        
+        if form_gestion_post.is_valid():
+            # 1. Actualizar estado del Ticket
+            nuevo_estado = form_gestion_post.cleaned_data['estado']
+            ticket_para_gestionar.estado = nuevo_estado
+            if nuevo_estado in ['CERRADO', 'RESUELTO']:
+                ticket_para_gestionar.cerrado_en = timezone.now().date()
+            else:
+                ticket_para_gestionar.cerrado_en = None
+            ticket_para_gestionar.save()
+
+            # 2. Crear nuevo comentario (si hay contenido)
+            contenido_comentario = form_gestion_post.cleaned_data['contenido']
+            if contenido_comentario:
+                # OJO: No usamos form.save() directamente porque GestionTicketForm
+                # no está basado en Comentario para todos sus campos.
+                Comentario.objects.create(
+                    ticket=ticket_para_gestionar,
+                    autor=tecnico_actual,
+                    contenido=contenido_comentario
+                )
+                
+            # 3. Redirigir manteniendo filtros y mostrando el ticket actualizado
+            estado_filtro = request.GET.get('estado', '') 
+            orden = request.GET.get('orden', 'reciente')
+            # Redirigimos a la vista detalle para ver el resultado
+            return redirect(f"{reverse('mis_asignaciones_detalle', args=[ticket_id])}?estado={estado_filtro}&orden={orden}")
+        else:
+            # Si el form falla, preparamos contexto para mostrar error
+            ticket_seleccionado = ticket_para_gestionar
+            comentarios = Comentario.objects.filter(ticket=ticket_seleccionado).order_by('fecha_creacion')
+            form_gestion = form_gestion_post # Pasa el form con errores
+
+    # --- LÓGICA GET (y preparación de formularios) ---
+    # (Filtros y ordenamiento)
+    estado_filtro = request.GET.get('estado', '') 
+    orden = request.GET.get('orden', 'reciente')
     tickets_query = Ticket.objects.filter(
         asignacionticket__usuario_asignado=tecnico_actual
-    ).distinct() # Distinct es importante si un ticket se reasigna
-
-    # Aplicar filtro de estado
+    ).distinct()
     if estado_filtro and estado_filtro != 'todos':
         tickets_query = tickets_query.filter(estado=estado_filtro)
-
-    # Aplicar ordenamiento
     if orden == 'antiguo':
         tickets_query = tickets_query.order_by('fecha_creacion')
     else: 
         tickets_query = tickets_query.order_by('-fecha_creacion')
-
     lista_tickets = tickets_query.select_related('usuario_creador', 'prioridad').all()
-    # --- FIN DE LÓGICA DE FILTRADO ---
+
+    # Si se está viendo un ticket específico (GET o POST fallido)
+    if ticket_id:
+        if not ticket_seleccionado: # Si no lo seteamos arriba por POST fallido
+             # Aseguramos que el técnico solo vea tickets asignados a él
+            ticket_seleccionado = get_object_or_404(
+            Ticket,
+            pk=ticket_id
+            )
+            comentarios = Comentario.objects.filter(ticket=ticket_seleccionado).order_by('fecha_creacion')
+            form_gestion = GestionTicketForm(initial={'estado': ticket_seleccionado.estado}) # Form gestión
 
     context = {
-        'view_class': 'view-tickets', 
-        'tickets': lista_tickets, # Usamos la lista filtrada/ordenada
+        'view_class': 'view-tickets', # Usamos la clase que permite 2 columnas
+        'tickets': lista_tickets,
         'view_title': 'Mis Asignaciones',
-        # Pasamos filtros al contexto
+        # Datos para el panel lateral
+        'ticket_seleccionado': ticket_seleccionado,
+        'comentarios': comentarios,
+        'form_gestion': form_gestion, # Renombrado para claridad
+        # Datos para los filtros
         'estado_actual': estado_filtro or 'todos',
         'orden_actual': orden,
         'estados_posibles': Ticket.ESTADO_CHOICES
     }
     return render(request, 'mis_asignaciones.html', context)
-
-@login_required
-def gestionar_ticket_view(request, ticket_id):
-    # --- BLOQUE DE PERMISO ---
-    try:
-        usuario = Usuario.objects.get(email=request.user.email)
-        if usuario.rol.nombre != 'TI':
-            return redirect('index') # Si no es TI, a la salida
-    except Usuario.DoesNotExist:
-        return redirect('index') # Si no existe, a la salida
-    # --- FIN DEL BLOQUE ---
-
-    # Usamos el 'usuario' del bloque de permisos
-    tecnico_actual = usuario
-    ticket = get_object_or_404(Ticket, pk=ticket_id)
-
-    # --- LÓGICA POST ---
-    if request.method == 'POST':
-        form = GestionTicketForm(request.POST)
-        if form.is_valid():
-            # 1. Actualizar el estado del Ticket
-            nuevo_estado = form.cleaned_data['estado']
-            ticket.estado = nuevo_estado
-
-            # Si el estado es 'CERRADO' o 'RESUELTO', guardamos la fecha
-            # (Ajustado para DateField, solo guarda la fecha actual)
-            if nuevo_estado in ['CERRADO', 'RESUELTO']:
-                 # Usamos timezone.now().date() para obtener solo la fecha
-                ticket.cerrado_en = timezone.now().date()
-            else:
-                 # Si se reabre, quitamos la fecha de cierre
-                ticket.cerrado_en = None 
-
-            ticket.save()
-
-            # 2. Crear el nuevo comentario
-            contenido_comentario = form.cleaned_data['contenido']
-            if contenido_comentario: # Solo si el técnico escribió algo
-                nuevo_comentario = form.save(commit=False)
-                nuevo_comentario.ticket = ticket
-                nuevo_comentario.autor = tecnico_actual
-                nuevo_comentario.save()
-
-            # 3. Redirigir de vuelta a la lista de asignaciones
-            #    Leemos los filtros de la URL actual para mantenerlos
-            estado_filtro = request.GET.get('estado', '') 
-            orden = request.GET.get('orden', 'reciente')
-            return redirect(f"{reverse('mis_asignaciones')}?estado={estado_filtro}&orden={orden}")
-            
-    # --- LÓGICA GET ---
-    else:
-        # Si es GET, mostramos el formulario con el estado actual del ticket
-        form = GestionTicketForm(initial={'estado': ticket.estado})
-
-    # Obtenemos todos los comentarios existentes para este ticket
-    comentarios = Comentario.objects.filter(ticket=ticket).order_by('fecha_creacion')
-
-    context = {
-        'view_class': 'view-tickets', # Reutilizamos estilos
-        'ticket': ticket,
-        'form': form,
-        'comentarios': comentarios,
-        # Pasamos los filtros actuales para que el enlace "Volver" funcione
-        'estado_actual': request.GET.get('estado', 'todos'),
-        'orden_actual': request.GET.get('orden', 'reciente'),
-    }
-    return render(request, 'gestionar_ticket.html', context)

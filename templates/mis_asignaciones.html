@@ -23,7 +23,7 @@
                 </select>
             </div>
         </div>
-        </header>
+    </header>
 
     <main class="list" aria-label="Mis tickets asignados">
         {% for ticket in tickets %}
@@ -50,7 +50,7 @@
                 </div>
             </div>
             <div class="ticket-actions">
-                 <a href="{% url 'gestionar_ticket' ticket.ticket_id %}?estado={{ estado_actual }}&orden={{ orden_actual }}" class="btn-link">Gestionar</a>
+                 <a href="{% url 'mis_asignaciones_detalle' ticket.ticket_id %}?estado={{ estado_actual }}&orden={{ orden_actual }}" class="btn-link">Gestionar</a>
             </div>
         </article>
         {% empty %}
@@ -59,4 +59,60 @@
         </div>
         {% endfor %}
     </main>
-{% endblock %}
+
+    {% if ticket_seleccionado %}
+    <aside class="detail" aria-label="Detalle y gestión del ticket">
+        <div class="detail-head">
+             <div class="avatar avatar--R">{{ ticket_seleccionado.usuario_creador.nombre|first }}</div>
+             <div>
+                 <div class="user-name">{{ ticket_seleccionado.titulo }}</div>
+                 <div class="muted small">Solicitante: {{ ticket_seleccionado.usuario_creador.nombre }}</div>
+                 <div class="muted small">Estado actual: <b>{{ ticket_seleccionado.get_estado_display }}</b></div>
+             </div>
+        </div>
+
+        <div class="detail-body" style="flex: 1; overflow-y: auto;">
+            <div class="bubble" style="background: var(--card); border: 1px solid var(--line); margin-bottom: 10px;">
+                <p><strong>Descripción del solicitante:</strong></p>
+                <p>{{ ticket_seleccionado.descripcion }}</p>
+            </div>
+
+            {% for comentario in comentarios %}
+            <div class="bubble"
+                 style="background: {% if comentario.autor.rol.nombre == 'TI' %}var(--blue-100){% else %}var(--card){% endif %}; border: 1px solid var(--line); margin-bottom: 10px;">
+                <p>
+                    <strong>{{ comentario.autor.nombre }}</strong>
+                    <span class="muted small">({{ comentario.autor.rol.nombre }})</span>
+                    <span class="muted small" style="float: right;">{{ comentario.fecha_creacion }}</span>
+                </p>
+                <p>{{ comentario.contenido|linebreaksbr }}</p>
+            </div>
+            {% empty %}
+            <div class="bulk-bar" style="margin: 10px 0;">
+                No hay comentarios previos en este ticket.
+            </div>
+            {% endfor %}
+        </div>
+
+        <form class="composer" method="post" action="{% url 'mis_asignaciones_detalle' ticket_seleccionado.ticket_id %}?estado={{ estado_actual }}&orden={{ orden_actual }}">
+            {% csrf_token %}
+            <div style="padding: 10px;">
+                 <p>
+                     <label for="{{ form_gestion.estado.id_for_label }}">Actualizar Estado:</label>
+                     {{ form_gestion.estado }}
+                 </p>
+                 <p>
+                     <label for="{{ form_gestion.contenido.id_for_label }}">{{ form_gestion.contenido.label }}:</label>
+                     {{ form_gestion.contenido }}
+                     {% if form_gestion.contenido.errors %}
+                        <small style="color: var(--red);">{{ form_gestion.contenido.errors|first }}</small>
+                     {% endif %}
+                 </p>
+             </div>
+            <button type="submit" class="btn-link" style="background: var(--indigo-800); color: #fff; width: 100%; border-radius: 0 0 14px 14px; border:0; margin-top: 10px;">
+                Actualizar Ticket
+            </button>
+        </form>
+    </aside>
+    {% endif %}
+    {% endblock %}
