@@ -24,12 +24,17 @@ urlpatterns = [
     path('dashboard/', views.dashboard_view, name='dashboard'), 
     path('tickets/', views.ticket_list_view, name='ticket_list'),
     path('tickets/<int:ticket_id>/', views.ticket_list_view, name='ticket_detail'),
+
+    #path('gestionar-ticket/<int:ticket_id>/', views.gestionar_ticket_view, name='gestionar_ticket'),
+
+    # --- RUTAS DE "MIS TICKETS" (DOCENTE) ---
     path('mis-tickets/', views.mis_tickets_view, name='mis_tickets'),
+    path('mis-tickets/<int:ticket_id>/', views.mis_tickets_view, name='mis_tickets_detalle'),
 
+    # --- RUTAS DE "TI" ---
     path('mis-asignaciones/', views.mis_asignaciones_view, name='mis_asignaciones'),
-
+    
     path('gestionar-ticket/<int:ticket_id>/', views.gestionar_ticket_view, name='gestionar_ticket'),
-
     path('accounts/', include('django.contrib.auth.urls')),
 ]
 

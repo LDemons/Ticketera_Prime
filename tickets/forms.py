@@ -74,3 +74,17 @@ class GestionTicketForm(forms.ModelForm):
         labels = {
             'contenido': 'Añadir Comentario/Respuesta',
         }
+
+class ComentarioForm(forms.ModelForm):
+    """
+    Formulario simple para que un usuario añada un comentario.
+    """
+    class Meta:
+        model = Comentario
+        fields = ['contenido']
+        widgets = {
+            'contenido': forms.Textarea(attrs={'class': 'form-input', 'rows': 4, 'placeholder': 'Escribe una respuesta o seguimiento...'}),
+        }
+        labels = {
+            'contenido': 'Añadir Comentario:'
+        }

@@ -13,9 +13,9 @@
             <div class="card-head">
                 <h2>Crear un Nuevo Ticket</h2>
             </div>
-            <form method="post" style="padding: 15px;">
+            <form method="post" action="{% url 'mis_tickets' %}" style="padding: 15px;">
                 {% csrf_token %}
-                {{ form.as_p }}
+                {{ form_creacion.as_p }} 
                 <button type="submit" class="btn-link" style="background: var(--indigo-800); color: #fff;">Enviar Ticket</button>
             </form>
         </div>
@@ -44,7 +44,7 @@
                 </div>
             </div>
             <div class="ticket-actions">
-                <a href="{% url 'ticket_detail' ticket.ticket_id %}" class="btn-link">Ver Detalles</a>
+                <a href="{% url 'mis_tickets_detalle' ticket.ticket_id %}" class="btn-link">Ver Detalles</a>
             </div>
         </article>
         {% empty %}
@@ -52,6 +52,49 @@
             No has creado ningún ticket todavía. ¡Usa el formulario de arriba para empezar!
         </div>
         {% endfor %}
-
     </main>
-{% endblock %}
+
+    {% if ticket_seleccionado %}
+    <aside class="detail" aria-label="Detalle del ticket">
+        <div class="detail-head">
+            <div class="avatar avatar--R">{{ ticket_seleccionado.usuario_creador.nombre|first }}</div>
+            <div>
+                <div class="user-name">{{ ticket_seleccionado.titulo }}</div>
+                <div class="muted small">Estado: <b>{{ ticket_seleccionado.get_estado_display }}</b></div>
+            </div>
+        </div>
+        
+        <div class="detail-body" style="flex: 1; overflow-y: auto;">
+            
+            <div class="bubble" style="background: var(--card); border: 1px solid var(--line); margin-bottom: 10px;">
+                <p><strong>Tu descripción original:</strong></p>
+                <p>{{ ticket_seleccionado.descripcion }}</p>
+            </div>
+            
+            {% for comentario in comentarios %}
+            <div class="bubble" 
+                 style="background: {% if comentario.autor.rol.nombre == 'TI' %}var(--blue-100){% else %}var(--card){% endif %}; border: 1px solid var(--line); margin-bottom: 10px;">
+                <p>
+                    <strong>{{ comentario.autor.nombre }}</strong> 
+                    <span class="muted small">({{ comentario.autor.rol.nombre }})</span>
+                    <span class="muted small" style="float: right;">{{ comentario.fecha_creacion }}</span>
+                </p>
+                <p>{{ comentario.contenido|linebreaksbr }}</p>
+            </div>
+            {% empty %}
+            <div class="bulk-bar" style="margin: 10px 0;">
+                Aún no hay respuestas del equipo de TI.
+            </div>
+            {% endfor %}
+        </div>
+        
+        <form class="composer" method="post" action="{% url 'mis_tickets_detalle' ticket_seleccionado.ticket_id %}">
+            {% csrf_token %}
+            {{ form_comentario.contenido }}
+            <button type="submit" class="btn-link" style="background: var(--indigo-800); color: #fff; width: 100%; border-radius: 0 0 14px 14px; border:0; margin-top: 10px;">
+                Enviar Comentario
+            </button>
+        </form>
+    </aside>
+    {% endif %}
+    {% endblock %}
