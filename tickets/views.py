@@ -6,8 +6,46 @@ from django.contrib.auth.decorators import login_required
 from .forms import TicketForm, AsignacionTicketForm, GestionTicketForm
 from django.utils import timezone
 
+@login_required
+def index_view(request):
+    """
+    Redirige al usuario a su página principal según su rol.
+    """
+    try:
+        # Buscamos el usuario de nuestro modelo basado en el usuario de Django
+        usuario = Usuario.objects.get(email=request.user.email)
+        
+        # Redirigimos según el nombre del rol
+        if usuario.rol.nombre == 'Admin':
+            return redirect('dashboard')
+        elif usuario.rol.nombre == 'TI':
+            return redirect('mis_asignaciones')
+        elif usuario.rol.nombre == 'Docente':
+            return redirect('mis_tickets')
+        else:
+            # Si tiene un rol desconocido, lo mandamos al login
+            return redirect('login')
+            
+    except Usuario.DoesNotExist:
+        # Si el usuario de Django no existe en nuestro modelo
+        # (ej. es un superuser de Django pero no un 'Usuario' de la app)
+        if request.user.is_superuser:
+            return redirect('/admin/')
+        else:
+            return redirect('login')
 
+
+@login_required
 def dashboard_view(request):
+    # --- BLOQUE DE PERMISO ---
+    try:
+        usuario = Usuario.objects.get(email=request.user.email)
+        if usuario.rol.nombre != 'Admin':
+            return redirect('index') # Si no es Admin, a la salida
+    except Usuario.DoesNotExist:
+        return redirect('index') # Si no existe, a la salida
+    # --- FIN DEL BLOQUE ---
+    
     # Hacemos las consultas a la base de datos
     tickets_abiertos = Ticket.objects.filter(estado='ABIERTO').count()
     tickets_en_progreso = Ticket.objects.filter(estado='EN_PROGRESO').count()
@@ -26,6 +64,14 @@ def dashboard_view(request):
 
 @login_required
 def ticket_list_view(request, ticket_id=None):
+    # --- BLOQUE DE PERMISO ---
+    try:
+        usuario = Usuario.objects.get(email=request.user.email)
+        if usuario.rol.nombre != 'Admin':
+            return redirect('index') # Si no es Admin, a la salida
+    except Usuario.DoesNotExist:
+        return redirect('index') # Si no existe, a la salida
+    # --- FIN DEL BLOQUE ---
     
     # Lógica de asignación (POST)
     if request.method == 'POST' and ticket_id:
@@ -79,25 +125,33 @@ def ticket_detail_view(request, ticket_id):
     }
     return render(request, 'ticket_detail.html', context)
 
-@login_required 
+
+@login_required
 def mis_tickets_view(request):
-    # 👇 ¡AHORA USAMOS EL USUARIO REAL!
-    usuario_actual = request.user 
+    # --- BLOQUE DE PERMISO ---
+    try:
+        usuario = Usuario.objects.get(email=request.user.email)
+        if usuario.rol.nombre != 'Docente':
+            return redirect('index') # Si no es Docente, a la salida
+    except Usuario.DoesNotExist:
+        return redirect('index') # Si no existe, a la salida
+    # --- FIN DEL BLOQUE ---
+    
+    # Usamos el 'usuario' del bloque de permisos
+    creador = usuario 
 
     if request.method == 'POST':
         form = TicketForm(request.POST)
         if form.is_valid():
             ticket_nuevo = form.save(commit=False)
-            # Buscamos nuestro modelo Usuario basado en el usuario de Django
-            creador = Usuario.objects.get(email=usuario_actual.email)
-            ticket_nuevo.usuario_creador = creador
+            ticket_nuevo.usuario_creador = creador # Asignamos el creador
             ticket_nuevo.save()
             return redirect('mis_tickets')
     else:
         form = TicketForm()
 
-    # Obtenemos los tickets del usuario real
-    tickets_del_usuario = Ticket.objects.filter(usuario_creador__email=usuario_actual.email).order_by('-fecha_creacion')
+    # Obtenemos los tickets del 'creador'
+    tickets_del_usuario = Ticket.objects.filter(usuario_creador=creador).order_by('-fecha_creacion')
 
     context = {
         'view_class': 'view-tickets',
@@ -106,26 +160,24 @@ def mis_tickets_view(request):
     }
     return render(request, 'mis_tickets.html', context)
 
-@login_required # 👈 Protegemos la vista
+@login_required
 def mis_asignaciones_view(request):
+    # --- BLOQUE DE PERMISO ---
     try:
-        # 1. Obtenemos el usuario 'Técnico' de nuestro modelo 'Usuario'
-        #    basado en el email del usuario de Django que se logueó.
-        tecnico_actual = Usuario.objects.get(email=request.user.email)
+        usuario = Usuario.objects.get(email=request.user.email)
+        if usuario.rol.nombre != 'TI':
+            return redirect('index') # Si no es TI, a la salida
     except Usuario.DoesNotExist:
-        # Si el usuario de Django no existe en nuestro modelo Usuario
-        # (ej. es un superuser o un docente), no mostramos ningún ticket.
-        tecnico_actual = None
+        return redirect('index') # Si no existe, a la salida
+    # --- FIN DEL BLOQUE ---
 
-    if tecnico_actual:
-        # 2. Buscamos los tickets que están asignados a este técnico
-        #    Usamos 'asignacionticket__usuario_asignado' para 'saltar'
-        #    del modelo Ticket al modelo AsignacionTicket
-        tickets_asignados = Ticket.objects.filter(
-            asignacionticket__usuario_asignado=tecnico_actual
-        ).distinct().order_by('-fecha_creacion')
-    else:
-        tickets_asignados = Ticket.objects.none()
+    # Usamos el 'usuario' del bloque de permisos
+    tecnico_actual = usuario 
+
+    # Buscamos los tickets asignados a este técnico
+    tickets_asignados = Ticket.objects.filter(
+        asignacionticket__usuario_asignado=tecnico_actual
+    ).distinct().order_by('-fecha_creacion')
 
     context = {
         'view_class': 'view-tickets', # Reutilizamos el estilo de la vista de tickets
@@ -136,16 +188,20 @@ def mis_asignaciones_view(request):
 
 @login_required
 def gestionar_ticket_view(request, ticket_id):
-    # Obtenemos el ticket que se va a gestionar
+    # --- BLOQUE DE PERMISO ---
+    try:
+        usuario = Usuario.objects.get(email=request.user.email)
+        if usuario.rol.nombre != 'TI':
+            return redirect('index') # Si no es TI, a la salida
+    except Usuario.DoesNotExist:
+        return redirect('index') # Si no existe, a la salida
+    # --- FIN DEL BLOQUE ---
+
+    # Usamos el 'usuario' del bloque de permisos
+    tecnico_actual = usuario
     ticket = get_object_or_404(Ticket, pk=ticket_id)
     
-    # Obtenemos el usuario técnico (asumimos que está logueado)
-    try:
-        tecnico_actual = Usuario.objects.get(email=request.user.email)
-    except Usuario.DoesNotExist:
-        # Si no es un usuario de nuestro modelo, no puede gestionar
-        return redirect('dashboard') # O mostrar un error
-
+    # (El resto de la lógica de la vista)
     if request.method == 'POST':
         form = GestionTicketForm(request.POST)
         if form.is_valid():
@@ -153,7 +209,6 @@ def gestionar_ticket_view(request, ticket_id):
             nuevo_estado = form.cleaned_data['estado']
             ticket.estado = nuevo_estado
             
-            # Si el estado es 'CERRADO' o 'RESUELTO', guardamos la fecha
             if nuevo_estado in ['CERRADO', 'RESUELTO']:
                 ticket.cerrado_en = timezone.now()
             
@@ -161,23 +216,20 @@ def gestionar_ticket_view(request, ticket_id):
 
             # 2. Crear el nuevo comentario
             contenido_comentario = form.cleaned_data['contenido']
-            if contenido_comentario: # Solo si el técnico escribió algo
+            if contenido_comentario: 
                 nuevo_comentario = form.save(commit=False)
                 nuevo_comentario.ticket = ticket
                 nuevo_comentario.autor = tecnico_actual
                 nuevo_comentario.save()
 
-            # 3. Redirigir de vuelta a la lista de asignaciones
             return redirect('mis_asignaciones')
     else:
-        # Si es GET, mostramos el formulario con el estado actual del ticket
         form = GestionTicketForm(initial={'estado': ticket.estado})
 
-    # Obtenemos todos los comentarios existentes para este ticket
     comentarios = Comentario.objects.filter(ticket=ticket).order_by('fecha_creacion')
 
     context = {
-        'view_class': 'view-tickets', # Reutilizamos estilos
+        'view_class': 'view-tickets',
         'ticket': ticket,
         'form': form,
         'comentarios': comentarios
