@@ -34,7 +34,8 @@ urlpatterns = [
     # --- RUTAS DE "TI" ---
     path('mis-asignaciones/', views.mis_asignaciones_view, name='mis_asignaciones'),
     
-    path('gestionar-ticket/<int:ticket_id>/', views.gestionar_ticket_view, name='gestionar_ticket'),
+    path('mis-asignaciones/<int:ticket_id>/', views.mis_asignaciones_view, name='mis_asignaciones_detalle'),
+
     path('accounts/', include('django.contrib.auth.urls')),
 ]
 
