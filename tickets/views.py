@@ -3,7 +3,7 @@ from django.shortcuts import render, redirect
 from .models import Ticket, Usuario, AsignacionTicket, Comentario
 from django.shortcuts import get_object_or_404
 from django.contrib.auth.decorators import login_required 
-from .forms import TicketForm, AsignacionTicketForm, GestionTicketForm
+from .forms import TicketForm, AsignacionTicketForm, GestionTicketForm, ComentarioForm
 from django.utils import timezone
 
 @login_required
@@ -127,7 +127,7 @@ def ticket_detail_view(request, ticket_id):
 
 
 @login_required
-def mis_tickets_view(request):
+def mis_tickets_view(request, ticket_id=None):
     # --- BLOQUE DE PERMISO ---
     try:
         usuario = Usuario.objects.get(email=request.user.email)
@@ -140,25 +140,65 @@ def mis_tickets_view(request):
     # Usamos el 'usuario' del bloque de permisos
     creador = usuario 
 
-    if request.method == 'POST':
-        form = TicketForm(request.POST)
-        if form.is_valid():
-            ticket_nuevo = form.save(commit=False)
-            ticket_nuevo.usuario_creador = creador # Asignamos el creador
-            ticket_nuevo.save()
-            return redirect('mis_tickets')
-    else:
-        form = TicketForm()
+    ticket_seleccionado = None
+    comentarios = Comentario.objects.none()
+    form_comentario = None
 
-    # Obtenemos los tickets del 'creador'
+    # --- LÓGICA POST ---
+    if request.method == 'POST':
+        
+        # A) Lógica para AÑADIR UN COMENTARIO (si hay ticket_id en la URL)
+        if ticket_id:
+            ticket_para_comentar = get_object_or_404(Ticket, pk=ticket_id, usuario_creador=creador)
+            form_comentario_post = ComentarioForm(request.POST)
+            
+            if form_comentario_post.is_valid():
+                nuevo_comentario = form_comentario_post.save(commit=False)
+                nuevo_comentario.ticket = ticket_para_comentar
+                nuevo_comentario.autor = creador
+                nuevo_comentario.save()
+                return redirect('mis_tickets_detalle', ticket_id=ticket_id)
+            else:
+                # Si el form de comentario falla, preparamos el contexto para mostrar el error
+                ticket_seleccionado = ticket_para_comentar
+                comentarios = Comentario.objects.filter(ticket=ticket_seleccionado).order_by('fecha_creacion')
+                form_comentario = form_comentario_post # Pasa el form con errores
+        
+        # B) Lógica para CREAR UN TICKET (si NO hay ticket_id en la URL)
+        else:
+            form_creacion = TicketForm(request.POST)
+            if form_creacion.is_valid():
+                ticket_nuevo = form_creacion.save(commit=False)
+                ticket_nuevo.usuario_creador = creador
+                ticket_nuevo.save()
+                return redirect('mis_tickets')
+            # Si la creación falla, el form con errores se pasará al contexto
+    
+    # --- LÓGICA GET (y preparación de formularios) ---
+    form_creacion = TicketForm() # Formulario de la izquierda
+
+    # Si se está viendo un ticket específico (GET request o POST fallido de comentario)
+    if ticket_id:
+        if not ticket_seleccionado: # Si no lo seteamos arriba por un POST fallido
+            ticket_seleccionado = get_object_or_404(Ticket, pk=ticket_id, usuario_creador=creador)
+            comentarios = Comentario.objects.filter(ticket=ticket_seleccionado).order_by('fecha_creacion')
+            form_comentario = ComentarioForm() # Formulario de la derecha
+
+    # Obtenemos la lista de tickets (para la izquierda)
     tickets_del_usuario = Ticket.objects.filter(usuario_creador=creador).order_by('-fecha_creacion')
 
     context = {
-        'view_class': 'view-tickets',
+        'view_class': 'view-tickets', # Usamos la clase que permite 2 columnas
         'tickets': tickets_del_usuario,
-        'form': form
+        'form_creacion': form_creacion, # Renombrado para claridad
+        'ticket_seleccionado': ticket_seleccionado,
+        'comentarios': comentarios,
+        'form_comentario': form_comentario # Renombrado para claridad
     }
     return render(request, 'mis_tickets.html', context)
+
+
+
 
 @login_required
 def mis_asignaciones_view(request):
