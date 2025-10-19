@@ -5,7 +5,25 @@
 {% block content %}
     <header class="header">
         <h1 class="page-title">Mis Tickets Creados</h1>
-    </header>
+        <div class="filters">
+            <div class="select">
+                <label for="estado-select" class="sr">Filtrar por estado:</label>
+                <select id="estado-select" onchange="window.location.href=this.value;">
+                    <option value="?orden={{ orden_actual }}" {% if estado_actual == 'todos' %}selected{% endif %}>Todos los estados</option>
+                    {% for value, display in estados_posibles %}
+                    <option value="?estado={{ value }}&orden={{ orden_actual }}" {% if estado_actual == value %}selected{% endif %}>{{ display }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="select">
+                <label for="orden-select" class="sr">Ordenar por:</label>
+                <select id="orden-select" onchange="window.location.href=this.value;">
+                    <option value="?estado={{ estado_actual }}&orden=reciente" {% if orden_actual == 'reciente' %}selected{% endif %}>Recientes primero</option>
+                    <option value="?estado={{ estado_actual }}&orden=antiguo" {% if orden_actual == 'antiguo' %}selected{% endif %}>Antiguos primero</option>
+                </select>
+            </div>
+        </div>
+        </header>
 
     <main class="list" aria-label="Mis tickets">
 
@@ -13,9 +31,9 @@
             <div class="card-head">
                 <h2>Crear un Nuevo Ticket</h2>
             </div>
-            <form method="post" action="{% url 'mis_tickets' %}" style="padding: 15px;">
+            <form method="post" action="{% url 'mis_tickets' %}?estado={{ estado_actual }}&orden={{ orden_actual }}" style="padding: 15px;">
                 {% csrf_token %}
-                {{ form_creacion.as_p }} 
+                {{ form_creacion.as_p }}
                 <button type="submit" class="btn-link" style="background: var(--indigo-800); color: #fff;">Enviar Ticket</button>
             </form>
         </div>
@@ -44,7 +62,7 @@
                 </div>
             </div>
             <div class="ticket-actions">
-                <a href="{% url 'mis_tickets_detalle' ticket.ticket_id %}" class="btn-link">Ver Detalles</a>
+                <a href="{% url 'mis_tickets_detalle' ticket.ticket_id %}?estado={{ estado_actual }}&orden={{ orden_actual }}" class="btn-link">Ver Detalles</a>
             </div>
         </article>
         {% empty %}
@@ -63,19 +81,16 @@
                 <div class="muted small">Estado: <b>{{ ticket_seleccionado.get_estado_display }}</b></div>
             </div>
         </div>
-        
         <div class="detail-body" style="flex: 1; overflow-y: auto;">
-            
             <div class="bubble" style="background: var(--card); border: 1px solid var(--line); margin-bottom: 10px;">
                 <p><strong>Tu descripción original:</strong></p>
                 <p>{{ ticket_seleccionado.descripcion }}</p>
             </div>
-            
             {% for comentario in comentarios %}
-            <div class="bubble" 
+            <div class="bubble"
                  style="background: {% if comentario.autor.rol.nombre == 'TI' %}var(--blue-100){% else %}var(--card){% endif %}; border: 1px solid var(--line); margin-bottom: 10px;">
                 <p>
-                    <strong>{{ comentario.autor.nombre }}</strong> 
+                    <strong>{{ comentario.autor.nombre }}</strong>
                     <span class="muted small">({{ comentario.autor.rol.nombre }})</span>
                     <span class="muted small" style="float: right;">{{ comentario.fecha_creacion }}</span>
                 </p>
@@ -87,8 +102,7 @@
             </div>
             {% endfor %}
         </div>
-        
-        <form class="composer" method="post" action="{% url 'mis_tickets_detalle' ticket_seleccionado.ticket_id %}">
+        <form class="composer" method="post" action="{% url 'mis_tickets_detalle' ticket_seleccionado.ticket_id %}?estado={{ estado_actual }}&orden={{ orden_actual }}">
             {% csrf_token %}
             {{ form_comentario.contenido }}
             <button type="submit" class="btn-link" style="background: var(--indigo-800); color: #fff; width: 100%; border-radius: 0 0 14px 14px; border:0; margin-top: 10px;">
@@ -97,4 +111,4 @@
         </form>
     </aside>
     {% endif %}
-    {% endblock %}
+{% endblock %}
