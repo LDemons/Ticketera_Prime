@@ -14,6 +14,7 @@
     <main class="list" aria-label="Lista de tickets">
         {% for ticket in tickets %}
         <article class="ticket">
+            {# ... (esto se mantiene igual) ... #}
             <div class="avatar avatar--R">{{ ticket.usuario_creador.nombre|first }}</div>
             <div>
                 <div class="ticket-title">
@@ -52,9 +53,23 @@
                 <p>{{ ticket_seleccionado.descripcion }}</p>
             </div>
         </div>
-        <div class="composer">
-            <textarea placeholder="Escribe una respuesta…"></textarea>
-        </div>
-    </aside>
+
+        <form class="composer" method="POST" action="{% url 'ticket_detail' ticket_seleccionado.ticket_id %}">
+            {% csrf_token %}
+            
+            <div style="padding: 10px;">
+                <strong>Asignar este ticket:</strong>
+                {{ asignacion_form.usuario_asignado }}
+                
+                <br>
+                
+                {{ asignacion_form.comentarios }}
+            </div>
+            
+            <button type="submit" class="btn-link" style="background: var(--indigo-800); color: #fff; width: 100%; border-radius: 0 0 14px 14px; border:0; margin-top: 10px;">
+                Asignar y poner "En Progreso"
+            </button>
+        </form>
+        </aside>
     {% endif %}
-    {% endblock %}
+{% endblock %}
