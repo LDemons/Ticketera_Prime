@@ -70,16 +70,15 @@
 
         <form class="composer" method="POST" action="{% url 'ticket_detail' ticket_seleccionado.ticket_id %}?estado={{ estado_actual }}&orden={{ orden_actual }}">
             {% csrf_token %}
-            
             <div style="padding: 10px;">
-                <strong>Asignar este ticket:</strong>
-                {{ asignacion_form.usuario_asignado }}
-                
-                <br>
-                
-                {{ asignacion_form.comentarios }}
+                <p> <label for="{{ asignacion_form.usuario_asignado.id_for_label }}"><strong>Asignar este ticket:</strong></label>
+                    <div class="select" style="width: 100%; margin-top: 5px;"> {{ asignacion_form.usuario_asignado }}
+                    </div>
+                </p>
+                <p style="margin-top: 15px;"> <label for="{{ asignacion_form.comentarios.id_for_label }}">Comentarios (opcional):</label>
+                     {{ asignacion_form.comentarios }}
+                </p>
             </div>
-            
             <button type="submit" class="btn-link" style="background: var(--indigo-800); color: #fff; width: 100%; border-radius: 0 0 14px 14px; border:0; margin-top: 10px;">
                 Asignar y poner "En Progreso"
             </button>
