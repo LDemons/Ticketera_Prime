@@ -25,7 +25,7 @@
                     <span class="ico"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="8" height="8" rx="2"/><rect x="13" y="3" width="8" height="5" rx="2"/><rect x="3" y="13" width="5" height="8" rx="2"/><rect x="10" y="13" width="11" height="8" rx="2"/></svg></span>
                     Dashboard
                 </a>
-                <a class="{% if view_class == 'view-tickets' and request.resolver_match.url_name == 'ticket_list' or request.resolver_match.url_name == 'ticket_detail' %}active{% endif %}" href="{% url 'ticket_list' %}">
+                <a class="{% if view_class == 'view-tickets' and request.resolver_match.url_name == 'ticket_list' or view_class == 'view-tickets' and request.resolver_match.url_name == 'ticket_detail' %}active{% endif %}" href="{% url 'ticket_list' %}">
                     <span class="ico"><svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="6" rx="2"/><rect x="4" y="13" width="16" height="6" rx="2"/></svg></span>
                     Tickets
                 </a>
