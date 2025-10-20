@@ -374,3 +374,55 @@ body{
 }
 
 /* ===================================== */
+
+/* ===== ESTILOS PARA FORMULARIOS GENÉRICOS ===== */
+
+/* Estilo base para los inputs y textareas con la clase form-input */
+.form-input {
+  width: 100%; /* Ocupa todo el ancho disponible */
+  padding: 10px 12px; /* Espaciado interno */
+  border: 1px solid var(--line); /* Borde sutil */
+  border-radius: 8px; /* Bordes redondeados */
+  margin-top: 5px; /* Espacio sobre el input */
+  font: inherit; /* Usa la misma fuente que el resto */
+  color: var(--text);
+  background-color: #fff; /* Fondo blanco */
+  box-shadow: inset 0 1px 2px rgba(0,0,0,0.05); /* Sombra interna sutil */
+  transition: border-color 0.2s ease, box-shadow 0.2s ease; /* Transiciones suaves */
+}
+
+/* Estilo al enfocar (hacer clic) en el input/textarea */
+.form-input:focus {
+  outline: none; /* Quita el contorno por defecto */
+  border-color: var(--blue); /* Borde azul al enfocar */
+  box-shadow: inset 0 1px 2px rgba(0,0,0,0.05), 0 0 0 3px rgba(47, 115, 217, 0.2); /* Sombra exterior azul suave */
+}
+
+/* Ajustes específicos para textareas */
+textarea.form-input {
+  min-height: 80px; /* Altura mínima para descripción */
+  resize: vertical; /* Permite redimensionar solo verticalmente */
+}
+
+/* Estilo para los párrafos <p> generados por form.as_p dentro de un .card */
+.card form p {
+  margin-bottom: 15px; /* Espacio debajo de cada campo */
+}
+
+/* Estilo para las etiquetas <label> dentro de esos párrafos */
+.card form p label {
+  display: block; /* La etiqueta ocupa su propia línea */
+  font-weight: 600; /* Texto un poco más grueso */
+  margin-bottom: 3px; /* Pequeño espacio bajo la etiqueta */
+  color: var(--muted); /* Color grisáceo */
+  font-size: 14px; /* Tamaño un poco más pequeño */
+}
+
+/* Si usas campos select con la clase 'form-select' (como en otros formularios) */
+.form-select {
+     width: 100%; 
+     margin-top: 5px; 
+}
+/* Puedes combinarlos con los estilos de .select que ya tenemos si los envuelves en <div class="select"> */
+
+/* ===== FIN DE ESTILOS PARA FORMULARIOS ===== */
