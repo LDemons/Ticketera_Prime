@@ -1,6 +1,6 @@
 # tickets/views.py
 from django.shortcuts import render, redirect
-from .models import Ticket, Usuario, AsignacionTicket, Comentario
+from .models import Ticket, Usuario, AsignacionTicket, Comentario, Prioridad, Categoria
 from django.shortcuts import render, redirect, get_object_or_404, reverse
 from django.contrib.auth.decorators import login_required 
 from .forms import TicketForm, AsignacionTicketForm, GestionTicketForm, ComentarioForm
@@ -149,32 +149,54 @@ def ticket_list_view(request, ticket_id=None):
     # Lógica de asignación (POST) - (Se mantiene igual)
     if request.method == 'POST' and ticket_id:
         ticket_para_asignar = get_object_or_404(Ticket, pk=ticket_id)
-        form = AsignacionTicketForm(request.POST)
+        form = AsignacionTicketForm(request.POST, ticket=ticket_para_asignar)
         if form.is_valid():
-            asignacion = form.save(commit=False)
-            asignacion.ticket = ticket_para_asignar
-            asignacion.save()
-            ticket_para_asignar.estado = 'EN_PROGRESO'
+                # ---  ACTUALIZAR EL TICKET PRIMERO ---
+            ticket_para_asignar.prioridad = form.cleaned_data['prioridad']
+            ticket_para_asignar.categoria = form.cleaned_data['categoria']
+            ticket_para_asignar.estado = 'EN_PROGRESO' # Lo asignamos aquí también
             ticket_para_asignar.save()
-            # Redirigimos AÑADIENDO los filtros actuales para mantener la vista
-            return redirect(f"{reverse('ticket_list')}?estado={estado_filtro}&orden={orden}")
+            # --- FIN DE ACTUALIZACIÓN DEL TICKET ---
 
-    # Lógica para mostrar el panel lateral (GET) - (Se mantiene igual)
-    ticket_seleccionado = None
-    asignacion_form = None
-    if ticket_id:
-        ticket_seleccionado = get_object_or_404(Ticket, pk=ticket_id)
-        asignacion_form = AsignacionTicketForm()
+            # Creamos la asignación (solo usuario y comentarios)
+            asignacion = AsignacionTicket(
+                ticket=ticket_para_asignar,
+                usuario_asignado=form.cleaned_data['usuario_asignado'],
+                comentarios=form.cleaned_data['comentarios']
+            )
+            asignacion.save()
+
+            # La redirección se mantiene igual
+            return redirect(f"{reverse('ticket_list')}?estado={estado_filtro}&orden={orden}")
+        else:
+            # Si el form falla, necesitamos preparar el contexto igual que en GET
+            ticket_seleccionado = ticket_para_asignar
+            # Pasamos el ticket para inicializar y el form con errores
+            asignacion_form = form # Muestra los errores
+            lista_tickets = tickets_query.all() # Necesitamos la lista aquí también
+
+        # --- Lógica para mostrar el panel lateral (GET) ---
+    else: # Si NO es POST o no tiene ticket_id
+        ticket_seleccionado = None
+        asignacion_form = None
+        if ticket_id:
+            ticket_seleccionado = get_object_or_404(Ticket, pk=ticket_id)
+            # Pasamos el ticket al inicializar el formulario 
+            asignacion_form = AsignacionTicketForm(ticket=ticket_seleccionado) 
+
+        # Si no hubo POST fallido, obtenemos la lista aquí
+        if request.method != 'POST':
+            lista_tickets = tickets_query.all()
+
 
     context = {
         'view_class': 'view-tickets',
-        'tickets': lista_tickets, # Usamos la lista filtrada/ordenada
+        'tickets': lista_tickets, 
         'ticket_seleccionado': ticket_seleccionado,
-        'asignacion_form': asignacion_form,
-        # Pasamos los filtros actuales al contexto para usarlos en la plantilla
+        'asignacion_form': asignacion_form, 
         'estado_actual': estado_filtro or 'todos',
         'orden_actual': orden,
-        'estados_posibles': Ticket.ESTADO_CHOICES # Pasamos los estados posibles
+        'estados_posibles': Ticket.ESTADO_CHOICES 
     }
     return render(request, 'tickets_list.html', context)
 
@@ -242,10 +264,32 @@ def mis_tickets_view(request, ticket_id=None):
                 comentarios = Comentario.objects.filter(ticket=ticket_seleccionado).order_by('fecha_creacion')
                 form_comentario = form_comentario_post
         else: # Crear ticket
-            form_creacion = TicketForm(request.POST)
+            form_creacion = TicketForm(request.POST) 
             if form_creacion.is_valid():
-                # ... (guardar ticket) ...
-                # Redirigimos AÑADIENDO los filtros
+                ticket_nuevo = form_creacion.save(commit=False)
+                ticket_nuevo.usuario_creador = creador
+                
+                # --- Asignación de Prioridad y Categoría por defecto ---
+                try:
+                    prioridad_media = Prioridad.objects.get(Tipo_Nivel='MEDIO')
+                    ticket_nuevo.prioridad = prioridad_media
+                except Prioridad.DoesNotExist:
+                    prioridad_default = Prioridad.objects.first() 
+                    if prioridad_default:
+                        ticket_nuevo.prioridad = prioridad_default
+                    else:
+                        pass # Manejo de error si no hay prioridades
+
+                try:
+                    categoria_general = Categoria.objects.get(nombre='General') 
+                    ticket_nuevo.categoria = categoria_general
+                except Categoria.DoesNotExist:
+                    categoria_default = Categoria.objects.first()
+                    if categoria_default:
+                         ticket_nuevo.categoria = categoria_default
+                # --- Fin de Asignación por defecto ---
+
+                ticket_nuevo.save()
                 return redirect(f"{reverse('mis_tickets')}?estado={estado_filtro}&orden={orden}")
     
     # --- LÓGICA GET --- (Se mantiene igual)
