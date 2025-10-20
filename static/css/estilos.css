@@ -90,7 +90,66 @@ body{
 }
 .page-title{margin:0; font-size:20px}
 .filters{display:flex; gap:8px}
-.select{padding:8px 12px;border:1px solid var(--line);border-radius:8px;background:#fff;cursor:pointer}
+/* ===== ESTILOS PARA LOS SELECTORES DE FILTRO ===== */
+.select {
+  /* Mantenemos lo básico del div contenedor */
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background-color: #fff; /* Fondo blanco */
+  cursor: pointer;
+  position: relative; /* Necesario para posicionar la flecha */
+  min-width: 150px; /* Ancho mínimo */
+  display: inline-block; /* Para que se alinee bien con otros filtros */
+  transition: background-color 0.2s ease, border-color 0.2s ease; /* Transición suave */
+}
+
+/* Efecto al pasar el mouse por encima del div */
+.select:hover {
+  background-color: #f7f8fd; /* Fondo sutil */
+  border-color: #d1d5db; /* Borde un poco más oscuro */
+}
+
+/* Estilos específicos para el <select> DENTRO del div */
+.select select {
+  /* Quita toda la apariencia nativa */
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background: transparent; /* Sin fondo propio */
+  border: none; /* Sin borde propio */
+  outline: none; /* Sin contorno al hacer clic */
+
+  /* Ocupa todo el espacio del div y hereda estilos */
+  width: 100%;
+  height: 100%; /* Asegura que ocupe toda la altura */
+  padding: 8px 30px 8px 12px; /* Espacio interno (más a la derecha para la flecha) */
+  cursor: pointer;
+  font: inherit; /* Misma fuente que el resto */
+  color: var(--text); /* Color de texto */
+  margin: 0; /* Sin márgenes internos */
+  box-sizing: border-box; /* Padding incluido en el tamaño */
+}
+
+/* Oculta la flecha nativa en IE/Edge */
+.select select::-ms-expand {
+  display: none;
+}
+
+/* Añade nuestra propia flecha (SVG como imagen de fondo) */
+.select::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    right: 10px;
+    width: 16px; /* Ancho del icono */
+    height: 16px; /* Alto del icono */
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%236b6b7a' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: center;
+    transform: translateY(-50%); /* Centra verticalmente */
+    pointer-events: none; /* Evita que la flecha bloquee el clic */
+}
+/* ===== FIN DE ESTILOS PARA SELECTORES ===== */
 .back{width:36px;height:36px;border:1px solid var(--line);border-radius:10px;background:#fff;cursor:pointer}
 
 /* Chips / pills / tags (común) */
