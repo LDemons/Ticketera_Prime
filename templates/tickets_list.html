@@ -28,7 +28,6 @@
     <main class="list" aria-label="Lista de tickets">
         {% for ticket in tickets %}
         <article class="ticket">
-            {# ... (esto se mantiene igual) ... #}
             <div class="avatar avatar--R">{{ ticket.usuario_creador.nombre|first }}</div>
             <div>
                 <div class="ticket-title">
@@ -47,6 +46,14 @@
             </div>
             <div class="ticket-actions">
                 <a href="{% url 'ticket_detail' ticket.ticket_id %}?estado={{ estado_actual }}&orden={{ orden_actual }}" class="btn-link">Abrir</a>
+
+                <form method="POST"
+                    action="{% url 'borrar_ticket_admin' ticket.ticket_id %}?estado={{ estado_actual }}&orden={{ orden_actual }}"
+                    onsubmit="return confirm('¿Estás seguro de que quieres borrar este ticket? Esta acción no se puede deshacer.');"
+                    style="display: inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="btn-link" style="color: var(--red); border-color: var(--red);">Borrar</button>
+                </form>
             </div>
         </article>
         {% endfor %}

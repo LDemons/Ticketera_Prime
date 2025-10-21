@@ -25,8 +25,6 @@ urlpatterns = [
     path('tickets/', views.ticket_list_view, name='ticket_list'),
     path('tickets/<int:ticket_id>/', views.ticket_list_view, name='ticket_detail'),
 
-    #path('gestionar-ticket/<int:ticket_id>/', views.gestionar_ticket_view, name='gestionar_ticket'),
-
     # --- RUTAS DE "MIS TICKETS" (DOCENTE) ---
     path('mis-tickets/', views.mis_tickets_view, name='mis_tickets'),
     path('mis-tickets/<int:ticket_id>/', views.mis_tickets_view, name='mis_tickets_detalle'),
@@ -35,6 +33,11 @@ urlpatterns = [
     path('mis-asignaciones/', views.mis_asignaciones_view, name='mis_asignaciones'),
     
     path('mis-asignaciones/<int:ticket_id>/', views.mis_asignaciones_view, name='mis_asignaciones_detalle'),
+    path('reportes/', views.reportes_view, name='reportes'),
+
+    # --- BORRAR TICKET ---
+    path('mis-tickets/borrar/<int:ticket_id>/', views.borrar_mi_ticket_view, name='borrar_mi_ticket'),
+    path('tickets/borrar/<int:ticket_id>/', views.borrar_ticket_admin_view, name='borrar_ticket_admin'),
 
     path('accounts/', include('django.contrib.auth.urls')),
 ]
