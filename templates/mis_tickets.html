@@ -92,7 +92,7 @@
                 <p>
                     <strong>{{ comentario.autor.nombre }}</strong>
                     <span class="muted small">({{ comentario.autor.rol.nombre }})</span>
-                    <span class="muted small" style="float: right;">{{ comentario.fecha_creacion }}</span>
+                    <span class="muted small" style="float: right;">{{ comentario.fecha_creacion|date:"d/m/Y" }}</span>
                 </p>
                 <p>{{ comentario.contenido|linebreaksbr }}</p>
             </div>
