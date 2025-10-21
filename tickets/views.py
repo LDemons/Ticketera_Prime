@@ -255,14 +255,19 @@ def mis_tickets_view(request, ticket_id=None):
         if ticket_id: # Añadir comentario
             ticket_para_comentar = get_object_or_404(Ticket, pk=ticket_id, usuario_creador=creador)
             form_comentario_post = ComentarioForm(request.POST)
+
             if form_comentario_post.is_valid():
+                nuevo_comentario = form_comentario_post.save(commit=False) # Prepara el objeto
+                nuevo_comentario.ticket = ticket_para_comentar # Asigna el ticket
+                nuevo_comentario.autor = creador # Asigna el autor (docente)
+                nuevo_comentario.save() # Guarda en la BD
                 # ... (guardar comentario) ...
                 # Redirigimos AÑADIENDO los filtros
                 return redirect(f"{reverse('mis_tickets_detalle', args=[ticket_id])}?estado={estado_filtro}&orden={orden}")
             else:
                 ticket_seleccionado = ticket_para_comentar
                 comentarios = Comentario.objects.filter(ticket=ticket_seleccionado).order_by('fecha_creacion')
-                form_comentario = form_comentario_post
+                form_comentario = form_comentario_post # Pasa el formulario CON errores a la plantilla
         else: # Crear ticket
             form_creacion = TicketForm(request.POST) 
             if form_creacion.is_valid():
