@@ -73,7 +73,7 @@
     </main>
 
     {% if ticket_seleccionado %}
-    <aside class="detail" aria-label="Detalle del ticket">
+    <aside class="detail" aria-label="Detalle del ticket" style="height: calc(100vh - 64px);">
         <div class="detail-head">
             <div class="avatar avatar--R">{{ ticket_seleccionado.usuario_creador.nombre|first }}</div>
             <div>
