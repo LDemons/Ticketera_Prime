@@ -1,4 +1,3 @@
-# tickets/forms.py
 from django import forms
 from .models import Ticket, AsignacionTicket, Usuario, Rol, Comentario, Prioridad, Categoria
 
@@ -8,7 +7,7 @@ class TicketForm(forms.ModelForm):
         # Estos son los campos que aparecerán en el formulario
         fields = ['titulo', 'descripcion']
         
-        # Opcional: Esto hace que los campos se vean un poco mejor
+        # Esto hace que los campos se vean un poco mejor
         widgets = {
             'titulo': forms.TextInput(attrs={'class': 'form-input'}),
             'descripcion': forms.Textarea(attrs={'class': 'form-input', 'rows': 4}),
@@ -16,8 +15,8 @@ class TicketForm(forms.ModelForm):
 
 class AsignacionTicketForm(forms.ModelForm):
     
-    # 1. Definimos el campo, pero con un queryset vacío.
-    #    No consultamos la BD aquí.
+    # Definimos el campo, pero con un queryset vacío.
+    # No consultamos la BD aquí.
     usuario_asignado = forms.ModelChoiceField(
         queryset=Usuario.objects.none(), # Empezamos con un queryset vacío
         label="Asignar a Técnico",

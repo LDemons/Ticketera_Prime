@@ -1,4 +1,3 @@
-# tickets/views.py
 from django.shortcuts import render, redirect
 from .models import Ticket, Usuario, AsignacionTicket, Comentario, Prioridad, Categoria
 from django.shortcuts import render, redirect, get_object_or_404, reverse
@@ -6,7 +5,8 @@ from django.contrib.auth.decorators import login_required
 from .forms import TicketForm, AsignacionTicketForm, GestionTicketForm, ComentarioForm
 from django.utils import timezone
 from datetime import timedelta
-from django.db.models import F, ExpressionWrapper, fields, Avg, Min, Func, Value
+from django.db.models import F, ExpressionWrapper, fields, Avg, Min, Func, Value, Count
+from django.views.decorators.http import require_POST
 
 @login_required
 def index_view(request):
@@ -424,3 +424,100 @@ def mis_asignaciones_view(request, ticket_id=None):
         'estados_posibles': Ticket.ESTADO_CHOICES
     }
     return render(request, 'mis_asignaciones.html', context)
+
+
+# --- VISTA PARA BORRAR (DOCENTE) ---
+@require_POST # Solo permite peticiones POST
+@login_required
+def borrar_mi_ticket_view(request, ticket_id):
+    # --- BLOQUE DE PERMISO ---
+    try:
+        usuario = Usuario.objects.get(email=request.user.email)
+        if usuario.rol.nombre != 'Docente':
+            # Si no es Docente, no puede borrar "sus" tickets
+            # Podríamos redirigir a 'index' o mostrar error 403 (Prohibido)
+            return redirect('index') 
+    except Usuario.DoesNotExist:
+        return redirect('index') 
+    # --- FIN DEL BLOQUE ---
+
+    # Busca el ticket asegurándose que pertenece al usuario logueado
+    ticket_a_borrar = get_object_or_404(Ticket, pk=ticket_id, usuario_creador=usuario)
+    
+    # Borra el ticket
+    ticket_a_borrar.delete()
+    
+    # Redirige de vuelta a la lista "Mis Tickets" (manteniendo filtros si existen)
+    estado_filtro = request.GET.get('estado', '') 
+    orden = request.GET.get('orden', 'reciente')
+    return redirect(f"{reverse('mis_tickets')}?estado={estado_filtro}&orden={orden}")
+
+
+# --- VISTA PARA BORRAR (ADMIN) ---
+@require_POST # Solo permite peticiones POST
+@login_required
+def borrar_ticket_admin_view(request, ticket_id):
+    # --- BLOQUE DE PERMISO ---
+    try:
+        usuario = Usuario.objects.get(email=request.user.email)
+        if usuario.rol.nombre != 'Admin':
+            # Si no es Admin, no puede borrar tickets
+            return redirect('index') 
+    except Usuario.DoesNotExist:
+        # Superuser de Django sin Usuario en app? Permitir o redirigir
+        if not request.user.is_superuser:
+            return redirect('index')
+    # --- FIN DEL BLOQUE ---
+
+    # El Admin puede borrar cualquier ticket, solo busca por ID
+    ticket_a_borrar = get_object_or_404(Ticket, pk=ticket_id)
+    
+    # Borra el ticket
+    ticket_a_borrar.delete()
+    
+    # Redirige de vuelta a la lista general "Tickets" (manteniendo filtros)
+    estado_filtro = request.GET.get('estado', '') 
+    orden = request.GET.get('orden', 'reciente')
+    return redirect(f"{reverse('ticket_list')}?estado={estado_filtro}&orden={orden}")
+
+@login_required
+def reportes_view(request):
+    # --- BLOQUE DE PERMISO (Solo Admin) ---
+    try:
+        usuario = Usuario.objects.get(email=request.user.email)
+        if usuario.rol.nombre != 'Admin':
+            return redirect('index') 
+    except Usuario.DoesNotExist:
+        if not request.user.is_superuser:
+             return redirect('index')
+    # --- FIN DEL BLOQUE ---
+
+    # 1. Reporte: Conteo de Tickets por Estado
+    conteo_por_estado = Ticket.objects.values('estado').annotate(
+        total=Count('ticket_id')
+    ).order_by('estado')
+
+    reporte_estados = []
+    for item in conteo_por_estado:
+        temp_ticket = Ticket(estado=item['estado']) 
+        reporte_estados.append({
+            'estado': temp_ticket.get_estado_display(), 
+            'total': item['total']
+        })
+
+    # 2. Reporte: Conteo de Tickets por Categoría
+    conteo_por_categoria = Ticket.objects.values('categoria__nombre').annotate(
+        total=Count('ticket_id')
+    ).order_by('categoria__nombre')
+
+    reporte_categorias = [
+        {'categoria': item['categoria__nombre'], 'total': item['total']}
+        for item in conteo_por_categoria
+    ]
+
+    context = {
+        'view_class': 'view-reportes', 
+        'reporte_estados': reporte_estados,
+        'reporte_categorias': reporte_categorias,
+    }
+    return render(request, 'reportes.html', context)
