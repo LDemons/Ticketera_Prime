@@ -253,8 +253,14 @@ body{
 }
 
 .kpis{grid-area:kpis; display:grid; grid-template-columns:repeat(4,1fr); gap:12px}
-.cards{display:grid; gap:16px}
-.cards.two-col{grid-area:charts; grid-template-columns:1fr 1fr}
+.cards { 
+    display: grid; 
+    gap: 16px; 
+}
+.cards.two-col { 
+    /* grid-area: charts; */
+    grid-template-columns: 1fr 1fr; /* <= Asegúrate que esto exista */
+}
 .view-dashboard .cards.left{grid-area:left}
 .view-dashboard .cards.right{grid-area:right}
 
@@ -479,3 +485,51 @@ textarea.form-input {
 }
 
 /* ===== FIN LAYOUT LANDING PAGE ===== */
+
+/* ===== ESTILOS PARA PÁGINA DE REPORTES ===== */
+
+/* Contenedor principal de la página de reportes */
+/* (Ya tenemos el padding en el main style="padding: 16px;") */
+
+/* Estilos para las tablas dentro de las tarjetas de reporte */
+.card .table table { /* Apunta a la tabla dentro de .table dentro de .card */
+  width: 100%; /* Ocupa todo el ancho de la tarjeta */
+  border-collapse: collapse; /* Une los bordes de las celdas */
+  margin-top: 10px; /* Un poco de espacio sobre la tabla */
+}
+
+/* Estilos para las cabeceras de las tablas (th) */
+.card .table th {
+  border-bottom: 2px solid var(--line); /* Línea gruesa bajo la cabecera */
+  padding-bottom: 8px; /* Espacio bajo el texto de cabecera */
+  font-weight: 600; /* Texto un poco más grueso */
+  color: var(--muted); /* Color grisáceo */
+  font-size: 14px;
+  text-transform: uppercase; /* Opcional: mayúsculas */
+}
+
+/* Estilos para las celdas de datos (td) */
+.card .table td {
+  padding: 10px 5px; /* Espaciado vertical y un poco horizontal */
+  border-bottom: 1px solid var(--line); /* Línea sutil entre filas */
+  font-size: 14px;
+}
+
+/* Opcional: Quitar borde de la última fila para que no se duplique con el final de la tarjeta */
+.card .table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+/* Opcional: Alinear la cantidad a la derecha */
+.card .table th:last-child,
+.card .table td:last-child {
+  text-align: right;
+}
+
+/* Opcional: Alinear el estado/categoría a la izquierda */
+.card .table th:first-child,
+.card .table td:first-child {
+  text-align: left;
+}
+
+/* ===== FIN ESTILOS REPORTES ===== */

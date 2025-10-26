@@ -540,3 +540,61 @@ def reportes_view(request):
         'reporte_categorias': reporte_categorias,
     }
     return render(request, 'reportes.html', context)
+
+@login_required
+def reportes_view(request):
+    # --- BLOQUE DE PERMISO (Solo Admin) ---
+    try:
+        usuario = Usuario.objects.get(email=request.user.email)
+        if usuario.rol.nombre != 'Admin':
+            return redirect('index')
+    except Usuario.DoesNotExist:
+        if not request.user.is_superuser:
+             return redirect('index')
+    # --- FIN DEL BLOQUE ---
+
+    # 1. Reporte: Conteo de Tickets por Estado
+    conteo_por_estado = Ticket.objects.values('estado').annotate(
+        total=Count('ticket_id')
+    ).order_by('estado')
+
+    reporte_estados = []
+    for item in conteo_por_estado:
+        # Usamos .get() con default por si el estado no está en CHOICES (poco probable)
+        estado_display = dict(Ticket.ESTADO_CHOICES).get(item['estado'], item['estado'])
+        reporte_estados.append({
+            'estado': estado_display, # Nombre legible
+            'total': item['total']
+        })
+
+    # 2. Reporte: Conteo de Tickets por Categoría
+    conteo_por_categoria = Ticket.objects.values('categoria__nombre').annotate(
+        total=Count('ticket_id')
+    ).order_by('categoria__nombre')
+
+    reporte_categorias = [
+        # Aseguramos que si una categoría es None (si permitieras null), se muestre como 'Sin categoría'
+        {'categoria': item['categoria__nombre'] if item['categoria__nombre'] else 'Sin categoría', 'total': item['total']}
+        for item in conteo_por_categoria
+    ]
+
+    conteo_por_prioridad = Ticket.objects.values('prioridad__Tipo_Nivel').annotate(
+        total=Count('ticket_id')
+    ).order_by('prioridad__Tipo_Nivel') # Ordena por ALTO, BAJO, MEDIO
+
+    # Mapeamos los códigos ('ALTO', 'BAJO', 'MEDIO') a nombres legibles
+    # Usamos los NIVEL_CHOICES definidos en el modelo Prioridad
+    prioridad_map = dict(Prioridad.NIVEL_CHOICES) 
+    reporte_prioridades = [
+        {'prioridad': prioridad_map.get(item['prioridad__Tipo_Nivel'], 'Desconocida'), 
+         'total': item['total']}
+        for item in conteo_por_prioridad
+    ]
+
+    context = {
+        'view_class': 'view-dashboard', # Clase para CSS específico si es necesario
+        'reporte_estados': reporte_estados,
+        'reporte_categorias': reporte_categorias,
+        'reporte_prioridades': reporte_prioridades,
+    }
+    return render(request, 'reportes.html', context)
