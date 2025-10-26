@@ -206,10 +206,10 @@ body{
 .ticket-title{margin:6px 0 4px;font-weight:700}
 .ticket-meta{display:flex;gap:14px;color:var(--muted);font-size:14px}
 .dot{width:4px;height:4px;border-radius:50%;background:var(--line);align-self:center}
-.ticket-actions{display:flex;gap:8px}
+.ticket-actions{display:flex;gap:8px;align-items: center;}
 .btn-icon,.btn-link{border:1px solid var(--line);border-radius:10px;background:#fff;cursor:pointer}
 .btn-icon{width:36px;height:36px;display:grid;place-items:center}
-.btn-link{padding:8px 12px}
+.btn-link{padding:8px 12px;}
 
 
 /* Panel de detalle */
@@ -331,12 +331,27 @@ body{
 }
 
 .btn-link {
-    text-decoration: none; /* Elimina el subrayado */
-    color: var(--text);      /* Usa el color de texto principal */
+  /* Estilos existentes */
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: #fff;
+  cursor: pointer;
+  padding: 8px 12px;
+  text-decoration: none; /* Añadido antes */
+  color: var(--text); /* Añadido antes */
+
+  /* 👇 AÑADE ESTAS LÍNEAS 👇 */
+  display: inline-block; /* Asegura comportamiento de bloque en línea */
+  min-width: 80px;      /* Ancho mínimo (ajústalo si prefieres otro) */
+  text-align: center;   /* Centra el texto del botón */
+  font-size: 14px;      /* Opcional: ajustar tamaño de fuente si difiere */
+  line-height: 1.4;     /* Opcional: ajustar altura de línea si es necesario */
+  /* 👆 FIN DE LÍNEAS AÑADIDAS 👆 */
 }
 
+/* Regla hover existente */
 .btn-link:hover {
-    background: #f7f8fd;   /* Mantiene el efecto hover que ya tenías */
+    background: #f7f8fd;
 }
 
 
