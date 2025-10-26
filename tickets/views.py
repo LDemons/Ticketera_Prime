@@ -4,7 +4,7 @@ from django.shortcuts import render, redirect, get_object_or_404, reverse
 from django.contrib.auth.decorators import login_required 
 from .forms import TicketForm, AsignacionTicketForm, GestionTicketForm, ComentarioForm
 from django.utils import timezone
-from datetime import timedelta
+from datetime import timedelta, date, datetime
 from django.db.models import F, ExpressionWrapper, fields, Avg, Min, Func, Value, Count
 from django.views.decorators.http import require_POST
 
@@ -553,8 +553,47 @@ def reportes_view(request):
              return redirect('index')
     # --- FIN DEL BLOQUE ---
 
+    # --- 👇 PROCESAMIENTO DE FECHAS 👇 ---
+    fecha_desde_str = request.GET.get('fecha_desde', '')
+    fecha_hasta_str = request.GET.get('fecha_hasta', '')
+
+    fecha_desde = None
+    fecha_hasta = None
+
+    # Convertir strings a objetos date (si son válidos)
+    try:
+        if fecha_desde_str:
+            fecha_desde = datetime.strptime(fecha_desde_str, '%Y-%m-%d').date()
+    except ValueError:
+        fecha_desde = None # Ignora fecha inválida
+
+    try:
+        if fecha_hasta_str:
+            # Sumamos un día y usamos '<' para incluir el día 'hasta' completo
+            fecha_hasta = datetime.strptime(fecha_hasta_str, '%Y-%m-%d').date()
+    except ValueError:
+        fecha_hasta = None # Ignora fecha inválida
+
+    # --- FIN PROCESAMIENTO DE FECHAS ---
+
+    # --- Query base con filtro de fecha aplicado ---
+    base_query = Ticket.objects.all() # Empezamos con todos los tickets
+
+    # Aplicar filtros de fecha si existen
+    if fecha_desde and fecha_hasta:
+        # Si tenemos ambas, filtramos por rango (__range)
+        base_query = base_query.filter(fecha_creacion__range=(fecha_desde, fecha_hasta))
+    elif fecha_desde:
+        # Si solo hay 'desde', filtramos desde esa fecha en adelante (__gte)
+        base_query = base_query.filter(fecha_creacion__gte=fecha_desde)
+    elif fecha_hasta:
+        # Si solo hay 'hasta', filtramos hasta esa fecha inclusive (__lte)
+         base_query = base_query.filter(fecha_creacion__lte=fecha_hasta)
+
+    # --- FIN Query base ---
+
     # 1. Reporte: Conteo de Tickets por Estado
-    conteo_por_estado = Ticket.objects.values('estado').annotate(
+    conteo_por_estado = base_query.values('estado').annotate(
         total=Count('ticket_id')
     ).order_by('estado')
 
@@ -568,7 +607,7 @@ def reportes_view(request):
         })
 
     # 2. Reporte: Conteo de Tickets por Categoría
-    conteo_por_categoria = Ticket.objects.values('categoria__nombre').annotate(
+    conteo_por_categoria = base_query.values('categoria__nombre').annotate(
         total=Count('ticket_id')
     ).order_by('categoria__nombre')
 
@@ -578,7 +617,7 @@ def reportes_view(request):
         for item in conteo_por_categoria
     ]
 
-    conteo_por_prioridad = Ticket.objects.values('prioridad__Tipo_Nivel').annotate(
+    conteo_por_prioridad = base_query.values('prioridad__Tipo_Nivel').annotate(
         total=Count('ticket_id')
     ).order_by('prioridad__Tipo_Nivel') # Ordena por ALTO, BAJO, MEDIO
 
@@ -596,5 +635,7 @@ def reportes_view(request):
         'reporte_estados': reporte_estados,
         'reporte_categorias': reporte_categorias,
         'reporte_prioridades': reporte_prioridades,
+        'fecha_desde_str': fecha_desde_str,
+        'fecha_hasta_str': fecha_hasta_str,
     }
     return render(request, 'reportes.html', context)
