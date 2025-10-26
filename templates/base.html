@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <title>{% block title %}Ticketera{% endblock %}</title>
     <link rel="stylesheet" href="{% static 'css/estilos.css' %}" />
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
 <body>
     <div class="app {{ view_class }}">
@@ -75,6 +76,54 @@
                 appContainer.classList.toggle('sidebar-collapsed');
             });
         });
+    </script>
+    <script>
+        // sidebar toggle
+        document.addEventListener('DOMContentLoaded', function() {
+            const toggleButton = document.getElementById('sidebar-toggle');
+            const appContainer = document.querySelector('.app');
+
+            if (toggleButton && appContainer) { // Añadir chequeo por si no existen
+                toggleButton.addEventListener('click', function() {
+                    appContainer.classList.toggle('sidebar-collapsed');
+                });
+            }
+        });
+    </script>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Selecciona TODOS los formularios que tengan la clase 'form-borrar'
+        const formsBorrar = document.querySelectorAll('.form-borrar');
+
+        formsBorrar.forEach(form => {
+            form.addEventListener('submit', function(event) {
+                // 1. Previene el envío normal del formulario
+                event.preventDefault(); 
+
+                // Guarda una referencia al formulario actual
+                const currentForm = this; 
+
+                // 2. Muestra la alerta de SweetAlert2
+                Swal.fire({
+                    title: '¿Estás seguro?',
+                    text: "¡Esta acción no se puede deshacer!",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#d33', // Color rojo para confirmar borrado
+                    cancelButtonColor: '#3b1353ff', // Color azul para cancelar
+                    confirmButtonText: 'Sí, ¡borrar!',
+                    cancelButtonText: 'Cancelar'
+                }).then((result) => {
+                    // 3. Si el usuario confirma...
+                    if (result.isConfirmed) {
+                        // ...envía el formulario original
+                        currentForm.submit(); 
+                    }
+                });
+            });
+        });
+    });
     </script>
 </body>
 </html>
