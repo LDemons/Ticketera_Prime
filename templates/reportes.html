@@ -1,0 +1,101 @@
+{% extends 'base.html' %}
+
+{% block title %}Ticketera · Reportes{% endblock %}
+
+{% block content %}
+    <header class="header">
+      <h1 class="page-title">Reportes Simples</h1>
+      </header>
+
+     <main style="padding: 16px;">
+
+        <div class="cards"> <section class="card">
+                <div class="card-head">
+                    <h2>Tickets por Estado</h2>
+                </div>
+                <div class="table" style="padding: 15px;"> {% if reporte_estados %}
+                    <table>
+                        <thead>
+                            <tr>
+                                <th style="text-align: left; padding-bottom: 8px;">Estado</th>
+                                <th style="text-align: right; padding-bottom: 8px;">Cantidad</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in reporte_estados %}
+                            <tr>
+                                <td style="padding: 5px 0;">{{ item.estado }}</td>
+                                <td style="text-align: right; padding: 5px 0;">{{ item.total }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    {% else %}
+                    <p class="muted">No hay tickets para mostrar.</p>
+                    {% endif %}
+                </div>
+            </section>
+
+            <section class="card">
+                <div class="card-head">
+                    <h2>Tickets por Categoría</h2>
+                </div>
+                 <div class="table" style="padding: 15px;">
+                    {% if reporte_categorias %}
+                    <table>
+                        <thead>
+                            <tr>
+                                <th style="text-align: left; padding-bottom: 8px;">Categoría</th>
+                                <th style="text-align: right; padding-bottom: 8px;">Cantidad</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in reporte_categorias %}
+                            <tr>
+                                <td style="padding: 5px 0;">{{ item.categoria }}</td>
+                                <td style="text-align: right; padding: 5px 0;">{{ item.total }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    {% else %}
+                    <p class="muted">No hay tickets registrados con categorías.</p> {# Mensaje ajustado #}
+                    {% endif %}
+                </div>
+            </section>
+            
+            <section class="card">
+                <div class="card-head">
+                    <h2>Tickets por Prioridad</h2>
+                </div>
+                 <div class="table" style="padding: 15px;">
+                    {% if reporte_prioridades %}
+                    <table>
+                        <thead>
+                            <tr>
+                                <th style="text-align: left; padding-bottom: 8px;">Prioridad</th>
+                                <th style="text-align: right; padding-bottom: 8px;">Cantidad</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in reporte_prioridades %}
+                            <tr>
+                                <td style="padding: 5px 0;">
+                                    {# Opcional: Añadir tag de color #}
+                                    {% if item.prioridad == 'Alto' %} <b class="tag tag--high">ALTO</b>
+                                    {% elif item.prioridad == 'Medio' %} <b class="tag tag--medium">MEDIO</b>
+                                    {% elif item.prioridad == 'Bajo' %} <b class="tag tag--low">BAJO</b>
+                                    {% else %} {{ item.prioridad }} {% endif %}
+                                </td>
+                                <td style="text-align: right; padding: 5px 0;">{{ item.total }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    {% else %}
+                    <p class="muted">No hay tickets registrados con prioridades.</p>
+                    {% endif %}
+                </div>
+            </section>
+            </div> </main>
+{% endblock %}
