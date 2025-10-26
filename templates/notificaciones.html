@@ -1,0 +1,59 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Ticketera · Mis Notificaciones{% endblock %}
+
+{% block content %}
+    <header class="header">
+      <h1 class="page-title">Mis Notificaciones</h1>
+    </header>
+
+     <main style="padding: 16px;">
+        <div class="card">
+            <div class="card-head">
+                <h2>Historial de Notificaciones</h2>
+            </div>
+            
+            <div style="padding: 15px;">
+                {% for noti in notificaciones %}
+                <div class="notificacion-item" style="
+                    border-bottom: 1px solid var(--line); 
+                    padding: 12px 5px;
+                    background: {% if not noti.leido %}var(--blue-100){% else %}transparent{% endif %};
+                ">
+                    <p style="margin: 0;">
+                        
+                        {# --- INICIO: LÓGICA DE ENLACE DINÁMICO --- #}
+                        {% if usuario_rol == 'Docente' %}
+                            <a href="{% url 'mis_tickets_detalle' noti.ticket.ticket_id %}" style="text-decoration: none; color: var(--text);">
+                                {{ noti.mensaje }}
+                            </a>
+                        {% elif usuario_rol == 'TI' %}
+                             <a href="{% url 'mis_asignaciones_detalle' noti.ticket.ticket_id %}" style="text-decoration: none; color: var(--text);">
+                                {{ noti.mensaje }}
+                            </a>
+                        {% elif usuario_rol == 'Admin' %}
+                            {# El Admin puede ir a la vista de detalle de admin, o a la de asignación #}
+                            <a href="{% url 'ticket_detail' noti.ticket.ticket_id %}" style="text-decoration: none; color: var(--text);">
+                                {{ noti.mensaje }}
+                            </a>
+                        {% else %}
+                            {# Si no tiene rol, solo muestra el texto #}
+                            <span style="color: var(--text);">{{ noti.mensaje }}</span>
+                        {% endif %}
+                        {# --- FIN: LÓGICA DE ENLACE --- #}
+                        
+                        <span class="muted small" style="float: right;">
+                            {{ noti.fecha_creacion|date:"d/m/Y H:i" }}
+                        </span>
+                    </p>
+                </div>
+                {% empty %}
+                <div class="bulk-bar" style="margin: 10px 0;">
+                    No tienes notificaciones.
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+     </main>
+{% endblock %}

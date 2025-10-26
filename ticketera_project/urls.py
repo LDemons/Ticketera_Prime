@@ -35,7 +35,10 @@ urlpatterns = [
     
     path('mis-asignaciones/<int:ticket_id>/', views.mis_asignaciones_view, name='mis_asignaciones_detalle'),
     path('reportes/', views.reportes_view, name='reportes'),
-    
+
+    # --- URL DE NOTIFICACIONES ---
+    path('notificaciones/', views.notificaciones_view, name='notificaciones'),
+
     # --- BORRAR TICKET ---
     path('mis-tickets/borrar/<int:ticket_id>/', views.borrar_mi_ticket_view, name='borrar_mi_ticket'),
     path('tickets/borrar/<int:ticket_id>/', views.borrar_ticket_admin_view, name='borrar_ticket_admin'),
