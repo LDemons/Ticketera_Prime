@@ -441,3 +441,41 @@ textarea.form-input {
 /* Puedes combinarlos con los estilos de .select que ya tenemos si los envuelves en <div class="select"> */
 
 /* ===== FIN DE ESTILOS PARA FORMULARIOS ===== */
+
+/* ===== LAYOUT ESPECÍFICO PARA LANDING PAGE ===== */
+
+/* Redefine la grilla para ocultar la sidebar y expandir el contenido */
+.app.view-landing {
+  display: grid;
+  grid-template-columns: 1fr; /* Una sola columna */
+  grid-template-rows: 64px 1fr; /* Fila para header, fila para main */
+  grid-template-areas:
+    "header" /* Header ocupa la primera fila */
+    "main";   /* Main ocupa la segunda */
+  min-height: 100vh;
+  background: var(--bg); /* Fondo simple, sin gradiente lateral */
+}
+
+/* Oculta la sidebar específicamente en esta vista */
+.app.view-landing .sidebar {
+  display: none;
+}
+
+/* Asigna las áreas a los elementos correspondientes */
+.app.view-landing .header {
+  background: var(--indigo-800); /* Fondo oscuro como la sidebar */
+  color: #fff; /* Texto blanco */
+}
+
+/* Estilos para el <main> DENTRO de view-landing */
+.app.view-landing main {
+  grid-area: main; /* Asegura que ocupe el área 'main' */
+  display: flex; /* Usa flexbox para centrar su contenido */
+  flex-direction: column;
+  align-items: center; /* Centra horizontalmente la tarjeta */
+  justify-content: center; /* Centra verticalmente la tarjeta */
+  padding: 30px 16px; /* Espaciado interno */
+  overflow-y: auto; /* Scroll si el contenido es muy alto */
+}
+
+/* ===== FIN LAYOUT LANDING PAGE ===== */
