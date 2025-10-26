@@ -8,32 +8,51 @@ from datetime import timedelta
 from django.db.models import F, ExpressionWrapper, fields, Avg, Min, Func, Value, Count
 from django.views.decorators.http import require_POST
 
+
+@login_required
+def landing_view(request):
+    """
+    Muestra una página de bienvenida con opciones según el rol.
+    """
+    usuario_app = None # Variable para nuestro modelo Usuario
+    try:
+        # Buscamos el usuario de nuestro modelo basado en el usuario de Django
+        usuario_app = Usuario.objects.get(email=request.user.email)
+    except Usuario.DoesNotExist:
+        # Si no existe en nuestro modelo, puede ser un superuser de Django
+        if not request.user.is_superuser:
+            # Si no es superuser y no existe, algo anda mal, lo sacamos.
+             return redirect('login') 
+             # O podrías mostrar un mensaje de error en landing.html si prefieres
+
+    context = {
+        # Pasamos el usuario de nuestra app (si existe) para los 'if' de rol
+        'usuario': usuario_app, 
+        # Podemos usar una clase diferente si queremos estilos específicos
+        'view_class': 'view-landing' 
+    }
+    return render(request, 'landing.html', context)
+
 @login_required
 def index_view(request):
     """
-    Redirige al usuario a su página principal según su rol.
+    Redirige SIEMPRE a la página de bienvenida después del login.
+    La vista 'landing_view' se encargará de mostrar lo correcto.
     """
+    # Verificamos si el usuario logueado existe en nuestro modelo Usuario
+    # o si es un superuser de Django. Si no, lo mandamos al login.
+    # (Esto es una seguridad extra por si acaso)
     try:
-        # Buscamos el usuario de nuestro modelo basado en el usuario de Django
-        usuario = Usuario.objects.get(email=request.user.email)
-        
-        # Redirigimos según el nombre del rol
-        if usuario.rol.nombre == 'Admin':
-            return redirect('dashboard')
-        elif usuario.rol.nombre == 'TI':
-            return redirect('mis_asignaciones')
-        elif usuario.rol.nombre == 'Docente':
-            return redirect('mis_tickets')
-        else:
-            # Si tiene un rol desconocido, lo mandamos al login
-            return redirect('login')
-            
+        Usuario.objects.get(email=request.user.email)
+        # Si existe, lo mandamos a la landing page
+        return redirect('landing_page') 
     except Usuario.DoesNotExist:
-        # Si el usuario de Django no existe en nuestro modelo
-        # (ej. es un superuser de Django pero no un 'Usuario' de la app)
+        # Si no existe, vemos si es superuser de Django
         if request.user.is_superuser:
-            return redirect('/admin/')
+            # El superuser también va a la landing page (ella decidirá qué mostrar)
+             return redirect('landing_page')
         else:
+            # Si no es superuser y no existe en Usuario, algo raro pasa, al login.
             return redirect('login')
 
 
