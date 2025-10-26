@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect
-from .models import Ticket, Usuario, AsignacionTicket, Comentario, Prioridad, Categoria
+from .models import Ticket, Usuario, AsignacionTicket, Comentario, Prioridad, Categoria, Notificacion
 from django.shortcuts import render, redirect, get_object_or_404, reverse
 from django.contrib.auth.decorators import login_required 
 from .forms import TicketForm, AsignacionTicketForm, GestionTicketForm, ComentarioForm
@@ -639,3 +639,33 @@ def reportes_view(request):
         'fecha_hasta_str': fecha_hasta_str,
     }
     return render(request, 'reportes.html', context)
+
+@login_required
+def notificaciones_view(request):
+    """
+    Muestra la lista de notificaciones del usuario y las marca como leídas.
+    """
+    try:
+        # Buscamos nuestro modelo de Usuario
+        usuario_app = Usuario.objects.get(email=request.user.email)
+    except Usuario.DoesNotExist:
+        # Si no existe (p.ej. Superuser), redirigir
+        return redirect('index')
+
+    # 1. Obtenemos todas las notificaciones del usuario (leídas y no leídas)
+    notificaciones_list = Notificacion.objects.filter(usuario_destino=usuario_app)
+
+    # 2. Obtenemos las no leídas (antes de renderizar) para marcarlas
+    notificaciones_no_leidas = notificaciones_list.filter(leido=False)
+    
+    # 3. Marcamos todas las no leídas como leídas
+    # Usamos .update() que es más eficiente que iterar y guardar
+    notificaciones_no_leidas.update(leido=True)
+
+    context = {
+        'view_class': 'view-dashboard', # Reutilizamos esta clase para el layout
+        'notificaciones': notificaciones_list,
+        'usuario_rol': usuario_app.rol.nombre
+    }
+    
+    return render(request, 'notificaciones.html', context)

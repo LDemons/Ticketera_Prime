@@ -105,3 +105,31 @@ class Comentario(models.Model):
 
     def __str__(self):
         return f"Comentario de {self.autor.nombre} en Ticket #{self.ticket.ticket_id}"
+
+class Notificacion(models.Model):
+    notificacion_id = models.BigAutoField(primary_key=True)
+    
+    # El usuario que RECIBE la notificación
+    usuario_destino = models.ForeignKey(
+        Usuario, 
+        on_delete=models.CASCADE, 
+        related_name='notificaciones'
+    )
+    
+    # El ticket al que se refiere la notificación
+    ticket = models.ForeignKey(
+        Ticket, 
+        on_delete=models.CASCADE, 
+        related_name='notificaciones_ticket'
+    )
+    
+    mensaje = models.CharField(max_length=255)
+    leido = models.BooleanField(default=False)
+    fecha_creacion = models.DateTimeField(auto_now_add=True) # Usamos DateTimeField
+
+    def __str__(self):
+        return f"Notificación para {self.usuario_destino.nombre}: {self.mensaje}"
+
+    class Meta:
+        # Ordenar las notificaciones más nuevas primero
+        ordering = ['-fecha_creacion']
