@@ -31,7 +31,7 @@
             <div class="avatar avatar--R">{{ ticket.usuario_creador.nombre|first }}</div>
             <div>
                 <div class="ticket-title">
-                    {{ ticket.titulo }} <span class="muted">#{{ ticket.ticket_id }}</span>
+                    {{ ticket.titulo }} <span class="muted">#T{{ ticket.ticket_id|stringformat:"03d" }}</span>
                 </div>
                 <div class="ticket-meta">
                     <span>Solicitante: {{ ticket.usuario_creador.nombre }}</span>

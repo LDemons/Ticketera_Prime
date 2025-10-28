@@ -2,6 +2,24 @@
 
 {% block title %}Ticketera · Mis Asignaciones{% endblock %}
 
+{# --- INICIO: BLOQUE DE ESTILO DE EMERGENCIA (v2) --- #}
+<style>
+    .app.view-tickets .detail {
+        height: calc(100vh - 64px) !important;
+    }
+
+    .detail-body {
+        flex: 1 1 auto !important;     
+        overflow-y: auto !important;   
+        min-height: 100px !important;  
+    }
+
+    .composer {
+        flex-shrink: 0 !important;     
+    }
+</style>
+{# --- FIN: BLOQUE DE ESTILO --- #}
+
 {% block content %}
     <header class="header">
         <h1 class="page-title">{{ view_title|default:"Mis Asignaciones" }}</h1>
@@ -31,7 +49,7 @@
             <div class="avatar avatar--R">{{ ticket.usuario_creador.nombre|first }}</div>
             <div>
                 <div class="ticket-title">
-                    {{ ticket.titulo }} <span class="muted">#{{ ticket.ticket_id }}</span>
+                    {{ ticket.titulo }} <span class="muted">#T{{ ticket.ticket_id|stringformat:"03d" }}</span>
                 </div>
                 <div class="ticket-meta">
                     <span>Solicitante: {{ ticket.usuario_creador.nombre }}</span>
@@ -71,7 +89,7 @@
              </div>
         </div>
 
-        <div class="detail-body" style="flex: 1; overflow-y: auto;">
+        <div class="detail-body">
             <div class="bubble" style="background: var(--card); border: 1px solid var(--line); margin-bottom: 10px;">
                 <p><strong>Descripción del solicitante:</strong></p>
                 <p>{{ ticket_seleccionado.descripcion }}</p>

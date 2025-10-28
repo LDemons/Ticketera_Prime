@@ -186,8 +186,15 @@ body{
 }
 .view-tickets .sidebar{grid-area:sidebar}
 .view-tickets .header{grid-area:header}
-.view-tickets .list{grid-area:list}
-.view-tickets .detail{grid-area:detail}
+
+.view-tickets .list {
+    grid-area: list;
+    height: calc(100vh - 64px); /* <-- AÑADE ESTA LÍNEA */
+}
+.view-tickets .detail {
+    grid-area: detail;
+    height: calc(100vh - 64px); /* <-- AÑADE ESTA LÍNEA */
+}
 
 /* Lista de tickets (componentes existentes) */
 .list{padding:16px;overflow-y:auto;display:flex;flex-direction:column;gap:12px}
@@ -216,10 +223,25 @@ body{
 .detail{border-left:1px solid var(--line);background:#fafbff;display:flex;flex-direction:column}
 .detail-head{padding:14px 16px;display:flex;align-items:center;gap:10px;background:#fff;border-bottom:1px solid var(--line)}
 .user-name{font-weight:700}
-.detail-body{padding:16px;display:flex;flex-direction:column;gap:16px}
+.detail-body {
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    flex: 1 1 auto;     
+    overflow-y: auto;   
+    min-height: 100px; 
+}
 .bubble{background:#5fb3cc;border-radius:14px;padding:12px;min-height:70px}
 .bubble--small{width:60%;height:46px}
-.composer{background:#fff;border:1px solid var(--line);border-radius:14px;padding:10px;margin:16px}
+.composer{
+  background:#fff;
+  border:1px solid var(--line);
+  border-radius:14px;
+  padding:10px;
+  margin: 0 16px 16px 16px;
+  flex-shrink: 0;
+}
 .composer textarea{width:100%;border:none;outline:none;min-height:44px;font:inherit}
 
 /* ===================== */

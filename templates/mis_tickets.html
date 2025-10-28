@@ -66,7 +66,7 @@
 
                 <form method="POST"
                     action="{% url 'borrar_mi_ticket' ticket.ticket_id %}?estado={{ estado_actual }}&orden={{ orden_actual }}"
-                    class="form-borrar" {# <--- CLASE AÑADIDA #}
+                    class="form-borrar" 
                     style="display: inline;"> {# Quitamos onsubmit #}
                     {% csrf_token %}
                     <button type="submit" class="btn-link" style="color: var(--red); border-color: var(--red);">Borrar</button>
@@ -81,7 +81,7 @@
     </main>
 
     {% if ticket_seleccionado %}
-    <aside class="detail" aria-label="Detalle del ticket" style="height: calc(100vh - 64px);">
+    <aside class="detail" aria-label="Detalle del ticket">
         <div class="detail-head">
             <div class="avatar avatar--R">{{ ticket_seleccionado.usuario_creador.nombre|first }}</div>
             <div>
@@ -89,7 +89,7 @@
                 <div class="muted small">Estado: <b>{{ ticket_seleccionado.get_estado_display }}</b></div>
             </div>
         </div>
-        <div class="detail-body" style="flex: 1; overflow-y: auto;">
+        <div class="detail-body">
             <div class="bubble" style="background: var(--card); border: 1px solid var(--line); margin-bottom: 10px;">
                 <p><strong>Tu descripción original:</strong></p>
                 <p>{{ ticket_seleccionado.descripcion }}</p>

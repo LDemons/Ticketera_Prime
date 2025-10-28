@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 
-{% block title %}Ticket #{{ ticket.ticket_id }}{% endblock %}
+{% block title %}Ticket #T{{ ticket.ticket_id|stringformat:"03d" }}{% endblock %}
 
 {% block content %}
     <header class="header">
