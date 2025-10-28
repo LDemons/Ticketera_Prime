@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load ticket_tags %}
 
 {% block title %}Ticketera · Mis Notificaciones{% endblock %}
 
@@ -16,38 +17,47 @@
             
             <div style="padding: 15px;">
                 {% for noti in notificaciones %}
+                
+                {# --- INICIO: BLOQUE DE NOTIFICACIÓN MODIFICADO --- #}
                 <div class="notificacion-item" style="
                     border-bottom: 1px solid var(--line); 
-                    padding: 12px 5px;
+                    padding: 12px 10px;
                     background: {% if not noti.leido %}var(--blue-100){% else %}transparent{% endif %};
+                    
+                    /* --- Estilos Flexbox --- */
+                    display: flex;
+                    align-items: center;
+                    justify-content: space-between;
+                    gap: 15px;
                 ">
-                    <p style="margin: 0;">
-                        
-                        {# --- INICIO: LÓGICA DE ENLACE DINÁMICO --- #}
-                        {% if usuario_rol == 'Docente' %}
-                            <a href="{% url 'mis_tickets_detalle' noti.ticket.ticket_id %}" style="text-decoration: none; color: var(--text);">
-                                {{ noti.mensaje }}
-                            </a>
-                        {% elif usuario_rol == 'TI' %}
-                             <a href="{% url 'mis_asignaciones_detalle' noti.ticket.ticket_id %}" style="text-decoration: none; color: var(--text);">
-                                {{ noti.mensaje }}
-                            </a>
-                        {% elif usuario_rol == 'Admin' %}
-                            {# El Admin puede ir a la vista de detalle de admin, o a la de asignación #}
-                            <a href="{% url 'ticket_detail' noti.ticket.ticket_id %}" style="text-decoration: none; color: var(--text);">
-                                {{ noti.mensaje }}
-                            </a>
-                        {% else %}
-                            {# Si no tiene rol, solo muestra el texto #}
-                            <span style="color: var(--text);">{{ noti.mensaje }}</span>
-                        {% endif %}
-                        {# --- FIN: LÓGICA DE ENLACE --- #}
-                        
-                        <span class="muted small" style="float: right;">
+                    
+                    <div style="font-size: 16px; color: var(--text);">
+                        {% with noti.mensaje|split_at_hash as parts %}
+                            {{ parts.0 }} {# Parte antes del # #}
+                            {% if parts.1 %}
+                                <b>{{ parts.1 }}</b> {# Parte desde el # en negrita #}
+                            {% endif %}
+                        {% endwith %}
+                    </div>
+
+                    <div style="display: flex; align-items: center; gap: 15px; flex-shrink: 0;">
+                        <span class="muted small">
                             {{ noti.fecha_creacion|date:"d/m/Y H:i" }}
                         </span>
-                    </p>
+
+                        {# --- El nuevo botón "Abrir" con el enlace dinámico --- #}
+                        {% if usuario_rol == 'Docente' %}
+                            <a href="{% url 'mis_tickets_detalle' noti.ticket.ticket_id %}" class="btn-link">Abrir</a>
+                        {% elif usuario_rol == 'TI' %}
+                             <a href="{% url 'mis_asignaciones_detalle' noti.ticket.ticket_id %}" class="btn-link">Abrir</a>
+                        {% elif usuario_rol == 'Admin' %}
+                            <a href="{% url 'ticket_detail' noti.ticket.ticket_id %}" class="btn-link">Abrir</a>
+                        {% endif %}
+                    </div>
+
                 </div>
+                {# --- FIN: BLOQUE DE NOTIFICACIÓN MODIFICADO --- #}
+
                 {% empty %}
                 <div class="bulk-bar" style="margin: 10px 0;">
                     No tienes notificaciones.

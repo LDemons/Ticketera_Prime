@@ -12,7 +12,7 @@ def crear_notificacion_asignacion(sender, instance, created, **kwargs):
         ticket = asignacion.ticket
         destinatario = asignacion.usuario_asignado
         
-        mensaje = f"Se te ha asignado el ticket #{ticket.ticket_id}: '{ticket.titulo[:30]}...'"
+        mensaje = f"Se te ha asignado el ticket #T{ticket.ticket_id:03d}: '{ticket.titulo[:30]}...'"
         
         Notificacion.objects.create(
             usuario_destino=destinatario,
@@ -37,7 +37,7 @@ def crear_notificacion_comentario(sender, instance, created, **kwargs):
             if autor.rol.nombre == 'TI':
                 # ...notifica al creador del ticket (Docente)
                 destinatario = ticket.usuario_creador
-                mensaje = f"{autor.nombre} (TI) ha respondido a tu ticket #{ticket.ticket_id}"
+                mensaje = f"{autor.nombre} (TI) ha respondido a tu ticket #T{ticket.ticket_id:03d}"
 
             # 2. Si el autor es Docente...
             elif autor.rol.nombre == 'Docente':
@@ -51,7 +51,7 @@ def crear_notificacion_comentario(sender, instance, created, **kwargs):
             elif autor.rol.nombre == 'Admin' and autor != ticket.usuario_creador:
                  # ...notifica al creador del ticket (Docente)
                 destinatario = ticket.usuario_creador
-                mensaje = f"El Administrador ({autor.nombre}) ha comentado tu ticket #{ticket.ticket_id}"
+                mensaje = f"El Administrador ({autor.nombre}) ha comentado tu ticket #T{ticket.ticket_id:03d}"
 
 
             # Si encontramos un destinatario (y no es él mismo), creamos la notificación
