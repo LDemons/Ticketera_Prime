@@ -45,7 +45,159 @@
             <span class="dot"></span> Meta: 20m
           </div>
         </article>
+
+        <article class="kpi">
+          <div class="kpi-title">Creados esta semana</div>
+          <div class="kpi-value">{{ tickets_creados_esta_semana }}</div>
+          <div class="kpi-foot">
+            <span class="dot dot--purple"></span> Últimos 7 días
+          </div>
+        </article>
       </section>
 
+      <div class="cards two-col">
+        
+        <section class="card">
+            <div class="card-head">
+                <h2>Tickets por Estado</h2>
+            </div>
+            <div style="padding: 15px;">
+                <canvas id="chartEstado" height="200"></canvas>
+            </div>
+        </section>
+        
+        <section class="card">
+            <div class="card-head">
+                <h2>Tickets por Categoría</h2>
+            </div>
+            <div style="padding: 15px;">
+                <canvas id="chartCategoria" height="200"></canvas>
+            </div>
+        </section>
+
+        <section class="card">
+            <div class="card-head">
+                <h2>Tickets Creados por Día (Últimos 7)</h2>
+            </div>
+            <div style="padding: 15px;">
+                <canvas id="chartCreadosDia" height="200"></canvas>
+            </div>
+        </section>
+
+        <section class="card">
+            <div class="card-head">
+                <h2>Tickets Abiertos por Prioridad</h2>
+            </div>
+            <div style="padding: 15px;">
+                <canvas id="chartPrioridad" height="200"></canvas>
+            </div>
+        </section>
+
+      </div>
       </main>
-{% endblock %}
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script>
+        // --- GRÁFICO 1: TICKETS POR ESTADO (PIE) ---
+        const labelsEstado = {{ labels_estado_json|safe }};
+        const dataEstado = {{ data_estado_json|safe }};
+        const ctxEstado = document.getElementById('chartEstado').getContext('2d');
+        new Chart(ctxEstado, {
+            type: 'pie',
+            data: {
+                labels: labelsEstado,
+                datasets: [{
+                    label: 'Tickets',
+                    data: dataEstado,
+                    backgroundColor: [
+                        'rgba(255, 99, 132, 0.7)', // Rojo claro para Abierto/Critico
+                        'rgba(54, 162, 235, 0.7)', // Azul claro para En Progreso/Alta
+                        'rgba(255, 206, 86, 0.7)', // Amarillo para Resuelto/Media
+                        'rgba(75, 192, 192, 0.7)', // Verde para Cerrado/Baja
+                        'rgba(153, 102, 255, 0.7)' // Púrpura para otras
+                    ],
+                    borderColor: '#fff',
+                    borderWidth: 1
+                }]
+            },
+            options: { responsive: true, aspectRatio: 2,plugins: { legend: { position: 'top' } } }
+        });
+
+        // --- GRÁFICO 2: TICKETS POR CATEGORÍA (BARRAS) ---
+        const labelsCategoria = {{ labels_categoria_json|safe }};
+        const dataCategoria = {{ data_categoria_json|safe }};
+        const ctxCategoria = document.getElementById('chartCategoria').getContext('2d');
+        new Chart(ctxCategoria, {
+            type: 'bar',
+            data: {
+                labels: labelsCategoria,
+                datasets: [{
+                    label: 'Nº de Tickets',
+                    data: dataCategoria,
+                    backgroundColor: 'rgba(121, 47, 217, 0.7)',
+                    borderColor: 'rgba(121, 47, 217, 0.7)',
+                    borderWidth: 1
+                }]
+            },
+            options: { responsive: true, aspectRatio: 2, scales: { y: { beginAtZero: true } }, plugins: { legend: { display: false } } }
+        });
+
+        // --- NUEVO GRÁFICO 3: TICKETS CREADOS POR DÍA (LÍNEAS) ---
+        const labelsCreadosDia = {{ labels_creados_dia_json|safe }};
+        const dataCreadosDia = {{ data_creados_dia_json|safe }};
+        const ctxCreadosDia = document.getElementById('chartCreadosDia').getContext('2d');
+        new Chart(ctxCreadosDia, {
+            type: 'line',
+            data: {
+                labels: labelsCreadosDia,
+                datasets: [{
+                    label: 'Tickets Creados',
+                    data: dataCreadosDia,
+                    borderColor: 'rgba(153, 102, 255, 1)', // Púrpura
+                    backgroundColor: 'rgba(153, 102, 255, 0.2)',
+                    fill: true,
+                    tension: 0.3
+                }]
+            },
+            options: {
+                responsive: true,
+                aspectRatio: 2,
+                scales: {
+                    y: { beginAtZero: true }
+                },
+                plugins: { legend: { display: false } }
+            }
+        });
+
+        // --- NUEVO GRÁFICO 4: TICKETS ABIERTOS POR PRIORIDAD (BARRAS) ---
+        const labelsPrioridad = {{ labels_prioridad_json|safe }};
+        const dataPrioridad = {{ data_prioridad_json|safe }};
+        const ctxPrioridad = document.getElementById('chartPrioridad').getContext('2d');
+        new Chart(ctxPrioridad, {
+            type: 'bar',
+            data: {
+                labels: labelsPrioridad,
+                datasets: [{
+                    label: 'Tickets Abiertos',
+                    data: dataPrioridad,
+                    backgroundColor: [ // Diferentes colores para prioridades
+                        'rgba(255, 99, 132, 0.7)', // Crítica (rojo)
+                        'rgba(255, 159, 64, 0.7)', // Alta (naranja)
+                        'rgba(255, 206, 86, 0.7)', // Media (amarillo)
+                        'rgba(75, 192, 192, 0.7)', // Baja (verde azulado)
+                        'rgba(54, 162, 235, 0.7)', // Muy Baja (azul)
+                    ],
+                    borderColor: '#fff',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                aspectRatio: 2,
+                scales: { y: { beginAtZero: true } },
+                plugins: { legend: { display: false } }
+            }
+        });
+    </script>
+    {% endblock %}

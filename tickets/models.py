@@ -45,7 +45,7 @@ class Usuario(models.Model):
     nombre = models.CharField(max_length=120)
     email = models.EmailField(max_length=255, unique=True)
     contrasenia_hash = models.CharField(max_length=255) # Django gestiona el hash de contraseñas de forma segura
-    fecha_creacion = models.DateField(auto_now_add=True)
+    fecha_creacion = models.DateTimeField(auto_now_add=True)
     activo = models.BooleanField(default=True)
     rol = models.ForeignKey(Rol, on_delete=models.PROTECT) # ON DELETE NO ACTION se traduce como PROTECT
 
@@ -65,8 +65,9 @@ class Ticket(models.Model):
     titulo = models.CharField(max_length=200)
     descripcion = models.CharField(max_length=200) # Considera usar models.TextField() si la descripción puede ser más larga
     estado = models.CharField(max_length=20, choices=ESTADO_CHOICES, default='ABIERTO')
-    fecha_creacion = models.DateField(auto_now_add=True)
-    cerrado_en = models.DateField(null=True, blank=True) # Permite valores nulos como indica el DDL
+    # De DateField a DateTimeField
+    fecha_creacion = models.DateTimeField(auto_now_add=True)
+    cerrado_en = models.DateField(null=True, blank=True)
     
     # Relaciones (Foreign Keys)
     usuario_creador = models.ForeignKey(
@@ -82,7 +83,7 @@ class Ticket(models.Model):
 
 class AsignacionTicket(models.Model):
     asignacion_id = models.BigAutoField(primary_key=True)
-    fecha_asignacion = models.DateField(auto_now_add=True)
+    fecha_asignacion = models.DateTimeField(auto_now_add=True)
     comentarios = models.CharField(max_length=255)
 
     # Relaciones (Foreign Keys)
@@ -101,8 +102,7 @@ class Comentario(models.Model):
     ticket = models.ForeignKey(Ticket, on_delete=models.CASCADE, related_name='comentarios')
     autor = models.ForeignKey(Usuario, on_delete=models.PROTECT)
     contenido = models.TextField()
-    fecha_creacion = models.DateField(auto_now_add=True)
-
+    fecha_creacion = models.DateTimeField(auto_now_add=True)
     def __str__(self):
         return f"Comentario de {self.autor.nombre} en Ticket #{self.ticket.ticket_id}"
 
