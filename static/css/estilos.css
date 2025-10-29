@@ -266,11 +266,12 @@ body{
 /* Secciones del dashboard */
 .dashboard{
   display:grid; gap:16px;
-  grid-template-columns: 2fr 1fr;
+  grid-template-columns: 1fr; /* <-- ¡CAMBIO CLAVE! De '2fr 1fr' a '1fr' */
   grid-template-areas:
-    "kpis kpis"
-    "charts charts"
-    "left right";
+    "kpis"
+    "charts"
+    "left"
+    "right";
   padding:16px;
 }
 
@@ -281,7 +282,7 @@ body{
 }
 .cards.two-col { 
     /* grid-area: charts; */
-    grid-template-columns: 1fr 1fr; /* <= Asegúrate que esto exista */
+    grid-template-columns: 1fr 1fr; /* <= ESTO ES LO IMPORTANTE */
 }
 .view-dashboard .cards.left{grid-area:left}
 .view-dashboard .cards.right{grid-area:right}
@@ -570,3 +571,4 @@ textarea.form-input {
     line-height: 1;
     margin-left: auto; /* Empuja el badge a la derecha */
 }
+

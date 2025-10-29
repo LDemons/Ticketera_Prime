@@ -4,6 +4,7 @@ from django.shortcuts import render, redirect, get_object_or_404, reverse
 from django.contrib.auth.decorators import login_required 
 from .forms import TicketForm, AsignacionTicketForm, GestionTicketForm, ComentarioForm
 from django.utils import timezone
+import json
 from datetime import timedelta, date, datetime
 from django.db.models import F, ExpressionWrapper, fields, Avg, Min, Func, Value, Count
 from django.views.decorators.http import require_POST
@@ -58,7 +59,7 @@ def index_view(request):
 
 @login_required
 def dashboard_view(request):
-    # --- BLOQUE DE PERMISO ---
+    # --- BLOQUE DE PERMISO (se mantiene igual) ---
     try:
         usuario = Usuario.objects.get(email=request.user.email)
         if usuario.rol.nombre != 'Admin':
@@ -67,68 +68,164 @@ def dashboard_view(request):
         return redirect('index') 
     # --- FIN DEL BLOQUE ---
 
-    # ahora_dt es datetime, ahora_date es solo date
     ahora_dt = timezone.now()
-    ahora_date = ahora_dt.date() # <--- Obtenemos solo la fecha actual
+    ahora_date = ahora_dt.date() 
 
-    # --- 1. KPI: Tickets Abiertos ---
+    # --- KPIs (existentes) ---
     tickets_abiertos = Ticket.objects.filter(estado='ABIERTO').count()
-
-    # --- 2. KPI: Tickets En Progreso ---
     tickets_en_progreso = Ticket.objects.filter(estado='EN_PROGRESO').count()
-
-    # --- 3. KPI: SLA Vencidos (Calculado en Python) ---
+    
+    # --- Cálculo de SLA ---
     estados_activos = ['ABIERTO', 'EN_PROGRESO']
     tickets_activos = Ticket.objects.filter(
         estado__in=estados_activos
     ).select_related('prioridad')
-
     sla_vencidos_count = 0
     for ticket in tickets_activos:
         horas_sla = ticket.prioridad.sla_horas
+        if horas_sla > 0:
+            fecha_vencimiento = ticket.fecha_creacion + timedelta(hours=horas_sla)
+            if fecha_vencimiento < ahora_dt: # Comparamos datetime con datetime
+                sla_vencidos_count += 1
 
-        # Sumamos días basados en horas. // 24 da la parte entera de días.
-        dias_sla = horas_sla // 24 
-        # Calculamos la fecha de vencimiento sumando DÍAS
-        # Nota: Esto es menos preciso que horas, pero compatible con DateField
-        fecha_vencimiento = ticket.fecha_creacion + timedelta(days=dias_sla) 
-
-        # Comparamos DATE con DATE
-        if fecha_vencimiento < ahora_date: # <--- Usamos ahora_date
-            sla_vencidos_count += 1
-
-    # --- 4. KPI: Tiempo de Primera Respuesta (Asignación) ---
-    # Como fecha_creacion y fecha_asignacion son DateFields,
-    # la diferencia será en días. No podemos calcular horas/minutos fácilmente.
-    # Mostraremos el promedio en días.
+    # --- Tiempo de Respuesta ---
     tickets_con_asignacion = Ticket.objects.annotate(
         primera_asignacion=Min('asignacionticket__fecha_asignacion')
     ).filter(
         primera_asignacion__isnull=False
-    ).annotate(
-        # La resta de dos DateFields da un timedelta en días
-        tiempo_primera_respuesta_dias=ExpressionWrapper(
+    )
+
+    # 2. Calculamos la diferencia (ahora será un timedelta preciso)
+    diferencia_de_tiempo = tickets_con_asignacion.annotate(
+        tiempo_diff=ExpressionWrapper(
             F('primera_asignacion') - F('fecha_creacion'),
-            output_field=fields.DurationField() # Django lo maneja como Duration
+            output_field=fields.DurationField()
         )
     )
 
-    promedio_timedelta_dias = tickets_con_asignacion.aggregate(
-        promedio=Avg('tiempo_primera_respuesta_dias')
+    # 3. Obtenemos el promedio de esas diferencias
+    promedio_timedelta = diferencia_de_tiempo.aggregate(
+        promedio=Avg('tiempo_diff')
     )['promedio']
 
     tiempo_respuesta_promedio_str = "N/A"
-    if promedio_timedelta_dias:
-        # Obtenemos los días del timedelta
-        dias_promedio = promedio_timedelta_dias.days
-        tiempo_respuesta_promedio_str = f"{dias_promedio} día(s)" # Mostramos días
+    if promedio_timedelta:
+        # 4. Convertimos el timedelta a minutos totales
+        total_minutos = promedio_timedelta.total_seconds() / 60
+        
+        if total_minutos < 120:
+            # Si es menos de 2 horas, mostrar en minutos
+            tiempo_respuesta_promedio_str = f"{total_minutos:.0f} min"
+        else:
+            # Si es más, mostrar en horas
+            total_horas = total_minutos / 60
+            tiempo_respuesta_promedio_str = f"{total_horas:.1f} horas"
+
+    # --- DATOS PARA GRÁFICOS (existentes) ---
+    
+    # 1. Gráfico de Tickets por Estado (Pie)
+    conteo_por_estado = Ticket.objects.values('estado').annotate(
+        total=Count('ticket_id')
+    ).order_by('estado')
+    
+    mapa_estados = dict(Ticket.ESTADO_CHOICES)
+    labels_estado = [mapa_estados.get(item['estado'], item['estado']) for item in conteo_por_estado]
+    data_estado = [item['total'] for item in conteo_por_estado]
+
+    # 2. Gráfico de Tickets por Categoría (Barras)
+    conteo_por_categoria = Ticket.objects.values('categoria__nombre').annotate(
+        total=Count('ticket_id')
+    ).order_by('categoria__nombre')
+    
+    labels_categoria = [item['categoria__nombre'] if item['categoria__nombre'] else 'Sin categoría' for item in conteo_por_categoria]
+    data_categoria = [item['total'] for item in conteo_por_categoria]
+    
+    # --- NUEVAS MODIFICACIONES: DATOS ADICIONALES PARA DASHBOARD ---
+
+    # 3. KPI: Tickets Creados Esta Semana
+    hace_siete_dias = ahora_date - timedelta(days=7)
+    tickets_creados_esta_semana = Ticket.objects.filter(
+        fecha_creacion__date__gte=hace_siete_dias,
+        fecha_creacion__date__lte=ahora_date 
+    ).count()
+
+    # 4. Gráfico de Líneas: Tickets Creados por Día (Últimos 7 Días)
+    tickets_por_dia = {}
+    for i in range(7):
+        fecha = ahora_date - timedelta(days=i)
+        tickets_por_dia[fecha.strftime('%a')] = 0 # 'Mon', 'Tue', etc.
+    
+    tickets_data = Ticket.objects.filter(
+        fecha_creacion__date__gte=hace_siete_dias,
+        fecha_creacion__date__lte=ahora_date
+    ).annotate(
+        dia_semana=Func(F('fecha_creacion'), Value('DayOfWeek'), function='strftime', output_field=fields.CharField()) # SQLite
+    )
+    # Ajuste para obtener el nombre del día de la semana para Chart.js
+    dias_semana_map = {
+        'Sun': 'Dom', 'Mon': 'Lun', 'Tue': 'Mar', 'Wed': 'Mié', 
+        'Thu': 'Jue', 'Fri': 'Vie', 'Sat': 'Sáb'
+    }
+
+    # Mejor enfoque para Tickets Creados por Día:
+    fechas_ultimos_7_dias = [ahora_date - timedelta(days=i) for i in range(7)]
+    fechas_ultimos_7_dias.reverse() # Para que el gráfico vaya de L-D o el día más antiguo al más reciente
+
+    labels_creados_dia = []
+    data_creados_dia = []
+
+    for d in fechas_ultimos_7_dias:
+        dia_semana_es = d.strftime('%a') # Ej: 'Mon', 'Tue'
+        dia_semana_es = dias_semana_map.get(dia_semana_es, dia_semana_es) # Mapear a español
+        labels_creados_dia.append(dia_semana_es)
+        
+        count_for_day = Ticket.objects.filter(
+            fecha_creacion__date=d
+        ).count()
+        data_creados_dia.append(count_for_day)
+
+    # 5. Gráfico de Barras: Tickets Abiertos por Prioridad
+    conteo_por_prioridad = Ticket.objects.filter(
+        estado__in=['ABIERTO', 'EN_PROGRESO'] # Solo tickets activos
+    ).values('prioridad__Tipo_Nivel').annotate(  # <-- CAMBIO 1
+        total=Count('ticket_id')
+    ).order_by('prioridad__Tipo_Nivel')      # <-- CAMBIO 2
+
+    # Mapear los códigos (ej. 'ALTO') a nombres legibles (ej. 'Alto')
+    mapa_prioridad = dict(Prioridad.NIVEL_CHOICES) 
+
+    labels_prioridad = [
+        mapa_prioridad.get(item['prioridad__Tipo_Nivel'], item['prioridad__Tipo_Nivel']) 
+        if item['prioridad__Tipo_Nivel'] else 'Sin prioridad' 
+        for item in conteo_por_prioridad
+    ] # <-- CAMBIO 3 (para mostrar 'Alto' en vez de 'ALTO')
+    
+    data_prioridad = [item['total'] for item in conteo_por_prioridad]
+
+    # --- FIN DE NUEVAS MODIFICACIONES ---
 
     context = {
         'view_class': 'view-dashboard',
+        # KPIs (existentes)
         'tickets_abiertos': tickets_abiertos,
         'tickets_en_progreso': tickets_en_progreso,
         'sla_vencidos': sla_vencidos_count,
-        'tiempo_respuesta': tiempo_respuesta_promedio_str, # Ahora en días
+        'tiempo_respuesta': tiempo_respuesta_promedio_str,
+        
+        # Nuevos KPIs
+        'tickets_creados_esta_semana': tickets_creados_esta_semana,
+
+        # Datos JSON para Gráficos (existentes)
+        'labels_estado_json': json.dumps(labels_estado),
+        'data_estado_json': json.dumps(data_estado),
+        'labels_categoria_json': json.dumps(labels_categoria),
+        'data_categoria_json': json.dumps(data_categoria),
+
+        # Nuevos datos JSON para Gráficos
+        'labels_creados_dia_json': json.dumps(labels_creados_dia),
+        'data_creados_dia_json': json.dumps(data_creados_dia),
+        'labels_prioridad_json': json.dumps(labels_prioridad),
+        'data_prioridad_json': json.dumps(data_prioridad),
     }
     return render(request, 'dashboard.html', context)
 
