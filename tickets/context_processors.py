@@ -2,30 +2,32 @@ from .models import Notificacion, Usuario
 
 def notificaciones_context(request):
     """
-    Añade el conteo de notificaciones no leídas al contexto de todas las plantillas.
+    Añade el conteo de notificaciones Y el rol del usuario 
+    al contexto de todas las plantillas.
     """
+    contexto = {
+        'notificaciones_conteo_no_leidas': 0,
+        'usuario_rol': None # Valor por defecto
+    }
+
     if request.user.is_authenticated:
         try:
-            # Buscamos nuestro modelo de Usuario basado en el usuario de Django
+            # Buscamos nuestro modelo de Usuario
             usuario_app = Usuario.objects.get(email=request.user.email)
             
-            # Contamos las notificaciones no leídas para ESE usuario
+            # Contamos las notificaciones
             conteo = Notificacion.objects.filter(
                 usuario_destino=usuario_app, 
                 leido=False
             ).count()
             
-            return {
-                'notificaciones_conteo_no_leidas': conteo
-            }
+            # Añadimos los datos al contexto
+            contexto['notificaciones_conteo_no_leidas'] = conteo
+            contexto['usuario_rol'] = usuario_app.rol.nombre # <-- ¡AÑADIDO!
+            
         except Usuario.DoesNotExist:
-            # Si el usuario es, por ej., un Superuser de Django pero no 
-            # un Usuario de nuestra app, no tendrá notificaciones.
-            return {
-                'notificaciones_conteo_no_leidas': 0
-            }
-    
-    # Si no está autenticado, no hay notificaciones
-    return {
-        'notificaciones_conteo_no_leidas': 0
-    }
+            # Si es un Superuser de Django pero no un Usuario de la app
+            if request.user.is_superuser:
+                 contexto['usuario_rol'] = 'Superuser' # Un rol especial
+            
+    return contexto
