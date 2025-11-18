@@ -51,6 +51,8 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    # Añadimos WhiteNoise para servir archivos estáticos tras collectstatic
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -134,15 +136,16 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 
+# Directorio donde collectstatic volcará todos los archivos (IMPORTANTE)
+STATIC_ROOT = BASE_DIR / 'staticfiles'   # <-- Nuevo: carpeta de destino para collectstatic
+
+# Mantenemos los static dirs para desarrollo (los archivos en /static/ del repo)
 STATICFILES_DIRS = [
     BASE_DIR / 'static',
 ]
 
-STATICFILES_FINDERS = [
-    'django.contrib.staticfiles.finders.FileSystemFinder',
-    'django.contrib.staticfiles.finders.AppDirectoriesFinder',
-]
-
+# Almacenamiento de archivos estáticos recomendado para producción
+# CompressedManifest evita problemas con nombres de archivos cacheados
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 # Default primary key field type
