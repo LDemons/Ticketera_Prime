@@ -263,6 +263,24 @@ body{
 .view-dashboard .header{grid-area:header}
 .view-dashboard .dashboard{grid-area:main}
 
+/* ===================== */
+/* 4b) Vista: PANEL PRINCIPAL */
+/*    (.view-panel-principal)  */
+/* ===================== */
+
+.app.view-panel-principal{
+  display:grid;
+  grid-template-columns: 260px 1fr;
+  grid-template-rows: 64px 1fr;
+  grid-template-areas:
+    "sidebar header"
+    "sidebar main";
+  min-height:100vh;
+}
+.view-panel-principal .sidebar{grid-area:sidebar}
+.view-panel-principal .header{grid-area:header}
+.view-panel-principal main{grid-area:main; overflow-y:auto}
+
 /* Secciones del dashboard */
 .dashboard{
   display:grid; gap:16px;
@@ -385,36 +403,11 @@ body{
 
 
 /* ===================================== */
-/* 6) Funcionalidad Sidebar Toggle (Final) */
+/* 6) Sidebar sin toggle - siempre visible */
 /* ===================================== */
 
-.sidebar-toggle {
-    background: rgba(255, 255, 255, 0.1);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    color: white;
-    border-radius: 50%;
-    cursor: pointer;
-    width: 32px;
-    height: 32px;
-    position: absolute;
-    top: 18px;
-    right: -16px;
-    z-index: 1000;
-    display: grid;
-    place-items: center;
-}
-
 .sidebar {
-    overflow: hidden; /* Oculta el texto de la sidebar cuando se encoge */
-}
-
-/* --- ESTADO OCULTO --- */
-/* Esta es la parte clave. Redefine la grilla cuando la sidebar está oculta */
-.app.sidebar-collapsed.view-dashboard {
-    grid-template-columns: 0 1fr;
-}
-.app.sidebar-collapsed.view-tickets {
-    grid-template-columns: 0 1fr 460px;
+    position: relative;
 }
 
 /* ===================================== */
@@ -571,4 +564,3 @@ textarea.form-input {
     line-height: 1;
     margin-left: auto; /* Empuja el badge a la derecha */
 }
-

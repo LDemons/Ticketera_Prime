@@ -1,0 +1,211 @@
+{% extends 'base.html' %}
+
+{% block title %}Ticketera · Panel Principal{% endblock %}
+
+{% block content %}
+    <header class="header">
+        <h1 class="page-title">Panel principal</h1>
+        <div class="filters">
+            <a href="{% url 'dashboard' %}" class="btn-link">Ver Gráficos</a>
+            <a href="{% url 'reportes' %}" class="btn-link">Ver Reportes</a>
+        </div>
+    </header>
+
+    <main style="padding: 16px;">
+        <!-- KPIs -->
+        <section class="kpis" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 20px;">
+            <article class="kpi">
+                <div class="kpi-title">Abiertos</div>
+                <div class="kpi-value">{{ tickets_abiertos }}</div>
+                <div class="kpi-foot">
+                    <span class="dot dot--blue"></span> 
+                    Variación 24h: <b>+{{ abiertos_variacion }}</b>
+                </div>
+            </article>
+
+            <article class="kpi">
+                <div class="kpi-title">En curso</div>
+                <div class="kpi-value">{{ tickets_en_progreso }}</div>
+                <div class="kpi-foot">
+                    <span class="dot dot--green"></span> 
+                    Asignados hoy: <b>+{{ en_progreso_variacion }}</b>
+                </div>
+            </article>
+
+            <article class="kpi">
+                <div class="kpi-title">SLA vencidos</div>
+                <div class="kpi-value alert">{{ sla_vencidos }}</div>
+                <div class="kpi-foot">
+                    <span class="dot dot--red"></span> 
+                    Últimas 24h: <b>+{{ sla_vencidos_variacion }}</b>
+                </div>
+            </article>
+
+            <article class="kpi">
+                <div class="kpi-title">Tiempo resp. prom.</div>
+                <div class="kpi-value">{{ tiempo_respuesta }}</div>
+                <div class="kpi-foot">
+                    <span class="dot"></span> 
+                    Meta: <b>20m</b>
+                </div>
+            </article>
+        </section>
+
+        <!-- Gráfico de Entradas por Hora + Cumplimiento SLA -->
+        <div style="display: grid; grid-template-columns: 1.5fr 1fr; gap: 16px; margin-bottom: 20px;">
+            <!-- Entradas por hora -->
+            <section class="card">
+                <div class="card-head">
+                    <h2>Entradas por hora</h2>
+                    <div class="filters">
+                        <a href="{% url 'dashboard' %}" class="btn-link" style="font-size: 13px; padding: 6px 10px;">Ver Gráficos Detallados</a>
+                    </div>
+                </div>
+                <div style="padding: 15px;">
+                    <canvas id="chartEntradasPorHora" style="max-height: 220px;"></canvas>
+                </div>
+            </section>
+
+            <!-- Cumplimiento SLA -->
+            <section class="card">
+                <div class="card-head">
+                    <h2>Cumplimiento SLA</h2>
+                </div>
+                <div class="progress" style="padding: 15px;">
+                    {% for item in cumplimiento_sla %}
+                    <div class="progress-row">
+                        <span style="font-size: 13px; color: var(--muted);">{{ item.nivel }}</span>
+                        <div class="bar">
+                            <i style="--p: {{ item.porcentaje }}%; 
+                                {% if item.porcentaje >= 90 %}background: linear-gradient(90deg, var(--green), #9be1c2);
+                                {% elif item.porcentaje >= 70 %}background: linear-gradient(90deg, #fbbf24, #fde68a);
+                                {% else %}background: linear-gradient(90deg, var(--red), #fca5a5);{% endif %}">
+                            </i>
+                        </div>
+                        <span style="font-weight: 700; font-size: 14px;">{{ item.porcentaje }}%</span>
+                    </div>
+                    {% endfor %}
+                </div>
+            </section>
+        </div>
+
+        <!-- Mi Cola (Tickets Recientes) -->
+        <section class="card">
+            <div class="card-head">
+                <h2>Mi cola</h2>
+                <div class="filters">
+                    <div class="select">
+                        <select>
+                            <option>Lista</option>
+                            <option>Kanban</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="table" style="padding: 6px 10px 12px;">
+                <div class="thead">
+                    <div>ID</div>
+                    <div>Asunto</div>
+                    <div>Solicitante</div>
+                    <div>Prioridad</div>
+                    <div>Estado</div>
+                    <div>Vence</div>
+                </div>
+                {% for ticket in tickets_recientes %}
+                <div class="trow {% if ticket.prioridad.Tipo_Nivel == 'ALTO' %}warn{% endif %}">
+                    <div class="muted">#T{{ ticket.ticket_id|stringformat:"03d" }}</div>
+                    <div>
+                        <a href="{% url 'ticket_detail' ticket.ticket_id %}" style="color: var(--text); text-decoration: none;">
+                            {{ ticket.titulo|truncatewords:8 }}
+                        </a>
+                    </div>
+                    <div class="muted">{{ ticket.usuario_creador.nombre }}</div>
+                    <div>
+                        {% if ticket.prioridad.Tipo_Nivel == 'ALTO' %}
+                            <b class="tag tag--high">{{ ticket.prioridad.Tipo_Nivel }}</b>
+                        {% elif ticket.prioridad.Tipo_Nivel == 'MEDIO' %}
+                            <b class="tag tag--medium">{{ ticket.prioridad.Tipo_Nivel }}</b>
+                        {% else %}
+                            <b class="tag tag--low">{{ ticket.prioridad.Tipo_Nivel }}</b>
+                        {% endif %}
+                    </div>
+                    <div>
+                        <b class="tag {% if ticket.estado == 'ABIERTO' %}tag--open{% elif ticket.estado == 'EN_PROGRESO' %}tag--progress{% else %}tag--closed{% endif %}">
+                            {{ ticket.get_estado_display }}
+                        </b>
+                    </div>
+                    <div class="muted">{{ ticket.fecha_creacion|date:"d/m/Y" }}</div>
+                </div>
+                {% empty %}
+                <div class="bulk-bar" style="margin: 10px 0;">
+                    No hay tickets pendientes de asignación.
+                </div>
+                {% endfor %}
+            </div>
+        </section>
+    </main>
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // Gráfico de Entradas por Hora
+        const ctxHoras = document.getElementById('chartEntradasPorHora');
+        if (ctxHoras) {
+            const labelsHoras = {{ labels_horas_json|safe }};
+            const dataHoras = {{ tickets_por_hora_json|safe }};
+
+            new Chart(ctxHoras, {
+                type: 'bar',
+                data: {
+                    labels: labelsHoras,
+                    datasets: [{
+                        label: 'Tickets creados',
+                        data: dataHoras,
+                        backgroundColor: 'rgba(47, 115, 217, 0.8)',
+                        borderColor: 'rgba(47, 115, 217, 1)',
+                        borderWidth: 1,
+                        borderRadius: 6,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                            padding: 10,
+                            cornerRadius: 8,
+                            titleFont: { size: 13 },
+                            bodyFont: { size: 12 }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                stepSize: 1,
+                                font: { size: 11 }
+                            },
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.05)'
+                            }
+                        },
+                        x: {
+                            ticks: {
+                                font: { size: 11 },
+                                maxRotation: 45,
+                                minRotation: 0
+                            },
+                            grid: {
+                                display: false
+                            }
+                        }
+                    }
+                }
+            });
+        }
+    </script>
+{% endblock %}

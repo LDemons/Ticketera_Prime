@@ -12,10 +12,6 @@
     <div class="app {{ view_class }}">
         
         <aside class="sidebar">
-            <button id="sidebar-toggle" class="sidebar-toggle" title="Ocultar menú">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h18M3 6h18M3 18h18"/></svg>
-            </button>
-            
             <div class="brand">
                 <div class="logo">T</div>
                 <div class="title"><b>Ticketera</b><small>Helpdesk</small></div>
@@ -23,16 +19,22 @@
     
             {% if usuario_rol == 'Admin' or usuario_rol == 'Superuser' %}
             <nav class="nav-block">
-                <a class="{% if view_class == 'view-dashboard' and request.resolver_match.url_name == 'dashboard' %}active{% endif %}" href="{% url 'dashboard' %}">
+                <a class="{% if request.resolver_match.url_name == 'panel_principal' %}active{% endif %}" href="{% url 'panel_principal' %}">
                     <span class="ico"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="8" height="8" rx="2"/><rect x="13" y="3" width="8" height="5" rx="2"/><rect x="3" y="13" width="5" height="8" rx="2"/><rect x="10" y="13" width="11" height="8" rx="2"/></svg></span>
-                    Dashboard
+                    Panel Principal
+                </a>
+                <a class="{% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}" href="{% url 'dashboard' %}">
+                    <span class="ico"><svg viewBox="0 0 24 24"><line x1="4" y1="20" x2="20" y2="20"/><rect x="6" y="12" width="3" height="8"/><rect x="11" y="9" width="3" height="11"/><rect x="16" y="5" width="3" height="15"/></svg></span>
+                    Gráficos
                 </a>
                 <a class="{% if view_class == 'view-tickets' and request.resolver_match.url_name == 'ticket_list' or view_class == 'view-tickets' and request.resolver_match.url_name == 'ticket_detail' %}active{% endif %}" href="{% url 'ticket_list' %}">
                     <span class="ico"><svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="6" rx="2"/><rect x="4" y="13" width="16" height="6" rx="2"/></svg></span>
                     Tickets
                 </a>
-                <a class="{% if request.resolver_match.url_name == 'reportes' %}active{% endif %}" href="{% url 'reportes' %}"><svg viewBox="0 0 24 24">
-                    <line x1="4" y1="20" x2="20" y2="20"/><rect x="6" y="12" width="3" height="8"/><rect x="11" y="9" width="3" height="11"/><rect x="16" y="5" width="3" height="15"/></svg></span> Reportes</a>
+                <a class="{% if request.resolver_match.url_name == 'reportes' %}active{% endif %}" href="{% url 'reportes' %}">
+                    <span class="ico"><svg viewBox="0 0 24 24"><line x1="4" y1="20" x2="20" y2="20"/><rect x="6" y="12" width="3" height="8"/><rect x="11" y="9" width="3" height="11"/><rect x="16" y="5" width="3" height="15"/></svg></span>
+                    Reportes
+                </a>
                 <a href="#"><span class="ico"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M5.6 18.4l2.1-2.1M16.3 7.7l2.1-2.1"/></svg></span> Configuración</a>
             </nav>
     
@@ -84,30 +86,6 @@
         {% endblock %}
     
     </div>
-
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const toggleButton = document.getElementById('sidebar-toggle');
-            const appContainer = document.querySelector('.app');
-
-            toggleButton.addEventListener('click', function() {
-                appContainer.classList.toggle('sidebar-collapsed');
-            });
-        });
-    </script>
-    <script>
-        // sidebar toggle
-        document.addEventListener('DOMContentLoaded', function() {
-            const toggleButton = document.getElementById('sidebar-toggle');
-            const appContainer = document.querySelector('.app');
-
-            if (toggleButton && appContainer) { // Añadir chequeo por si no existen
-                toggleButton.addEventListener('click', function() {
-                    appContainer.classList.toggle('sidebar-collapsed');
-                });
-            }
-        });
-    </script>
 
     <script>
     document.addEventListener('DOMContentLoaded', function() {

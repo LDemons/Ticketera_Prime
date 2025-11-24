@@ -4,52 +4,13 @@
 
 {% block content %}
     <header class="header">
-      <h1 class="page-title">Panel principal</h1>
+      <h1 class="page-title">Dashboard</h1>
+      <div class="filters">
+        <a href="{% url 'panel_principal' %}" class="btn-link">Ver Panel Principal</a>
+      </div>
     </header>
 
      <main class="dashboard">
-      <section class="kpis">
-        <article class="kpi">
-          <div class="kpi-title">Abiertos</div>
-          <div class="kpi-value">{{ tickets_abiertos }}</div>
-          <div class="kpi-foot">
-            <span class="dot dot--blue"></span> Total activos
-          </div>
-        </article>
-        
-        <article class="kpi">
-          <div class="kpi-title">En curso</div>
-          <div class="kpi-value">{{ tickets_en_progreso }}</div>
-          <div class="kpi-foot">
-            <span class="dot dot--green"></span> Siendo atendidos
-          </div>
-        </article>
-
-        <article class="kpi">
-          <div class="kpi-title">SLA vencidos</div>
-           <div class="kpi-value alert">{{ sla_vencidos }}</div>
-          <div class="kpi-foot">
-            <span class="dot dot--red"></span> Requieren atención
-          </div>
-        </article>
-
-        <article class="kpi">
-          <div class="kpi-title">Tiempo resp. prom.</div>
-           <div class="kpi-value">{{ tiempo_respuesta }}</div>
-          <div class="kpi-foot">
-            <span class="dot"></span> Meta: 20m
-          </div>
-        </article>
-
-        <article class="kpi">
-          <div class="kpi-title">Creados esta semana</div>
-          <div class="kpi-value">{{ tickets_creados_esta_semana }}</div>
-          <div class="kpi-foot">
-            <span class="dot dot--purple"></span> Últimos 7 días
-          </div>
-        </article>
-      </section>
-
       <div class="cards two-col">
         
         <section class="card">

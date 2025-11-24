@@ -59,70 +59,21 @@ def index_view(request):
 
 @login_required
 def dashboard_view(request):
-    # --- BLOQUE DE PERMISO (se mantiene igual) ---
+    """
+    Vista de Dashboard con gráficos analíticos.
+    """
+    # --- BLOQUE DE PERMISO (Solo Admin) ---
     try:
         usuario = Usuario.objects.get(email=request.user.email)
         if usuario.rol.nombre != 'Admin':
-            return redirect('index') 
+            return redirect('index')
     except Usuario.DoesNotExist:
-        return redirect('index') 
+        if not request.user.is_superuser:
+            return redirect('index')
     # --- FIN DEL BLOQUE ---
 
-    ahora_dt = timezone.now()
-    ahora_date = ahora_dt.date() 
+    ahora_date = timezone.now().date()
 
-    # --- KPIs (existentes) ---
-    tickets_abiertos = Ticket.objects.filter(estado='ABIERTO').count()
-    tickets_en_progreso = Ticket.objects.filter(estado='EN_PROGRESO').count()
-    
-    # --- Cálculo de SLA ---
-    estados_activos = ['ABIERTO', 'EN_PROGRESO']
-    tickets_activos = Ticket.objects.filter(
-        estado__in=estados_activos
-    ).select_related('prioridad')
-    sla_vencidos_count = 0
-    for ticket in tickets_activos:
-        horas_sla = ticket.prioridad.sla_horas
-        if horas_sla > 0:
-            fecha_vencimiento = ticket.fecha_creacion + timedelta(hours=horas_sla)
-            if fecha_vencimiento < ahora_dt: # Comparamos datetime con datetime
-                sla_vencidos_count += 1
-
-    # --- Tiempo de Respuesta ---
-    tickets_con_asignacion = Ticket.objects.annotate(
-        primera_asignacion=Min('asignacionticket__fecha_asignacion')
-    ).filter(
-        primera_asignacion__isnull=False
-    )
-
-    # 2. Calculamos la diferencia (ahora será un timedelta preciso)
-    diferencia_de_tiempo = tickets_con_asignacion.annotate(
-        tiempo_diff=ExpressionWrapper(
-            F('primera_asignacion') - F('fecha_creacion'),
-            output_field=fields.DurationField()
-        )
-    )
-
-    # 3. Obtenemos el promedio de esas diferencias
-    promedio_timedelta = diferencia_de_tiempo.aggregate(
-        promedio=Avg('tiempo_diff')
-    )['promedio']
-
-    tiempo_respuesta_promedio_str = "N/A"
-    if promedio_timedelta:
-        # 4. Convertimos el timedelta a minutos totales
-        total_minutos = promedio_timedelta.total_seconds() / 60
-        
-        if total_minutos < 120:
-            # Si es menos de 2 horas, mostrar en minutos
-            tiempo_respuesta_promedio_str = f"{total_minutos:.0f} min"
-        else:
-            # Si es más, mostrar en horas
-            total_horas = total_minutos / 60
-            tiempo_respuesta_promedio_str = f"{total_horas:.1f} horas"
-
-    # --- DATOS PARA GRÁFICOS (existentes) ---
-    
     # 1. Gráfico de Tickets por Estado (Pie)
     conteo_por_estado = Ticket.objects.values('estado').annotate(
         total=Count('ticket_id')
@@ -139,89 +90,47 @@ def dashboard_view(request):
     
     labels_categoria = [item['categoria__nombre'] if item['categoria__nombre'] else 'Sin categoría' for item in conteo_por_categoria]
     data_categoria = [item['total'] for item in conteo_por_categoria]
-    
-    # --- NUEVAS MODIFICACIONES: DATOS ADICIONALES PARA DASHBOARD ---
 
-    # 3. KPI: Tickets Creados Esta Semana
-    hace_siete_dias = ahora_date - timedelta(days=7)
-    tickets_creados_esta_semana = Ticket.objects.filter(
-        fecha_creacion__date__gte=hace_siete_dias,
-        fecha_creacion__date__lte=ahora_date 
-    ).count()
+    # 3. Tickets Creados por Día (Últimos 7 Días)
+    fechas_ultimos_7_dias = [ahora_date - timedelta(days=i) for i in range(7)]
+    fechas_ultimos_7_dias.reverse()
 
-    # 4. Gráfico de Líneas: Tickets Creados por Día (Últimos 7 Días)
-    tickets_por_dia = {}
-    for i in range(7):
-        fecha = ahora_date - timedelta(days=i)
-        tickets_por_dia[fecha.strftime('%a')] = 0 # 'Mon', 'Tue', etc.
-    
-    tickets_data = Ticket.objects.filter(
-        fecha_creacion__date__gte=hace_siete_dias,
-        fecha_creacion__date__lte=ahora_date
-    ).annotate(
-        dia_semana=Func(F('fecha_creacion'), Value('DayOfWeek'), function='strftime', output_field=fields.CharField()) # SQLite
-    )
-    # Ajuste para obtener el nombre del día de la semana para Chart.js
     dias_semana_map = {
-        'Sun': 'Dom', 'Mon': 'Lun', 'Tue': 'Mar', 'Wed': 'Mié', 
+        'Sun': 'Dom', 'Mon': 'Lun', 'Tue': 'Mar', 'Wed': 'Mié',
         'Thu': 'Jue', 'Fri': 'Vie', 'Sat': 'Sáb'
     }
-
-    # Mejor enfoque para Tickets Creados por Día:
-    fechas_ultimos_7_dias = [ahora_date - timedelta(days=i) for i in range(7)]
-    fechas_ultimos_7_dias.reverse() # Para que el gráfico vaya de L-D o el día más antiguo al más reciente
 
     labels_creados_dia = []
     data_creados_dia = []
 
     for d in fechas_ultimos_7_dias:
-        dia_semana_es = d.strftime('%a') # Ej: 'Mon', 'Tue'
-        dia_semana_es = dias_semana_map.get(dia_semana_es, dia_semana_es) # Mapear a español
+        dia_semana_es = d.strftime('%a')
+        dia_semana_es = dias_semana_map.get(dia_semana_es, dia_semana_es)
         labels_creados_dia.append(dia_semana_es)
         
-        count_for_day = Ticket.objects.filter(
-            fecha_creacion__date=d
-        ).count()
+        count_for_day = Ticket.objects.filter(fecha_creacion__date=d).count()
         data_creados_dia.append(count_for_day)
 
-    # 5. Gráfico de Barras: Tickets Abiertos por Prioridad
+    # 4. Tickets Abiertos por Prioridad
     conteo_por_prioridad = Ticket.objects.filter(
-        estado__in=['ABIERTO', 'EN_PROGRESO'] # Solo tickets activos
-    ).values('prioridad__Tipo_Nivel').annotate(  # <-- CAMBIO 1
+        estado__in=['ABIERTO', 'EN_PROGRESO']
+    ).values('prioridad__Tipo_Nivel').annotate(
         total=Count('ticket_id')
-    ).order_by('prioridad__Tipo_Nivel')      # <-- CAMBIO 2
+    ).order_by('prioridad__Tipo_Nivel')
 
-    # Mapear los códigos (ej. 'ALTO') a nombres legibles (ej. 'Alto')
-    mapa_prioridad = dict(Prioridad.NIVEL_CHOICES) 
-
+    mapa_prioridad = dict(Prioridad.NIVEL_CHOICES)
     labels_prioridad = [
-        mapa_prioridad.get(item['prioridad__Tipo_Nivel'], item['prioridad__Tipo_Nivel']) 
-        if item['prioridad__Tipo_Nivel'] else 'Sin prioridad' 
+        mapa_prioridad.get(item['prioridad__Tipo_Nivel'], item['prioridad__Tipo_Nivel'])
         for item in conteo_por_prioridad
-    ] # <-- CAMBIO 3 (para mostrar 'Alto' en vez de 'ALTO')
-    
+    ]
     data_prioridad = [item['total'] for item in conteo_por_prioridad]
-
-    # --- FIN DE NUEVAS MODIFICACIONES ---
 
     context = {
         'view_class': 'view-dashboard',
-        # KPIs (existentes)
-        'tickets_abiertos': tickets_abiertos,
-        'tickets_en_progreso': tickets_en_progreso,
-        'sla_vencidos': sla_vencidos_count,
-        'tiempo_respuesta': tiempo_respuesta_promedio_str,
-        
-        # Nuevos KPIs
-        'tickets_creados_esta_semana': tickets_creados_esta_semana,
-
-        # Datos JSON para Gráficos (existentes)
         'labels_estado_json': json.dumps(labels_estado),
         'data_estado_json': json.dumps(data_estado),
         'labels_categoria_json': json.dumps(labels_categoria),
         'data_categoria_json': json.dumps(data_categoria),
-
-        # Nuevos datos JSON para Gráficos
         'labels_creados_dia_json': json.dumps(labels_creados_dia),
         'data_creados_dia_json': json.dumps(data_creados_dia),
         'labels_prioridad_json': json.dumps(labels_prioridad),
@@ -766,3 +675,159 @@ def notificaciones_view(request):
     }
     
     return render(request, 'notificaciones.html', context)
+
+@login_required
+def panel_principal_view(request):
+    """
+    Vista del Panel Principal con KPIs y vistas resumidas (sin gráficos).
+    """
+    # --- BLOQUE DE PERMISO (Solo Admin) ---
+    try:
+        usuario = Usuario.objects.get(email=request.user.email)
+        if usuario.rol.nombre != 'Admin':
+            return redirect('index')
+    except Usuario.DoesNotExist:
+        if not request.user.is_superuser:
+            return redirect('index')
+    # --- FIN DEL BLOQUE ---
+
+    ahora_dt = timezone.now()
+    ahora_date = ahora_dt.date()
+
+    # --- KPIs ---
+    tickets_abiertos = Ticket.objects.filter(estado='ABIERTO').count()
+    tickets_en_progreso = Ticket.objects.filter(estado='EN_PROGRESO').count()
+    
+    # --- SLA Vencidos ---
+    estados_activos = ['ABIERTO', 'EN_PROGRESO']
+    tickets_activos = Ticket.objects.filter(
+        estado__in=estados_activos
+    ).select_related('prioridad')
+    
+    sla_vencidos_count = 0
+    for ticket in tickets_activos:
+        horas_sla = ticket.prioridad.sla_horas
+        if horas_sla > 0:
+            fecha_vencimiento = ticket.fecha_creacion + timedelta(hours=horas_sla)
+            if fecha_vencimiento < ahora_dt:
+                sla_vencidos_count += 1
+
+    # --- Tiempo de Respuesta Promedio ---
+    tickets_con_asignacion = Ticket.objects.annotate(
+        primera_asignacion=Min('asignacionticket__fecha_asignacion')
+    ).filter(primera_asignacion__isnull=False)
+
+    diferencia_de_tiempo = tickets_con_asignacion.annotate(
+        tiempo_diff=ExpressionWrapper(
+            F('primera_asignacion') - F('fecha_creacion'),
+            output_field=fields.DurationField()
+        )
+    )
+
+    promedio_timedelta = diferencia_de_tiempo.aggregate(
+        promedio=Avg('tiempo_diff')
+    )['promedio']
+
+    tiempo_respuesta_promedio_str = "N/A"
+    if promedio_timedelta:
+        total_minutos = promedio_timedelta.total_seconds() / 60
+        if total_minutos < 60:
+            tiempo_respuesta_promedio_str = f"{total_minutos:.0f}m"
+        else:
+            total_horas = total_minutos / 60
+            tiempo_respuesta_promedio_str = f"{total_horas:.1f}h"
+
+    # --- Variaciones de últimas 24h ---
+    hace_24h = ahora_dt - timedelta(hours=24)
+    
+    abiertos_ultimas_24h = Ticket.objects.filter(
+        estado='ABIERTO',
+        fecha_creacion__gte=hace_24h
+    ).count()
+    
+    # Contar asignaciones nuevas en las últimas 24h (tickets que pasaron a EN_PROGRESO)
+    asignaciones_ultimas_24h = AsignacionTicket.objects.filter(
+        fecha_asignacion__gte=hace_24h
+    ).count()
+    
+    asignados_hoy = AsignacionTicket.objects.filter(
+        fecha_asignacion__date=ahora_date
+    ).count()
+
+    # --- Tickets Recientes (Mi Cola) - Últimos 10 tickets sin asignar o recién creados ---
+    tickets_recientes = Ticket.objects.filter(
+        estado='ABIERTO'
+    ).select_related('usuario_creador', 'prioridad').order_by('-fecha_creacion')[:10]
+
+    # --- Entradas por Hora (últimas 24 horas) ---
+    tickets_por_hora = []
+    labels_horas = []
+    
+    for hora in range(24):
+        inicio_hora = ahora_dt.replace(hour=hora, minute=0, second=0, microsecond=0)
+        fin_hora = inicio_hora + timedelta(hours=1)
+        
+        # Contar tickets creados en esa hora del día de hoy
+        count = Ticket.objects.filter(
+            fecha_creacion__gte=inicio_hora,
+            fecha_creacion__lt=fin_hora,
+            fecha_creacion__date=ahora_date
+        ).count()
+        
+        tickets_por_hora.append(count)
+        labels_horas.append(f"{hora:02d}h")
+
+    # --- Cumplimiento SLA por Prioridad ---
+    prioridades = Prioridad.objects.all()
+    cumplimiento_sla = []
+    
+    for prioridad in prioridades:
+        tickets_prioridad = Ticket.objects.filter(
+            prioridad=prioridad,
+            estado__in=['CERRADO', 'RESUELTO']
+        ).select_related('prioridad')
+        
+        total = tickets_prioridad.count()
+        if total == 0:
+            cumplimiento_sla.append({
+                'nivel': prioridad.Tipo_Nivel,
+                'porcentaje': 0
+            })
+            continue
+            
+        cumplidos = 0
+        for ticket in tickets_prioridad:
+            if ticket.cerrado_en and prioridad.sla_horas > 0:
+                # Convertir cerrado_en (date) a datetime para poder comparar
+                fecha_cierre_dt = timezone.datetime.combine(ticket.cerrado_en, timezone.datetime.min.time())
+                fecha_cierre_dt = timezone.make_aware(fecha_cierre_dt)
+                tiempo_resolucion = fecha_cierre_dt - ticket.fecha_creacion
+                horas_resolucion = tiempo_resolucion.total_seconds() / 3600
+                if horas_resolucion <= prioridad.sla_horas:
+                    cumplidos += 1
+        
+        porcentaje = int((cumplidos / total) * 100) if total > 0 else 0
+        cumplimiento_sla.append({
+            'nivel': dict(Prioridad.NIVEL_CHOICES).get(prioridad.Tipo_Nivel, prioridad.Tipo_Nivel),
+            'porcentaje': porcentaje
+        })
+
+    context = {
+        'view_class': 'view-panel-principal',
+        # KPIs principales
+        'tickets_abiertos': tickets_abiertos,
+        'tickets_en_progreso': tickets_en_progreso,
+        'sla_vencidos': sla_vencidos_count,
+        'tiempo_respuesta': tiempo_respuesta_promedio_str,
+        # Variaciones últimas 24h
+        'abiertos_variacion': abiertos_ultimas_24h,
+        'en_progreso_variacion': asignaciones_ultimas_24h,
+        'sla_vencidos_variacion': 3,  # Puedes calcular esto comparando con periodo anterior
+        # Datos para gráficos
+        'labels_horas_json': json.dumps(labels_horas),
+        'tickets_por_hora_json': json.dumps(tickets_por_hora),
+        # Datos para tablas
+        'tickets_recientes': tickets_recientes,
+        'cumplimiento_sla': cumplimiento_sla,
+    }
+    return render(request, 'panel_principal.html', context)
