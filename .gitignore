@@ -29,14 +29,11 @@ db.sqlite3
 .idea/
 
 # Flutter/Dart
-.dart_tool/
-.flutter-plugins
-.flutter-plugins-dependencies
-.packages
-.pub-cache/
-.pub/
-build/
+ticketera_mobile/.dart_tool/
+ticketera_mobile/build/
+ticketera_mobile/**/.dart_tool/**
+ticketera_mobile/**/build/**
+*.log
 
-# Flutter Chrome/Web device files (contienen datos sensibles de sesión)
-**/chrome-device/
-**/.dart_tool/chrome-device/**
+# Chrome device data (contiene APIs de Google)
+**/chrome-device/**
