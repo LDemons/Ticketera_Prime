@@ -451,16 +451,13 @@ body{
   background: #fff;
   cursor: pointer;
   padding: 8px 12px;
-  text-decoration: none; /* Añadido antes */
-  color: var(--text); /* Añadido antes */
-
-  /* 👇 AÑADE ESTAS LÍNEAS 👇 */
-  display: inline-block; /* Asegura comportamiento de bloque en línea */
-  min-width: 80px;      /* Ancho mínimo (ajústalo si prefieres otro) */
-  text-align: center;   /* Centra el texto del botón */
-  font-size: 14px;      /* Opcional: ajustar tamaño de fuente si difiere */
-  line-height: 1.4;     /* Opcional: ajustar altura de línea si es necesario */
-  /* 👆 FIN DE LÍNEAS AÑADIDAS 👆 */
+  text-decoration: none;
+  color: var(--text);
+  display: inline-block;
+  min-width: 80px;
+  text-align: center;
+  font-size: 14px;
+  line-height: 1.4;
 }
 
 /* Regla hover existente */
@@ -808,7 +805,7 @@ textarea.form-input {
   overflow: hidden;
 }
 
-.user-name {
+.user-section .user-name {
   font-weight: 600;
   color: #fff;
   font-size: 14px;

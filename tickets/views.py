@@ -323,10 +323,7 @@ def mis_tickets_view(request, ticket_id=None):
         'estados_posibles': Ticket.ESTADO_CHOICES
     }
     
-    # Si hay ticket_id, renderizar el template de detalle en móvil
-    if ticket_id:
-        return render(request, 'mis_tickets_detalle.html', context)
-    
+    # Siempre renderizar mis_tickets.html (tiene el panel lateral en desktop y funciona en mobile)
     return render(request, 'mis_tickets.html', context)
 
 
@@ -438,11 +435,93 @@ def mis_asignaciones_view(request, ticket_id=None):
         'estados_posibles': Ticket.ESTADO_CHOICES
     }
     
-    # Si hay ticket_id, renderizar el template de detalle en móvil
-    if ticket_id:
-        return render(request, 'mis_asignaciones_detalle.html', context)
-    
+    # Siempre renderizar mis_asignaciones.html (tiene el panel lateral en desktop y funciona en mobile)
     return render(request, 'mis_asignaciones.html', context)
+
+
+@login_required
+def mis_asignaciones_detalle_view(request, ticket_id):
+    """Vista para mostrar el detalle completo del ticket en móvil (TI)"""
+    try:
+        usuario = Usuario.objects.get(email=request.user.email)
+        if usuario.rol.nombre != 'TI':
+            return redirect('index')
+    except Usuario.DoesNotExist:
+        return redirect('index')
+
+    tecnico_actual = usuario
+    ticket_seleccionado = get_object_or_404(Ticket, pk=ticket_id)
+    
+    # Procesar POST (gestión del ticket)
+    if request.method == 'POST':
+        form_gestion = GestionTicketForm(request.POST)
+        if form_gestion.is_valid():
+            nuevo_estado = form_gestion.cleaned_data['estado']
+            ticket_seleccionado.estado = nuevo_estado
+            ticket_seleccionado.save()
+            
+            comentario_texto = form_gestion.cleaned_data['comentario']
+            if comentario_texto:
+                Comentario.objects.create(
+                    ticket=ticket_seleccionado,
+                    autor=usuario,
+                    texto=comentario_texto
+                )
+            
+            estado_filtro = request.GET.get('estado', 'todos')
+            orden = request.GET.get('orden', 'reciente')
+            return redirect(f"{reverse('mis_asignaciones_detalle', args=[ticket_id])}?estado={estado_filtro}&orden={orden}")
+    else:
+        form_gestion = GestionTicketForm(initial={'estado': ticket_seleccionado.estado})
+    
+    comentarios = Comentario.objects.filter(ticket=ticket_seleccionado).order_by('fecha_creacion')
+    
+    context = {
+        'ticket_seleccionado': ticket_seleccionado,
+        'comentarios': comentarios,
+        'form_gestion': form_gestion,
+        'estado_actual': request.GET.get('estado', 'todos'),
+        'orden_actual': request.GET.get('orden', 'reciente'),
+    }
+    
+    return render(request, 'mis_asignaciones_detalle.html', context)
+
+
+@login_required
+def mis_tickets_detalle_view(request, ticket_id):
+    """Vista para mostrar el detalle completo del ticket en móvil (Docente)"""
+    try:
+        usuario = Usuario.objects.get(email=request.user.email)
+        if usuario.rol.nombre != 'Docente':
+            return redirect('index')
+    except Usuario.DoesNotExist:
+        return redirect('index')
+
+    ticket_seleccionado = get_object_or_404(Ticket, pk=ticket_id, usuario_creador=usuario)
+    
+    # Procesar POST (agregar comentario)
+    if request.method == 'POST':
+        comentario_texto = request.POST.get('comentario', '').strip()
+        if comentario_texto:
+            Comentario.objects.create(
+                ticket=ticket_seleccionado,
+                autor=usuario,
+                texto=comentario_texto
+            )
+            estado_filtro = request.GET.get('estado', 'todos')
+            orden = request.GET.get('orden', 'reciente')
+            return redirect(f"{reverse('mis_tickets_detalle', args=[ticket_id])}?estado={estado_filtro}&orden={orden}")
+    
+    comentarios = Comentario.objects.filter(ticket=ticket_seleccionado).order_by('fecha_creacion')
+    
+    context = {
+        'ticket_seleccionado': ticket_seleccionado,
+        'comentarios': comentarios,
+        'estado_actual': request.GET.get('estado', 'todos'),
+        'orden_actual': request.GET.get('orden', 'reciente'),
+    }
+    
+    return render(request, 'mis_tickets_detalle.html', context)
 
 
 # --- VISTA PARA BORRAR (DOCENTE) ---

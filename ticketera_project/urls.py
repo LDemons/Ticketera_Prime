@@ -31,12 +31,13 @@ urlpatterns = [
 
     # --- RUTAS DE "MIS TICKETS" (DOCENTE) ---
     path('mis-tickets/', views.mis_tickets_view, name='mis_tickets'),
-    path('mis-tickets/<int:ticket_id>/', views.mis_tickets_view, name='mis_tickets_detalle'),
+    path('mis-tickets/<int:ticket_id>/', views.mis_tickets_view, name='mis_tickets'),  # Panel lateral (desktop)
+    path('mis-tickets/<int:ticket_id>/detalle/', views.mis_tickets_detalle_view, name='mis_tickets_detalle'),  # Página completa (móvil)
 
     # --- RUTAS DE "TI" ---
     path('mis-asignaciones/', views.mis_asignaciones_view, name='mis_asignaciones'),
-    
-    path('mis-asignaciones/<int:ticket_id>/', views.mis_asignaciones_view, name='mis_asignaciones_detalle'),
+    path('mis-asignaciones/<int:ticket_id>/', views.mis_asignaciones_view, name='mis_asignaciones'),  # Panel lateral (desktop)
+    path('mis-asignaciones/<int:ticket_id>/detalle/', views.mis_asignaciones_detalle_view, name='mis_asignaciones_detalle'),  # Página completa (móvil)
     path('reportes/', views.reportes_view, name='reportes'),
     path('reportes/descargar-csv/', views.descargar_reporte_csv, name='descargar_reporte_csv'),
 
