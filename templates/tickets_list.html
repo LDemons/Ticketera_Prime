@@ -45,6 +45,15 @@
                         {% else %}<b class="tag tag--low">BAJO</b>
                         {% endif %}
                     </span>
+                    <span>Estado: 
+                        {% if ticket.estado == 'ABIERTO' %}<b class="tag tag--open">{{ ticket.get_estado_display }}</b>
+                        {% elif ticket.estado == 'EN_PROGRESO' %}<b class="tag tag--progress">{{ ticket.get_estado_display }}</b>
+                        {% elif ticket.estado == 'RESUELTO' %}<b class="tag tag--resolved">{{ ticket.get_estado_display }}</b>
+                        {% elif ticket.estado == 'CERRADO' %}<b class="tag tag--closed">{{ ticket.get_estado_display }}</b>
+                        {% elif ticket.estado == 'RECHAZADO' %}<b class="tag tag--rejected">{{ ticket.get_estado_display }}</b>
+                        {% else %}<b class="tag">{{ ticket.get_estado_display }}</b>
+                        {% endif %}
+                    </span>
                 </div>
             </div>
             <div class="ticket-actions">

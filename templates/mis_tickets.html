@@ -61,6 +61,8 @@
                             <b class="tag tag--resolved">{{ ticket.get_estado_display }}</b>
                         {% elif ticket.estado == 'CERRADO' %}
                             <b class="tag tag--closed">{{ ticket.get_estado_display }}</b>
+                        {% elif ticket.estado == 'RECHAZADO' %}
+                            <b class="tag tag--rejected">{{ ticket.get_estado_display }}</b>
                         {% else %}
                             <b class="tag">{{ ticket.get_estado_display }}</b>
                         {% endif %}

@@ -83,7 +83,7 @@
                                 {% else %}background: linear-gradient(90deg, var(--red), #fca5a5);{% endif %}">
                             </i>
                         </div>
-                        <span style="font-weight: 700; font-size: 14px;">{{ item.porcentaje }}%</span>
+                        <span style="font-weight: 700, font-size: 14px;">{{ item.porcentaje }}%</span>
                     </div>
                     {% endfor %}
                 </div>
@@ -148,6 +148,8 @@
                             <b class="tag tag--resolved">{{ ticket.get_estado_display }}</b>
                         {% elif ticket.estado == 'CERRADO' %}
                             <b class="tag tag--closed">{{ ticket.get_estado_display }}</b>
+                        {% elif ticket.estado == 'RECHAZADO' %}
+                            <b class="tag tag--rejected">{{ ticket.get_estado_display }}</b>
                         {% else %}
                             <b class="tag">{{ ticket.get_estado_display }}</b>
                         {% endif %}
