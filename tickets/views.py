@@ -354,12 +354,16 @@ def mis_asignaciones_view(request, ticket_id=None):
             # 1. Actualizar estado del Ticket
             nuevo_estado = form_gestion_post.cleaned_data['estado']
             ticket_para_gestionar.estado = nuevo_estado
+            
+            # Si el ticket se marca como RESUELTO o CERRADO, se desf ija automáticamente
             if nuevo_estado in ['CERRADO', 'RESUELTO']:
                 ticket_para_gestionar.cerrado_en = timezone.now().date()
+                ticket_para_gestionar.fijado = False  # DESFIJAR AUTOMÁTICAMENTE
             else:
                 ticket_para_gestionar.cerrado_en = None
+            
             ticket_para_gestionar.save()
-
+            
             # 2. Crear nuevo comentario (si hay contenido)
             contenido_comentario = form_gestion_post.cleaned_data['contenido']
             if contenido_comentario:
@@ -392,9 +396,9 @@ def mis_asignaciones_view(request, ticket_id=None):
     if estado_filtro and estado_filtro != 'todos':
         tickets_query = tickets_query.filter(estado=estado_filtro)
     if orden == 'antiguo':
-        tickets_query = tickets_query.order_by('fecha_creacion')
+        tickets_query = tickets_query.order_by('-fijado', 'fecha_creacion')  # Fijados primero, luego antiguos
     else: 
-        tickets_query = tickets_query.order_by('-fecha_creacion')
+        tickets_query = tickets_query.order_by('-fijado', '-fecha_creacion')  # Fijados primero, luego recientes
     lista_tickets = tickets_query.select_related('usuario_creador', 'prioridad').all()
 
     # Si se está viendo un ticket específico (GET o POST fallido)
@@ -993,3 +997,43 @@ def usuario_detail_view(request, rut):
         'comentarios_realizados': comentarios_realizados,
     }
     return render(request, 'usuario_detail.html', context)
+
+@require_POST
+@login_required
+def toggle_fijar_ticket_view(request, ticket_id):
+    """
+    Alterna el estado de fijado de un ticket (solo para TI).
+    """
+    # --- BLOQUE DE PERMISO ---
+    try:
+        usuario = Usuario.objects.get(email=request.user.email)
+        if usuario.rol.nombre != 'TI':
+            return redirect('index')
+    except Usuario.DoesNotExist:
+        return redirect('index')
+    # --- FIN DEL BLOQUE ---
+
+    # Busca el ticket asignado al técnico actual
+    asignacion = AsignacionTicket.objects.filter(
+        ticket_id=ticket_id,
+        usuario_asignado=usuario
+    ).first()
+    
+    if not asignacion:
+        return redirect('mis_asignaciones')
+    
+    ticket = asignacion.ticket
+    
+    # Si el ticket está resuelto o cerrado, no se puede fijar
+    if ticket.estado in ['RESUELTO', 'CERRADO']:
+        ticket.fijado = False
+    else:
+        # Alterna el estado de fijado
+        ticket.fijado = not ticket.fijado
+    
+    ticket.save()
+    
+    # Redirige manteniendo los filtros
+    estado_filtro = request.GET.get('estado', '')
+    orden = request.GET.get('orden', 'reciente')
+    return redirect(f"{reverse('mis_asignaciones')}?estado={estado_filtro}&orden={orden}")

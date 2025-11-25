@@ -28,12 +28,17 @@
 
     <main class="list" aria-label="Mis tickets asignados">
         {% for ticket in tickets %}
-        <article class="ticket">
+        <article class="ticket" style="{% if ticket.fijado %}background: linear-gradient(135deg, #fff9e6 0%, #ffffff 100%); border-left: 4px solid #ffa726;{% endif %}">
             <div class="avatar" style="background: {{ ticket.usuario_creador.nombre|user_color }};">
                 {{ ticket.usuario_creador.nombre|first }}
             </div>
             <div>
                 <div class="ticket-title">
+                    {% if ticket.fijado %}
+                        <svg viewBox="0 0 24 24" style="width: 16px; height: 16px; fill: #ffa726; display: inline-block; vertical-align: middle; margin-right: 5px;">
+                            <path d="M16,12V4H17V2H7V4H8V12L6,14V16H11.2V22H12.8V16H18V14L16,12Z"/>
+                        </svg>
+                    {% endif %}
                     {{ ticket.titulo }} <span class="muted">#T{{ ticket.ticket_id|stringformat:"03d" }}</span>
                 </div>
                 <div class="ticket-meta">
@@ -54,10 +59,64 @@
             </div>
             <div class="ticket-actions">
                  <a href="{% url 'mis_asignaciones_detalle' ticket.ticket_id %}?estado={{ estado_actual }}&orden={{ orden_actual }}" class="btn-link">Gestionar</a>
+
+                 <div class="ticket-menu-wrapper">
+                    <button type="button" class="btn-icon" onclick="toggleTicketMenu({{ ticket.ticket_id }})" aria-label="Más opciones">
+                        <svg viewBox="0 0 24 24" style="width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 2;">
+                            <circle cx="12" cy="12" r="1"/>
+                            <circle cx="12" cy="5" r="1"/>
+                            <circle cx="12" cy="19" r="1"/>
+                        </svg>
+                    </button>
+                    
+                    <div id="ticketMenu{{ ticket.ticket_id }}" class="ticket-dropdown-menu">
+                        <form method="POST"
+                            action="{% url 'toggle_fijar_ticket' ticket.ticket_id %}?estado={{ estado_actual }}&orden={{ orden_actual }}"
+                            style="margin: 0;">
+                            {% csrf_token %}
+                            <button type="submit" class="ticket-menu-item" style="{% if ticket.fijado %}color: #ffa726;{% endif %}">
+                                <svg viewBox="0 0 24 24" style="width: 16px; height: 16px; {% if ticket.fijado %}fill: #ffa726;{% else %}fill: none; stroke: currentColor; stroke-width: 2;{% endif %}">
+                                    <path d="M16,12V4H17V2H7V4H8V12L6,14V16H11.2V22H12.8V16H18V14L16,12Z"/>
+                                </svg>
+                                {% if ticket.fijado %}Desfijar ticket{% else %}Fijar ticket{% endif %}
+                            </button>
+                        </form>
+                    </div>
+                </div>
             </div>
         </article>
         {% endfor %}
     </main>
+
+    <script>
+        // Toggle del menú de opciones del ticket
+        function toggleTicketMenu(ticketId) {
+            const menu = document.getElementById('ticketMenu' + ticketId);
+            const allMenus = document.querySelectorAll('.ticket-dropdown-menu');
+            
+            // Cerrar todos los demás menús
+            allMenus.forEach(m => {
+                if (m.id !== 'ticketMenu' + ticketId) {
+                    m.style.display = 'none';
+                }
+            });
+            
+            // Toggle del menú actual
+            menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
+        }
+
+        // Cerrar menús al hacer clic fuera
+        document.addEventListener('click', function(event) {
+            const isMenuButton = event.target.closest('.btn-icon');
+            const isMenuContent = event.target.closest('.ticket-dropdown-menu');
+            
+            if (!isMenuButton && !isMenuContent) {
+                document.querySelectorAll('.ticket-dropdown-menu').forEach(menu => {
+                    menu.style.display = 'none';
+                });
+            }
+        });
+    </script>
 
     {% if ticket_seleccionado %}
     <aside class="detail" aria-label="Detalle y gestión del ticket">

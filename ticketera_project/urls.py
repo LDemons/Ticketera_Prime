@@ -55,6 +55,9 @@ urlpatterns = [
     path('tickets/borrar/<int:ticket_id>/', views.borrar_ticket_admin_view, name='borrar_ticket_admin'),
 
     path('accounts/', include('django.contrib.auth.urls')),
+
+    # --- FIJAR TICKET (TI) ---
+    path('mis-asignaciones/fijar/<int:ticket_id>/', views.toggle_fijar_ticket_view, name='toggle_fijar_ticket'),
 ]
 
 if settings.DEBUG or not settings.PRODUCTION:

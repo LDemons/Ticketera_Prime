@@ -50,17 +50,67 @@
             <div class="ticket-actions">
                 <a href="{% url 'ticket_detail' ticket.ticket_id %}?estado={{ estado_actual }}&orden={{ orden_actual }}" class="btn-link">Abrir</a>
 
-                <form method="POST"
-                    action="{% url 'borrar_ticket_admin' ticket.ticket_id %}?estado={{ estado_actual }}&orden={{ orden_actual }}"
-                    class="form-borrar" {# <--- CLASE AÑADIDA #}
-                    style="display: inline;"> {# Quitamos onsubmit #}
-                    {% csrf_token %}
-                    <button type="submit" class="btn-link" style="color: var(--red); border-color: var(--red);">Borrar</button>
-                </form>
+                <div class="ticket-menu-wrapper">
+                    <button type="button" class="btn-icon" onclick="toggleTicketMenu({{ ticket.ticket_id }})" aria-label="Más opciones">
+                        <svg viewBox="0 0 24 24" style="width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 2;">
+                            <circle cx="12" cy="12" r="1"/>
+                            <circle cx="12" cy="5" r="1"/>
+                            <circle cx="12" cy="19" r="1"/>
+                        </svg>
+                    </button>
+                    
+                    <div id="ticketMenu{{ ticket.ticket_id }}" class="ticket-dropdown-menu">
+                        <form method="POST"
+                            action="{% url 'borrar_ticket_admin' ticket.ticket_id %}?estado={{ estado_actual }}&orden={{ orden_actual }}"
+                            class="form-borrar"
+                            style="margin: 0;">
+                            {% csrf_token %}
+                            <button type="submit" class="ticket-menu-item ticket-menu-delete">
+                                <svg viewBox="0 0 24 24" style="width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 2;">
+                                    <polyline points="3 6 5 6 21 6"></polyline>
+                                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                                    <line x1="10" y1="11" x2="10" y2="17"></line>
+                                    <line x1="14" y1="11" x2="14" y2="17"></line>
+                                </svg>
+                                Eliminar ticket
+                            </button>
+                        </form>
+                    </div>
+                </div>
             </div>
         </article>
         {% endfor %}
     </main>
+
+    <script>
+        // Toggle del menú de opciones del ticket
+        function toggleTicketMenu(ticketId) {
+            const menu = document.getElementById('ticketMenu' + ticketId);
+            const allMenus = document.querySelectorAll('.ticket-dropdown-menu');
+            
+            // Cerrar todos los demás menús
+            allMenus.forEach(m => {
+                if (m.id !== 'ticketMenu' + ticketId) {
+                    m.style.display = 'none';
+                }
+            });
+            
+            // Toggle del menú actual
+            menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
+        }
+
+        // Cerrar menús al hacer clic fuera
+        document.addEventListener('click', function(event) {
+            const isMenuButton = event.target.closest('.btn-icon');
+            const isMenuContent = event.target.closest('.ticket-dropdown-menu');
+            
+            if (!isMenuButton && !isMenuContent) {
+                document.querySelectorAll('.ticket-dropdown-menu').forEach(menu => {
+                    menu.style.display = 'none';
+                });
+            }
+        });
+    </script>
 
     {% if ticket_seleccionado %}
     <aside class="detail" aria-label="Detalle del ticket">

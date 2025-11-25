@@ -63,11 +63,11 @@ class Ticket(models.Model):
 
     ticket_id = models.BigAutoField(primary_key=True)
     titulo = models.CharField(max_length=200)
-    descripcion = models.CharField(max_length=200) # Considera usar models.TextField() si la descripción puede ser más larga
+    descripcion = models.CharField(max_length=200)
     estado = models.CharField(max_length=20, choices=ESTADO_CHOICES, default='ABIERTO')
-    # De DateField a DateTimeField
     fecha_creacion = models.DateTimeField(auto_now_add=True)
     cerrado_en = models.DateField(null=True, blank=True)
+    fijado = models.BooleanField(default=False)  # NUEVO CAMPO
     
     # Relaciones (Foreign Keys)
     usuario_creador = models.ForeignKey(
