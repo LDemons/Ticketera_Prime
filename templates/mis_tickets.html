@@ -52,9 +52,18 @@
                     <span>Creado: {{ ticket.fecha_creacion|date:"d/m/Y" }}</span>
                     <span class="dot"></span>
                     <span class="muted">
-                        Estado: <b class="tag {% if ticket.estado == 'ABIERTO' %}tag--open{% elif ticket.estado == 'EN_PROGRESO' %}tag--progress{% elif ticket.estado == 'RESUELTO' %}tag--closed{% else %}tag--closed{% endif %}">
-                            {{ ticket.get_estado_display }}
-                        </b>
+                        Estado: 
+                        {% if ticket.estado == 'ABIERTO' %}
+                            <b class="tag tag--open">{{ ticket.get_estado_display }}</b>
+                        {% elif ticket.estado == 'EN_PROGRESO' %}
+                            <b class="tag tag--progress">{{ ticket.get_estado_display }}</b>
+                        {% elif ticket.estado == 'RESUELTO' %}
+                            <b class="tag tag--resolved">{{ ticket.get_estado_display }}</b>
+                        {% elif ticket.estado == 'CERRADO' %}
+                            <b class="tag tag--closed">{{ ticket.get_estado_display }}</b>
+                        {% else %}
+                            <b class="tag">{{ ticket.get_estado_display }}</b>
+                        {% endif %}
                     </span>
                 </div>
             </div>

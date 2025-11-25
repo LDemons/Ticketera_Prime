@@ -155,12 +155,15 @@ body{
 /* Chips / pills / tags (común) */
 .pill{font-size:12px;padding:4px 8px;border-radius:999px;background:#eef0f6;border:1px solid var(--line)}
 .pill--time{background:#ffeede;color:#9a4c10;border-color:#ffd9bd}
-.tag{padding:4px 8px;border-radius:999px;font-size:12px;border:1px solid var(--line);background:#f5f6fb}
-.tag--high{background:#ffe8e8;color:#9e2330;border-color:#ffd1d1}
-.tag--medium{background:#fff4e6;color:#8a4b12;border-color:#ffd8b2}
-.tag--low{background:#eef7ff;color:#0b558a;border-color:#cfe4ff}
+.tag{display:inline-block;padding:4px 10px;border-radius:6px;font-size:12px;font-weight:600}
+.tag--open{background:#e3f2fd;color:#1976d2;border:1px solid #90caf9} /* Azul - Abierto */
+.tag--progress{background:#fff7e7;color:#8a5a12;border:1px solid #ffe6b8} /* Amarillo - En Progreso */
+.tag--resolved{background:#e8f5e9;color:#388e3c;border:1px solid #a5d6a7} /* Verde - Resuelto */
+.tag--closed{background:#f5f5f5;color:#616161;border:1px solid #bdbdbd} /* Gris - Cerrado */
+.tag--high{background:#ffe5e5;color:#c62828;border:1px solid #ffcdd2} /* Rojo suave - Alta */
+.tag--medium{background:#fff8e1;color:#ffae00;border:1px solid #ffe082} /* Amarillo suave - Media */
+.tag--low{background:#e8f5e9;color:#43a047;border:1px solid #a5d6a7} /* Verde suave - Baja */
 .tag--new{background:#e5f0ff;color:#184ea8;border-color:#cddcff}
-.tag--progress{background:#e5f8ef;color:#1a6c46;border-color:#cdeedd}
 .tag--hold{background:#fff7e7;color:#8a5a12;border-color:#ffe6b8}
 
 .muted{color:var(--muted)}

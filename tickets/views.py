@@ -150,69 +150,59 @@ def ticket_list_view(request, ticket_id=None):
     # --- FIN DEL BLOQUE ---
 
     # --- LÓGICA DE FILTRADO Y ORDENAMIENTO ---
-    estado_filtro = request.GET.get('estado', '') # '' significa 'todos'
-    orden = request.GET.get('orden', 'reciente') # 'reciente' por defecto
+    estado_filtro = request.GET.get('estado', '')
+    orden = request.GET.get('orden', 'reciente')
 
-    # Query base (todos los tickets)
     tickets_query = Ticket.objects.select_related('usuario_creador', 'prioridad')
 
-    # Aplicar filtro de estado si se seleccionó uno
     if estado_filtro and estado_filtro != 'todos':
         tickets_query = tickets_query.filter(estado=estado_filtro)
 
-    # Aplicar ordenamiento
     if orden == 'antiguo':
         tickets_query = tickets_query.order_by('fecha_creacion')
-    else: # 'reciente' o cualquier otro valor
+    else:
         tickets_query = tickets_query.order_by('-fecha_creacion')
 
-    # Ejecutamos la consulta para obtener la lista
     lista_tickets = tickets_query.all()
     # --- FIN DE LÓGICA DE FILTRADO ---
 
-
-    # Lógica de asignación (POST) - (Se mantiene igual)
+    # Lógica de asignación (POST)
     if request.method == 'POST' and ticket_id:
         ticket_para_asignar = get_object_or_404(Ticket, pk=ticket_id)
         form = AsignacionTicketForm(request.POST, ticket=ticket_para_asignar)
         if form.is_valid():
-                # ---  ACTUALIZAR EL TICKET PRIMERO ---
+            # Actualizar el ticket
             ticket_para_asignar.prioridad = form.cleaned_data['prioridad']
             ticket_para_asignar.categoria = form.cleaned_data['categoria']
-            ticket_para_asignar.estado = 'EN_PROGRESO' # Lo asignamos aquí también
+            ticket_para_asignar.estado = 'EN_PROGRESO'
             ticket_para_asignar.save()
-            # --- FIN DE ACTUALIZACIÓN DEL TICKET ---
 
-            # Creamos la asignación (solo usuario y comentarios)
+            # Crear la asignación (con comentarios incluidos)
             asignacion = AsignacionTicket(
                 ticket=ticket_para_asignar,
                 usuario_asignado=form.cleaned_data['usuario_asignado'],
-                comentarios=form.cleaned_data['comentarios']
+                comentarios=form.cleaned_data['comentarios'] or ''  # Se guarda en la asignación
             )
             asignacion.save()
 
-            # La redirección se mantiene igual
+            # ELIMINADO: Ya NO creamos un Comentario aquí
+            # El signal de AsignacionTicket se encargará de crear la notificación
+            # con el mensaje del admin incluido
+
             return redirect(f"{reverse('ticket_list')}?estado={estado_filtro}&orden={orden}")
         else:
-            # Si el form falla, necesitamos preparar el contexto igual que en GET
             ticket_seleccionado = ticket_para_asignar
-            # Pasamos el ticket para inicializar y el form con errores
-            asignacion_form = form # Muestra los errores
-            lista_tickets = tickets_query.all() # Necesitamos la lista aquí también
-
-        # --- Lógica para mostrar el panel lateral (GET) ---
-    else: # Si NO es POST o no tiene ticket_id
+            asignacion_form = form
+            lista_tickets = tickets_query.all()
+    else:
         ticket_seleccionado = None
         asignacion_form = None
         if ticket_id:
             ticket_seleccionado = get_object_or_404(Ticket, pk=ticket_id)
-            # Pasamos el ticket al inicializar el formulario 
-            asignacion_form = AsignacionTicketForm(ticket=ticket_seleccionado) 
+            asignacion_form = AsignacionTicketForm(ticket=ticket_seleccionado)
 
-        # Si no hubo POST fallido, obtenemos la lista aquí
         if request.method != 'POST':
             lista_tickets = tickets_query.all()
-
 
     context = {
         'view_class': 'view-tickets',
@@ -224,7 +214,6 @@ def ticket_list_view(request, ticket_id=None):
         'estados_posibles': Ticket.ESTADO_CHOICES 
     }
     return render(request, 'tickets_list.html', context)
-
 
 @login_required
 def ticket_detail_view(request, ticket_id):
@@ -299,25 +288,9 @@ def mis_tickets_view(request, ticket_id=None):
                 ticket_nuevo = form_creacion.save(commit=False)
                 ticket_nuevo.usuario_creador = creador
                 
-                # --- Asignación de Prioridad y Categoría por defecto ---
-                try:
-                    prioridad_media = Prioridad.objects.get(Tipo_Nivel='MEDIO')
-                    ticket_nuevo.prioridad = prioridad_media
-                except Prioridad.DoesNotExist:
-                    prioridad_default = Prioridad.objects.first() 
-                    if prioridad_default:
-                        ticket_nuevo.prioridad = prioridad_default
-                    else:
-                        pass # Manejo de error si no hay prioridades
-
-                try:
-                    categoria_general = Categoria.objects.get(nombre='General') 
-                    ticket_nuevo.categoria = categoria_general
-                except Categoria.DoesNotExist:
-                    categoria_default = Categoria.objects.first()
-                    if categoria_default:
-                         ticket_nuevo.categoria = categoria_default
-                # --- Fin de Asignación por defecto ---
+                # --- NO asignamos prioridad ni categoría ---
+                # Esto lo hará el Admin al asignar el ticket
+                # prioridad y categoria quedan como None (null en BD)
 
                 ticket_nuevo.save()
                 return redirect(f"{reverse('mis_tickets')}?estado={estado_filtro}&orden={orden}")
@@ -701,7 +674,8 @@ def panel_principal_view(request):
     # --- SLA Vencidos ---
     estados_activos = ['ABIERTO', 'EN_PROGRESO']
     tickets_activos = Ticket.objects.filter(
-        estado__in=estados_activos
+        estado__in=estados_activos,
+        prioridad__isnull=False  # Solo tickets con prioridad asignada
     ).select_related('prioridad')
     
     sla_vencidos_count = 0

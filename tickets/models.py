@@ -75,8 +75,8 @@ class Ticket(models.Model):
         on_delete=models.PROTECT, 
         related_name='tickets_creados'
     )
-    prioridad = models.ForeignKey(Prioridad, on_delete=models.PROTECT)
-    categoria = models.ForeignKey(Categoria, on_delete=models.PROTECT)
+    prioridad = models.ForeignKey(Prioridad, on_delete=models.PROTECT, null=True, blank=True)
+    categoria = models.ForeignKey(Categoria, on_delete=models.PROTECT, null=True, blank=True)
 
     def __str__(self):
         return f"Ticket #{self.ticket_id}: {self.titulo}"
@@ -84,7 +84,7 @@ class Ticket(models.Model):
 class AsignacionTicket(models.Model):
     asignacion_id = models.BigAutoField(primary_key=True)
     fecha_asignacion = models.DateTimeField(auto_now_add=True)
-    comentarios = models.CharField(max_length=255)
+    comentarios = models.CharField(max_length=255, blank=True, null=True)
 
     # Relaciones (Foreign Keys)
     usuario_asignado = models.ForeignKey(

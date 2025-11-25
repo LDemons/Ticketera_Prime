@@ -115,7 +115,7 @@
                     <div>Vence</div>
                 </div>
                 {% for ticket in tickets_recientes %}
-                <div class="trow {% if ticket.prioridad.Tipo_Nivel == 'ALTO' %}warn{% endif %}">
+                <div class="trow {% if ticket.prioridad and ticket.prioridad.Tipo_Nivel == 'ALTO' %}warn{% endif %}">
                     <div class="muted">#T{{ ticket.ticket_id|stringformat:"03d" }}</div>
                     <div style="display: flex; align-items: center; gap: 8px;">
                         <div class="avatar" style="background: {{ ticket.usuario_creador.nombre|user_color }}; width: 24px; height: 24px; font-size: 11px;">
@@ -127,18 +127,30 @@
                     </div>
                     <div class="muted">{{ ticket.usuario_creador.nombre }}</div>
                     <div>
-                        {% if ticket.prioridad.Tipo_Nivel == 'ALTO' %}
-                            <b class="tag tag--high">{{ ticket.prioridad.Tipo_Nivel }}</b>
-                        {% elif ticket.prioridad.Tipo_Nivel == 'MEDIO' %}
-                            <b class="tag tag--medium">{{ ticket.prioridad.Tipo_Nivel }}</b>
+                        {% if ticket.prioridad %}
+                            {% if ticket.prioridad.Tipo_Nivel == 'ALTO' %}
+                                <b class="tag tag--high">{{ ticket.prioridad.Tipo_Nivel }}</b>
+                            {% elif ticket.prioridad.Tipo_Nivel == 'MEDIO' %}
+                                <b class="tag tag--medium">{{ ticket.prioridad.Tipo_Nivel }}</b>
+                            {% else %}
+                                <b class="tag tag--low">{{ ticket.prioridad.Tipo_Nivel }}</b>
+                            {% endif %}
                         {% else %}
-                            <b class="tag tag--low">{{ ticket.prioridad.Tipo_Nivel }}</b>
+                            <span class="muted">-</span>
                         {% endif %}
                     </div>
                     <div>
-                        <b class="tag {% if ticket.estado == 'ABIERTO' %}tag--open{% elif ticket.estado == 'EN_PROGRESO' %}tag--progress{% else %}tag--closed{% endif %}">
-                            {{ ticket.get_estado_display }}
-                        </b>
+                        {% if ticket.estado == 'ABIERTO' %}
+                            <b class="tag tag--open">{{ ticket.get_estado_display }}</b>
+                        {% elif ticket.estado == 'EN_PROGRESO' %}
+                            <b class="tag tag--progress">{{ ticket.get_estado_display }}</b>
+                        {% elif ticket.estado == 'RESUELTO' %}
+                            <b class="tag tag--resolved">{{ ticket.get_estado_display }}</b>
+                        {% elif ticket.estado == 'CERRADO' %}
+                            <b class="tag tag--closed">{{ ticket.get_estado_display }}</b>
+                        {% else %}
+                            <b class="tag">{{ ticket.get_estado_display }}</b>
+                        {% endif %}
                     </div>
                     <div class="muted">{{ ticket.fecha_creacion|date:"d/m/Y" }}</div>
                 </div>
@@ -206,12 +218,16 @@
                                     {{ ticket.titulo|truncatewords:6 }}
                                 </a>
                                 <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px;">
-                                    {% if ticket.prioridad.Tipo_Nivel == 'ALTO' %}
-                                        <b class="tag tag--high" style="font-size: 11px;">ALTO</b>
-                                    {% elif ticket.prioridad.Tipo_Nivel == 'MEDIO' %}
-                                        <b class="tag tag--medium" style="font-size: 11px;">MEDIO</b>
+                                    {% if ticket.prioridad %}
+                                        {% if ticket.prioridad.Tipo_Nivel == 'ALTO' %}
+                                            <b class="tag tag--high" style="font-size: 11px;">ALTO</b>
+                                        {% elif ticket.prioridad.Tipo_Nivel == 'MEDIO' %}
+                                            <b class="tag tag--medium" style="font-size: 11px;">MEDIO</b>
+                                        {% else %}
+                                            <b class="tag tag--low" style="font-size: 11px;">BAJO</b>
+                                        {% endif %}
                                     {% else %}
-                                        <b class="tag tag--low" style="font-size: 11px;">BAJO</b>
+                                        <span class="muted small">-</span>
                                     {% endif %}
                                     <span class="muted small">{{ ticket.fecha_creacion|date:"d/m" }}</span>
                                 </div>
@@ -241,12 +257,16 @@
                                     {{ ticket.titulo|truncatewords:6 }}
                                 </a>
                                 <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px;">
-                                    {% if ticket.prioridad.Tipo_Nivel == 'ALTO' %}
-                                        <b class="tag tag--high" style="font-size: 11px;">ALTO</b>
-                                    {% elif ticket.prioridad.Tipo_Nivel == 'MEDIO' %}
-                                        <b class="tag tag--medium" style="font-size: 11px;">MEDIO</b>
+                                    {% if ticket.prioridad %}
+                                        {% if ticket.prioridad.Tipo_Nivel == 'ALTO' %}
+                                            <b class="tag tag--high" style="font-size: 11px;">ALTO</b>
+                                        {% elif ticket.prioridad.Tipo_Nivel == 'MEDIO' %}
+                                            <b class="tag tag--medium" style="font-size: 11px;">MEDIO</b>
+                                        {% else %}
+                                            <b class="tag tag--low" style="font-size: 11px;">BAJO</b>
+                                        {% endif %}
                                     {% else %}
-                                        <b class="tag tag--low" style="font-size: 11px;">BAJO</b>
+                                        <span class="muted small">-</span>
                                     {% endif %}
                                     <span class="muted small">{{ ticket.fecha_creacion|date:"d/m" }}</span>
                                 </div>
@@ -276,12 +296,16 @@
                                     {{ ticket.titulo|truncatewords:6 }}
                                 </a>
                                 <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px;">
-                                    {% if ticket.prioridad.Tipo_Nivel == 'ALTO' %}
-                                        <b class="tag tag--high" style="font-size: 11px;">ALTO</b>
-                                    {% elif ticket.prioridad.Tipo_Nivel == 'MEDIO' %}
-                                        <b class="tag tag--medium" style="font-size: 11px;">MEDIO</b>
+                                    {% if ticket.prioridad %}
+                                        {% if ticket.prioridad.Tipo_Nivel == 'ALTO' %}
+                                            <b class="tag tag--high" style="font-size: 11px;">ALTO</b>
+                                        {% elif ticket.prioridad.Tipo_Nivel == 'MEDIO' %}
+                                            <b class="tag tag--medium" style="font-size: 11px;">MEDIO</b>
+                                        {% else %}
+                                            <b class="tag tag--low" style="font-size: 11px;">BAJO</b>
+                                        {% endif %}
                                     {% else %}
-                                        <b class="tag tag--low" style="font-size: 11px;">BAJO</b>
+                                        <span class="muted small">-</span>
                                     {% endif %}
                                     <span class="muted small">{{ ticket.fecha_creacion|date:"d/m" }}</span>
                                 </div>

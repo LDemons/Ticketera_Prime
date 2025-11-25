@@ -73,13 +73,26 @@
                 <div class="muted small">Estado: <b>{{ ticket_seleccionado.get_estado_display }}</b></div>
             </div>
         </div>
+        
+        <!-- Descripción del ticket (sin scroll, es solo info) -->
         <div class="detail-body">
             <div class="bubble">
                 <p><strong>{{ ticket_seleccionado.titulo }}</strong></p>
                 <p>{{ ticket_seleccionado.descripcion }}</p>
             </div>
+            
+            <!-- Información adicional del ticket -->
+            <div class="bubble" style="background: var(--card); border: 1px solid var(--line);">
+                <p style="margin-bottom: 8px;"><strong>Información del Ticket</strong></p>
+                <p style="font-size: 13px; color: var(--muted);">
+                    <strong>Creado:</strong> {{ ticket_seleccionado.fecha_creacion|date:"d/m/Y H:i" }}<br>
+                    <strong>Categoría:</strong> {% if ticket_seleccionado.categoria %}{{ ticket_seleccionado.categoria.nombre }}{% else %}-{% endif %}<br>
+                    <strong>Prioridad Actual:</strong> {% if ticket_seleccionado.prioridad %}{{ ticket_seleccionado.prioridad.Tipo_Nivel }}{% else %}-{% endif %}
+                </p>
+            </div>
         </div>
 
+        <!-- Formulario de asignación (no hay chat para el Admin) -->
         <form class="composer" method="POST" action="{% url 'ticket_detail' ticket_seleccionado.ticket_id %}?estado={{ estado_actual }}&orden={{ orden_actual }}">
         {% csrf_token %}
 
@@ -104,7 +117,7 @@
                     </div>
                 </p>
                 <p style="margin-top: 15px;"> 
-                    <label for="{{ asignacion_form.comentarios.id_for_label }}">Comentarios (opcional):</label>
+                    <label for="{{ asignacion_form.comentarios.id_for_label }}">Nota para el técnico (opcional):</label>
                     {{ asignacion_form.comentarios }}
                 </p>
             </div>
