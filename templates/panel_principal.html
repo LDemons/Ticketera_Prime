@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% load ticket_tags %}  {# <-- AÑADIR ESTA LÍNEA #}
+{% load ticket_tags %}
 
 {% block title %}Ticketera · Panel Principal{% endblock %}
 
@@ -29,7 +29,7 @@
                 <div class="kpi-value">{{ tickets_en_progreso }}</div>
                 <div class="kpi-foot">
                     <span class="dot dot--green"></span> 
-                    Asignados hoy: <b>+{{ en_progreso_variacion }}</b>
+                    Asignados 24h: <b>+{{ en_progreso_variacion }}</b>
                 </div>
             </article>
 
@@ -90,20 +90,22 @@
             </section>
         </div>
 
-        <!-- Mi Cola (Tickets Recientes) -->
+        <!-- Mi Cola con toggle Lista/Kanban -->
         <section class="card">
             <div class="card-head">
                 <h2>Mi cola</h2>
                 <div class="filters">
                     <div class="select">
-                        <select>
-                            <option>Lista</option>
-                            <option>Kanban</option>
+                        <select id="vistaToggle" onchange="toggleVista(this.value)">
+                            <option value="lista">Lista</option>
+                            <option value="kanban">Kanban</option>
                         </select>
                     </div>
                 </div>
             </div>
-            <div class="table" style="padding: 6px 10px 12px;">
+
+            <!-- Vista Lista (por defecto) -->
+            <div id="vistaLista" class="table" style="padding: 6px 10px 12px;">
                 <div class="thead">
                     <div>ID</div>
                     <div>Asunto</div>
@@ -116,7 +118,6 @@
                 <div class="trow {% if ticket.prioridad.Tipo_Nivel == 'ALTO' %}warn{% endif %}">
                     <div class="muted">#T{{ ticket.ticket_id|stringformat:"03d" }}</div>
                     <div style="display: flex; align-items: center; gap: 8px;">
-                        {# Avatar con color generado #}
                         <div class="avatar" style="background: {{ ticket.usuario_creador.nombre|user_color }}; width: 24px; height: 24px; font-size: 11px;">
                             {{ ticket.usuario_creador.nombre|first }}
                         </div>
@@ -147,12 +148,172 @@
                 </div>
                 {% endfor %}
             </div>
+
+            <!-- Vista Kanban (oculta por defecto) -->
+            <div id="vistaKanban" style="display: none; padding: 15px;">
+                <div class="kanban-board">
+                    <!-- Columna ABIERTO -->
+                    <div class="kanban-column">
+                        <div class="kanban-header" style="background: var(--blue-100); color: var(--blue);">
+                            <h3>Abierto</h3>
+                            <span class="badge">{{ tickets_kanban.ABIERTO|length }}</span>
+                        </div>
+                        <div class="kanban-cards">
+                            {% for ticket in tickets_kanban.ABIERTO %}
+                            <div class="kanban-card">
+                                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+                                    <div class="avatar" style="background: {{ ticket.usuario_creador.nombre|user_color }}; width: 28px; height: 28px; font-size: 12px;">
+                                        {{ ticket.usuario_creador.nombre|first }}
+                                    </div>
+                                    <span class="muted small">#T{{ ticket.ticket_id|stringformat:"03d" }}</span>
+                                </div>
+                                <a href="{% url 'ticket_detail' ticket.ticket_id %}" style="color: var(--text); text-decoration: none; font-weight: 600; display: block; margin-bottom: 8px;">
+                                    {{ ticket.titulo|truncatewords:6 }}
+                                </a>
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px;">
+                                    {% if ticket.prioridad.Tipo_Nivel == 'ALTO' %}
+                                        <b class="tag tag--high" style="font-size: 11px;">ALTO</b>
+                                    {% elif ticket.prioridad.Tipo_Nivel == 'MEDIO' %}
+                                        <b class="tag tag--medium" style="font-size: 11px;">MEDIO</b>
+                                    {% else %}
+                                        <b class="tag tag--low" style="font-size: 11px;">BAJO</b>
+                                    {% endif %}
+                                    <span class="muted small">{{ ticket.fecha_creacion|date:"d/m" }}</span>
+                                </div>
+                            </div>
+                            {% empty %}
+                            <div class="kanban-empty">Sin tickets</div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <!-- Columna EN PROGRESO -->
+                    <div class="kanban-column">
+                        <div class="kanban-header" style="background: #fff7e7; color: #8a5a12;">
+                            <h3>En Progreso</h3>
+                            <span class="badge">{{ tickets_kanban.EN_PROGRESO|length }}</span>
+                        </div>
+                        <div class="kanban-cards">
+                            {% for ticket in tickets_kanban.EN_PROGRESO %}
+                            <div class="kanban-card">
+                                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+                                    <div class="avatar" style="background: {{ ticket.usuario_creador.nombre|user_color }}; width: 28px; height: 28px; font-size: 12px;">
+                                        {{ ticket.usuario_creador.nombre|first }}
+                                    </div>
+                                    <span class="muted small">#T{{ ticket.ticket_id|stringformat:"03d" }}</span>
+                                </div>
+                                <a href="{% url 'ticket_detail' ticket.ticket_id %}" style="color: var(--text); text-decoration: none; font-weight: 600; display: block; margin-bottom: 8px;">
+                                    {{ ticket.titulo|truncatewords:6 }}
+                                </a>
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px;">
+                                    {% if ticket.prioridad.Tipo_Nivel == 'ALTO' %}
+                                        <b class="tag tag--high" style="font-size: 11px;">ALTO</b>
+                                    {% elif ticket.prioridad.Tipo_Nivel == 'MEDIO' %}
+                                        <b class="tag tag--medium" style="font-size: 11px;">MEDIO</b>
+                                    {% else %}
+                                        <b class="tag tag--low" style="font-size: 11px;">BAJO</b>
+                                    {% endif %}
+                                    <span class="muted small">{{ ticket.fecha_creacion|date:"d/m" }}</span>
+                                </div>
+                            </div>
+                            {% empty %}
+                            <div class="kanban-empty">Sin tickets</div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <!-- Columna RESUELTO -->
+                    <div class="kanban-column">
+                        <div class="kanban-header" style="background: #e8f5e9; color: var(--green);">
+                            <h3>Resuelto</h3>
+                            <span class="badge">{{ tickets_kanban.RESUELTO|length }}</span>
+                        </div>
+                        <div class="kanban-cards">
+                            {% for ticket in tickets_kanban.RESUELTO %}
+                            <div class="kanban-card">
+                                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+                                    <div class="avatar" style="background: {{ ticket.usuario_creador.nombre|user_color }}; width: 28px; height: 28px; font-size: 12px;">
+                                        {{ ticket.usuario_creador.nombre|first }}
+                                    </div>
+                                    <span class="muted small">#T{{ ticket.ticket_id|stringformat:"03d" }}</span>
+                                </div>
+                                <a href="{% url 'ticket_detail' ticket.ticket_id %}" style="color: var(--text); text-decoration: none; font-weight: 600; display: block; margin-bottom: 8px;">
+                                    {{ ticket.titulo|truncatewords:6 }}
+                                </a>
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px;">
+                                    {% if ticket.prioridad.Tipo_Nivel == 'ALTO' %}
+                                        <b class="tag tag--high" style="font-size: 11px;">ALTO</b>
+                                    {% elif ticket.prioridad.Tipo_Nivel == 'MEDIO' %}
+                                        <b class="tag tag--medium" style="font-size: 11px;">MEDIO</b>
+                                    {% else %}
+                                        <b class="tag tag--low" style="font-size: 11px;">BAJO</b>
+                                    {% endif %}
+                                    <span class="muted small">{{ ticket.fecha_creacion|date:"d/m" }}</span>
+                                </div>
+                            </div>
+                            {% empty %}
+                            <div class="kanban-empty">Sin tickets</div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <!-- Columna CERRADO -->
+                    <div class="kanban-column">
+                        <div class="kanban-header" style="background: #f5f5f5; color: var(--muted);">
+                            <h3>Cerrado</h3>
+                            <span class="badge">{{ tickets_kanban.CERRADO|length }}</span>
+                        </div>
+                        <div class="kanban-cards">
+                            {% for ticket in tickets_kanban.CERRADO %}
+                            <div class="kanban-card">
+                                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+                                    <div class="avatar" style="background: {{ ticket.usuario_creador.nombre|user_color }}; width: 28px; height: 28px; font-size: 12px;">
+                                        {{ ticket.usuario_creador.nombre|first }}
+                                    </div>
+                                    <span class="muted small">#T{{ ticket.ticket_id|stringformat:"03d" }}</span>
+                                </div>
+                                <a href="{% url 'ticket_detail' ticket.ticket_id %}" style="color: var(--text); text-decoration: none; font-weight: 600; display: block; margin-bottom: 8px;">
+                                    {{ ticket.titulo|truncatewords:6 }}
+                                </a>
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px;">
+                                    {% if ticket.prioridad.Tipo_Nivel == 'ALTO' %}
+                                        <b class="tag tag--high" style="font-size: 11px;">ALTO</b>
+                                    {% elif ticket.prioridad.Tipo_Nivel == 'MEDIO' %}
+                                        <b class="tag tag--medium" style="font-size: 11px;">MEDIO</b>
+                                    {% else %}
+                                        <b class="tag tag--low" style="font-size: 11px;">BAJO</b>
+                                    {% endif %}
+                                    <span class="muted small">{{ ticket.fecha_creacion|date:"d/m" }}</span>
+                                </div>
+                            </div>
+                            {% empty %}
+                            <div class="kanban-empty">Sin tickets</div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
         </section>
     </main>
 
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
     <script>
+        // Toggle entre vista Lista y Kanban
+        function toggleVista(vista) {
+            const vistaLista = document.getElementById('vistaLista');
+            const vistaKanban = document.getElementById('vistaKanban');
+            
+            if (vista === 'kanban') {
+                vistaLista.style.display = 'none';
+                vistaKanban.style.display = 'block';
+            } else {
+                vistaLista.style.display = 'block';
+                vistaKanban.style.display = 'none';
+            }
+        }
+
         // Gráfico de Entradas por Hora
         const ctxHoras = document.getElementById('chartEntradasPorHora');
         if (ctxHoras) {

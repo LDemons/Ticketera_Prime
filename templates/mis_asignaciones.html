@@ -74,10 +74,6 @@
                  <a href="{% url 'mis_asignaciones_detalle' ticket.ticket_id %}?estado={{ estado_actual }}&orden={{ orden_actual }}" class="btn-link">Gestionar</a>
             </div>
         </article>
-        {% empty %}
-        <div class="bulk-bar">
-            No tienes ningún ticket asignado actualmente.
-        </div>
         {% endfor %}
     </main>
 

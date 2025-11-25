@@ -7,7 +7,6 @@ register = template.Library()
 def split_at_hash(value):
     """
     Parte un string en el primer '#' y devuelve una lista.
-    Volvemos a añadir el '#' a la segunda parte.
     """
     if '#' in value:
         parts = value.split('#', 1)
@@ -22,7 +21,7 @@ def user_color(username):
     Retorna un color en formato HSL con saturación y luminosidad fijas.
     """
     if not username:
-        return 'hsl(210, 70%, 55%)'  # Color por defecto (azul)
+        return 'hsl(210, 65%, 50%)'  # Color azul por defecto
     
     # Generar hash del nombre
     hash_object = hashlib.md5(username.encode())
@@ -36,6 +35,6 @@ def user_color(username):
     
     # Mantener saturación y luminosidad fijas para consistencia visual
     saturation = 65  # Saturación media-alta
-    lightness = 50   # Luminosidad media (ni muy claro ni muy oscuro)
+    lightness = 50   # Luminosidad media
     
     return f'hsl({hue}, {saturation}%, {lightness}%)'

@@ -745,7 +745,6 @@ def panel_principal_view(request):
         fecha_creacion__gte=hace_24h
     ).count()
     
-    # Contar asignaciones nuevas en las últimas 24h (tickets que pasaron a EN_PROGRESO)
     asignaciones_ultimas_24h = AsignacionTicket.objects.filter(
         fecha_asignacion__gte=hace_24h
     ).count()
@@ -754,12 +753,20 @@ def panel_principal_view(request):
         fecha_asignacion__date=ahora_date
     ).count()
 
-    # --- Tickets Recientes (Mi Cola) - Últimos 10 tickets sin asignar o recién creados ---
+    # --- Tickets Recientes (Mi Cola) ---
     tickets_recientes = Ticket.objects.filter(
         estado='ABIERTO'
     ).select_related('usuario_creador', 'prioridad').order_by('-fecha_creacion')[:10]
 
-    # --- Entradas por Hora (últimas 24 horas) ---
+    # --- NUEVO: Tickets organizados por estado para Kanban ---
+    tickets_kanban = {
+        'ABIERTO': Ticket.objects.filter(estado='ABIERTO').select_related('usuario_creador', 'prioridad').order_by('-fecha_creacion')[:20],
+        'EN_PROGRESO': Ticket.objects.filter(estado='EN_PROGRESO').select_related('usuario_creador', 'prioridad').order_by('-fecha_creacion')[:20],
+        'RESUELTO': Ticket.objects.filter(estado='RESUELTO').select_related('usuario_creador', 'prioridad').order_by('-fecha_creacion')[:20],
+        'CERRADO': Ticket.objects.filter(estado='CERRADO').select_related('usuario_creador', 'prioridad').order_by('-fecha_creacion')[:20],
+    }
+
+    # --- Entradas por Hora ---
     tickets_por_hora = []
     labels_horas = []
     
@@ -767,7 +774,6 @@ def panel_principal_view(request):
         inicio_hora = ahora_dt.replace(hour=hora, minute=0, second=0, microsecond=0)
         fin_hora = inicio_hora + timedelta(hours=1)
         
-        # Contar tickets creados en esa hora del día de hoy
         count = Ticket.objects.filter(
             fecha_creacion__gte=inicio_hora,
             fecha_creacion__lt=fin_hora,
@@ -798,7 +804,6 @@ def panel_principal_view(request):
         cumplidos = 0
         for ticket in tickets_prioridad:
             if ticket.cerrado_en and prioridad.sla_horas > 0:
-                # Convertir cerrado_en (date) a datetime para poder comparar
                 fecha_cierre_dt = timezone.datetime.combine(ticket.cerrado_en, timezone.datetime.min.time())
                 fecha_cierre_dt = timezone.make_aware(fecha_cierre_dt)
                 tiempo_resolucion = fecha_cierre_dt - ticket.fecha_creacion
@@ -819,15 +824,16 @@ def panel_principal_view(request):
         'tickets_en_progreso': tickets_en_progreso,
         'sla_vencidos': sla_vencidos_count,
         'tiempo_respuesta': tiempo_respuesta_promedio_str,
-        # Variaciones últimas 24h
+        # Variaciones
         'abiertos_variacion': abiertos_ultimas_24h,
         'en_progreso_variacion': asignaciones_ultimas_24h,
-        'sla_vencidos_variacion': 3,  # Puedes calcular esto comparando con periodo anterior
+        'sla_vencidos_variacion': 3,
         # Datos para gráficos
         'labels_horas_json': json.dumps(labels_horas),
         'tickets_por_hora_json': json.dumps(tickets_por_hora),
         # Datos para tablas
         'tickets_recientes': tickets_recientes,
+        'tickets_kanban': tickets_kanban,  # <- NUEVO
         'cumplimiento_sla': cumplimiento_sla,
     }
     return render(request, 'panel_principal.html', context)
