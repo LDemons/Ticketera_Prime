@@ -27,6 +27,15 @@
     </header>
 
     <main class="list" aria-label="Lista de tickets">
+        {% if not tickets %}
+        <div class="card" style="padding: 20px; text-align: center;">
+            <p class="muted">No hay tickets {{ estado_actual|default:"abiertos" }} en este momento.</p>
+            {% if estado_actual != 'todos' %}
+            <a href="?estado=todos&orden={{ orden_actual }}" class="btn-link" style="margin-top: 10px;">Ver todos los tickets</a>
+            {% endif %}
+        </div>
+        {% endif %}
+
         {% for ticket in tickets %}
         <article class="ticket">
             <div class="avatar" style="background: {{ ticket.usuario_creador.nombre|user_color }};">

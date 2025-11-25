@@ -162,7 +162,17 @@ def ticket_list_view(request, ticket_id=None):
 
     tickets_query = Ticket.objects.select_related('usuario_creador', 'prioridad')
 
-    if estado_filtro and estado_filtro != 'todos':
+    # Si no hay filtro explícito, mostrar solo ABIERTOS por defecto
+    if not estado_filtro or estado_filtro == 'todos':
+        # Si es la primera visita (sin parámetros GET), filtrar por ABIERTO
+        if not request.GET:
+            tickets_query = tickets_query.filter(estado='ABIERTO')
+            estado_filtro = 'ABIERTO'  # Actualizar la variable para el contexto
+        elif estado_filtro == 'todos':
+            # Si explícitamente seleccionó "todos", mostrar todos
+            pass
+    else:
+        # Si hay un filtro específico, aplicarlo
         tickets_query = tickets_query.filter(estado=estado_filtro)
 
     if orden == 'antiguo':
