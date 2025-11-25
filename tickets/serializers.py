@@ -35,11 +35,22 @@ class ComentarioSerializer(serializers.ModelSerializer):
     """Serializador para Comentarios"""
     autor_nombre = serializers.CharField(source='autor.nombre', read_only=True)
     autor_rol = serializers.CharField(source='autor.rol.nombre', read_only=True)
+    autor = serializers.SerializerMethodField()
     
     class Meta:
         model = Comentario
-        fields = ['comentario_id', 'contenido', 'autor_nombre', 'autor_rol', 'fecha_creacion']
+        fields = ['comentario_id', 'contenido', 'autor_nombre', 'autor_rol', 'autor', 'fecha_creacion']
         read_only_fields = ['comentario_id', 'fecha_creacion']
+    
+    def get_autor(self, obj):
+        """Retorna información completa del autor para la app móvil"""
+        if obj.autor:
+            return {
+                'nombre': obj.autor.nombre,
+                'email': obj.autor.email,
+                'rol': obj.autor.rol.nombre if obj.autor.rol else None,
+            }
+        return None
 
 
 class TicketListSerializer(serializers.ModelSerializer):
@@ -124,11 +135,26 @@ class NotificacionSerializer(serializers.ModelSerializer):
     """Serializador para Notificaciones"""
     ticket_titulo = serializers.CharField(source='ticket.titulo', read_only=True)
     ticket_id = serializers.IntegerField(source='ticket.ticket_id', read_only=True)
+    tipo = serializers.SerializerMethodField()
+    leida = serializers.BooleanField(source='leido')
     
     class Meta:
         model = Notificacion
-        fields = ['notificacion_id', 'mensaje', 'leido', 'fecha_creacion', 'ticket_id', 'ticket_titulo']
+        fields = ['notificacion_id', 'tipo', 'mensaje', 'leida', 'fecha_creacion', 'ticket_id', 'ticket_titulo']
         read_only_fields = ['notificacion_id', 'fecha_creacion']
+    
+    def get_tipo(self, obj):
+        """Determina el tipo de notificación basado en el mensaje"""
+        mensaje = obj.mensaje.upper()
+        if 'ASIGNADO' in mensaje or 'ASIGNA' in mensaje:
+            return 'ASIGNACION'
+        elif 'COMENTARIO' in mensaje or 'COMENT' in mensaje:
+            return 'COMENTARIO'
+        elif 'ESTADO' in mensaje or 'CAMBIO' in mensaje:
+            return 'CAMBIO_ESTADO'
+        elif 'PRIORIDAD' in mensaje:
+            return 'PRIORIDAD'
+        return 'GENERAL'
 
 
 class ComentarioCreateSerializer(serializers.ModelSerializer):

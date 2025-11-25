@@ -19,11 +19,13 @@
 
   factory Notificacion.fromJson(Map<String, dynamic> json) {
     return Notificacion(
-      notificacionId: json['notificacion_id'],
-      tipo: json['tipo'],
-      mensaje: json['mensaje'],
-      leida: json['leida'],
-      fechaCreacion: DateTime.parse(json['fecha_creacion']),
+      notificacionId: json['notificacion_id'] ?? 0,
+      tipo: json['tipo'] ?? 'GENERAL',
+      mensaje: json['mensaje'] ?? 'Sin mensaje',
+      leida: json['leida'] ?? false,
+      fechaCreacion: json['fecha_creacion'] != null 
+          ? DateTime.parse(json['fecha_creacion'])
+          : DateTime.now(),
       ticketId: json['ticket_id'],
       ticketTitulo: json['ticket_titulo'],
     );

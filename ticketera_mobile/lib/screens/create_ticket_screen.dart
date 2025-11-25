@@ -209,7 +209,7 @@ class _CreateTicketScreenState extends State<CreateTicketScreen> {
                             return 'Por favor ingresa una descripción';
                           }
                           return null;
-                        ),
+                        },
                         enabled: !_isLoading,
                       ),
                       const SizedBox(height: 24),

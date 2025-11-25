@@ -54,7 +54,7 @@ class _LoginScreenState extends State<LoginScreen> {
       if (!mounted) return;
       
       setState(() {
-        _errorMessage = 'Tu usuario o contraseña son incorrectos.';
+        _errorMessage = 'Tu usuario o contraseÃ±a son incorrectos.';
         _isLoading = false;
       });
     }
@@ -84,7 +84,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        // Logo y título
+                        // Logo y tï¿½tulo
                         Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
@@ -134,7 +134,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         const SizedBox(height: 24),
                         
                         Text(
-                          'Iniciar Sesión',
+                          'Iniciar SesiÃ³n',
                           style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                             fontWeight: FontWeight.bold,
                             color: AppColors.text,
@@ -200,12 +200,12 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                         const SizedBox(height: 20),
                         
-                        // Campo de contraseña
+                        // Campo de contraseÃ±a
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             const Text(
-                              'Contraseña:',
+                              'ContraseÃ±a:',
                               style: TextStyle(
                                 fontSize: 14,
                                 color: AppColors.text,
@@ -223,7 +223,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                 suffixIcon: IconButton(
                                   icon: Icon(
                                     _obscurePassword ? Icons.visibility_off : Icons.visibility,
-                                    color: const AppColors.muted,
+                                    color: AppColors.muted,
                                   ),
                                   onPressed: () {
                                     setState(() {
@@ -246,7 +246,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               ),
                               validator: (value) {
                                 if (value == null || value.isEmpty) {
-                                  return 'Por favor ingresa tu contraseña';
+                                  return 'Por favor ingresa tu contraseÃ±a';
                                 }
                                 return null;
                               },
@@ -255,14 +255,14 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                         const SizedBox(height: 24),
                         
-                        // Botón de login
+                        // Botï¿½n de login
                         SizedBox(
                           width: double.infinity,
                           height: 48,
                           child: ElevatedButton(
                             onPressed: _isLoading ? null : _handleLogin,
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: const AppColors.indigo800,
+                              backgroundColor: AppColors.indigo800,
                               foregroundColor: Colors.white,
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(10),
