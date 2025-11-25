@@ -527,65 +527,56 @@ def reportes_view(request):
     # --- BLOQUE DE PERMISO (Solo Admin) ---
     try:
         usuario = Usuario.objects.get(email=request.user.email)
-        if usuario.rol.nombre != 'Admin':
+        if usuario.rol.nombre not in ['Admin', 'Superadmin']:
             return redirect('index')
     except Usuario.DoesNotExist:
         if not request.user.is_superuser:
              return redirect('index')
     # --- FIN DEL BLOQUE ---
 
-    # --- 👇 PROCESAMIENTO DE FECHAS 👇 ---
+    # --- PROCESAMIENTO DE FECHAS ---
     fecha_desde_str = request.GET.get('fecha_desde', '')
     fecha_hasta_str = request.GET.get('fecha_hasta', '')
 
     fecha_desde = None
     fecha_hasta = None
 
-    # Convertir strings a objetos date (si son válidos)
     try:
         if fecha_desde_str:
             fecha_desde = datetime.strptime(fecha_desde_str, '%Y-%m-%d').date()
     except ValueError:
-        fecha_desde = None # Ignora fecha inválida
+        fecha_desde = None
 
     try:
         if fecha_hasta_str:
-            # Sumamos un día y usamos '<' para incluir el día 'hasta' completo
             fecha_hasta = datetime.strptime(fecha_hasta_str, '%Y-%m-%d').date()
     except ValueError:
-        fecha_hasta = None # Ignora fecha inválida
-
-    # --- FIN PROCESAMIENTO DE FECHAS ---
+        fecha_hasta = None
 
     # --- Query base con filtro de fecha aplicado ---
-    base_query = Ticket.objects.all() # Empezamos con todos los tickets
+    base_query = Ticket.objects.all()
 
-    # Aplicar filtros de fecha si existen
     if fecha_desde and fecha_hasta:
-        # Si tenemos ambas, filtramos por rango (__range)
         base_query = base_query.filter(fecha_creacion__range=(fecha_desde, fecha_hasta))
     elif fecha_desde:
-        # Si solo hay 'desde', filtramos desde esa fecha en adelante (__gte)
         base_query = base_query.filter(fecha_creacion__gte=fecha_desde)
     elif fecha_hasta:
-        # Si solo hay 'hasta', filtramos hasta esa fecha inclusive (__lte)
          base_query = base_query.filter(fecha_creacion__lte=fecha_hasta)
 
-    # --- FIN Query base ---
-
+    # --- REPORTES ---
+    
     # 1. Reporte: Conteo de Tickets por Estado
     conteo_por_estado = base_query.values('estado').annotate(
         total=Count('ticket_id')
     ).order_by('estado')
 
-    reporte_estados = []
-    for item in conteo_por_estado:
-        # Usamos .get() con default por si el estado no está en CHOICES (poco probable)
-        estado_display = dict(Ticket.ESTADO_CHOICES).get(item['estado'], item['estado'])
-        reporte_estados.append({
-            'estado': estado_display, # Nombre legible
+    reporte_estados = [
+        {
+            'estado': dict(Ticket.ESTADO_CHOICES).get(item['estado'], item['estado']),
             'total': item['total']
-        })
+        }
+        for item in conteo_por_estado
+    ]
 
     # 2. Reporte: Conteo de Tickets por Categoría
     conteo_por_categoria = base_query.values('categoria__nombre').annotate(
@@ -593,31 +584,82 @@ def reportes_view(request):
     ).order_by('categoria__nombre')
 
     reporte_categorias = [
-        # Aseguramos que si una categoría es None (si permitieras null), se muestre como 'Sin categoría'
-        {'categoria': item['categoria__nombre'] if item['categoria__nombre'] else 'Sin categoría', 'total': item['total']}
+        {
+            'categoria': item['categoria__nombre'] if item['categoria__nombre'] else 'Sin categoría',
+            'total': item['total']
+        }
         for item in conteo_por_categoria
     ]
 
+    # 3. Reporte: Conteo de Tickets por Prioridad
     conteo_por_prioridad = base_query.values('prioridad__Tipo_Nivel').annotate(
         total=Count('ticket_id')
-    ).order_by('prioridad__Tipo_Nivel') # Ordena por ALTO, BAJO, MEDIO
+    ).order_by('prioridad__Tipo_Nivel')
 
-    # Mapeamos los códigos ('ALTO', 'BAJO', 'MEDIO') a nombres legibles
-    # Usamos los NIVEL_CHOICES definidos en el modelo Prioridad
-    prioridad_map = dict(Prioridad.NIVEL_CHOICES) 
+    prioridad_map = dict(Prioridad.NIVEL_CHOICES)
     reporte_prioridades = [
-        {'prioridad': prioridad_map.get(item['prioridad__Tipo_Nivel'], 'Desconocida'), 
-         'total': item['total']}
+        {
+            'prioridad': prioridad_map.get(item['prioridad__Tipo_Nivel'], 'Desconocida'),
+            'total': item['total']
+        }
         for item in conteo_por_prioridad
     ]
 
+    # --- COMPARACIÓN MES ACTUAL VS MES ANTERIOR ---
+    ahora = timezone.now()
+    mes_actual = ahora.month
+    anio_actual = ahora.year
+    
+    # Calcular mes anterior
+    if mes_actual == 1:
+        mes_anterior = 12
+        anio_anterior = anio_actual - 1
+    else:
+        mes_anterior = mes_actual - 1
+        anio_anterior = anio_actual
+    
+    # Contar tickets del mes actual
+    tickets_mes_actual = Ticket.objects.filter(
+        fecha_creacion__year=anio_actual,
+        fecha_creacion__month=mes_actual
+    ).count()
+    
+    # Contar tickets del mes anterior
+    tickets_mes_anterior = Ticket.objects.filter(
+        fecha_creacion__year=anio_anterior,
+        fecha_creacion__month=mes_anterior
+    ).count()
+    
+    # Calcular porcentaje de cambio
+    if tickets_mes_anterior > 0:
+        porcentaje_cambio = ((tickets_mes_actual - tickets_mes_anterior) / tickets_mes_anterior) * 100
+    else:
+        porcentaje_cambio = 100 if tickets_mes_actual > 0 else 0
+    
+    # Nombres de meses en español
+    meses_es = {
+        1: 'Enero', 2: 'Febrero', 3: 'Marzo', 4: 'Abril',
+        5: 'Mayo', 6: 'Junio', 7: 'Julio', 8: 'Agosto',
+        9: 'Septiembre', 10: 'Octubre', 11: 'Noviembre', 12: 'Diciembre'
+    }
+    
+    comparacion_mensual = {
+        'mes_actual': meses_es[mes_actual],
+        'tickets_mes_actual': tickets_mes_actual,
+        'mes_anterior': meses_es[mes_anterior],
+        'tickets_mes_anterior': tickets_mes_anterior,
+        'porcentaje_cambio': round(porcentaje_cambio, 1),
+        'aumento': porcentaje_cambio > 0
+    }
+
     context = {
-        'view_class': 'view-dashboard', # Clase para CSS específico si es necesario
+        'view_class': 'view-dashboard',
         'reporte_estados': reporte_estados,
         'reporte_categorias': reporte_categorias,
         'reporte_prioridades': reporte_prioridades,
         'fecha_desde_str': fecha_desde_str,
         'fecha_hasta_str': fecha_hasta_str,
+        'comparacion_mensual': comparacion_mensual,
     }
     return render(request, 'reportes.html', context)
 
@@ -997,6 +1039,151 @@ def usuario_detail_view(request, rut):
         'comentarios_realizados': comentarios_realizados,
     }
     return render(request, 'usuario_detail.html', context)
+
+@login_required
+def descargar_reporte_csv(request):
+    """
+    Genera y descarga un archivo CSV con los reportes filtrados.
+    """
+    import csv
+    from django.http import HttpResponse
+    
+    # --- BLOQUE DE PERMISO ---
+    try:
+        usuario = Usuario.objects.get(email=request.user.email)
+        if usuario.rol.nombre not in ['Admin', 'Superadmin']:
+            return redirect('index')
+    except Usuario.DoesNotExist:
+        if not request.user.is_superuser:
+            return redirect('index')
+    # --- FIN DEL BLOQUE ---
+
+    # Obtener los mismos filtros que en la vista de reportes
+    fecha_desde_str = request.GET.get('fecha_desde', '')
+    fecha_hasta_str = request.GET.get('fecha_hasta', '')
+
+    fecha_desde = None
+    fecha_hasta = None
+
+    try:
+        if fecha_desde_str:
+            fecha_desde = datetime.strptime(fecha_desde_str, '%Y-%m-%d').date()
+    except ValueError:
+        fecha_desde = None
+
+    try:
+        if fecha_hasta_str:
+            fecha_hasta = datetime.strptime(fecha_hasta_str, '%Y-%m-%d').date()
+    except ValueError:
+        fecha_hasta = None
+
+    # Query base con filtros
+    base_query = Ticket.objects.all()
+
+    if fecha_desde and fecha_hasta:
+        base_query = base_query.filter(fecha_creacion__range=(fecha_desde, fecha_hasta))
+    elif fecha_desde:
+        base_query = base_query.filter(fecha_creacion__gte=fecha_desde)
+    elif fecha_hasta:
+        base_query = base_query.filter(fecha_creacion__lte=fecha_hasta)
+
+    # Crear respuesta HTTP con tipo CSV
+    response = HttpResponse(content_type='text/csv; charset=utf-8')
+    timestamp = timezone.now().strftime('%Y%m%d_%H%M%S')
+    response['Content-Disposition'] = f'attachment; filename="reporte_tickets_{timestamp}.csv"'
+
+    # Escribir BOM para UTF-8 (ayuda a Excel a reconocer caracteres especiales)
+    response.write('\ufeff')
+
+    writer = csv.writer(response)
+
+    # --- SECCIÓN 1: ENCABEZADO ---
+    writer.writerow(['REPORTE DE TICKETS'])
+    writer.writerow([])
+    
+    if fecha_desde_str or fecha_hasta_str:
+        periodo = f"Desde: {fecha_desde_str or 'Inicio'} - Hasta: {fecha_hasta_str or 'Hoy'}"
+        writer.writerow(['Período:', periodo])
+    else:
+        writer.writerow(['Período:', 'Todos los tickets'])
+    
+    writer.writerow([])
+    
+    # --- SECCIÓN 2: TICKETS POR ESTADO ---
+    writer.writerow(['TICKETS POR ESTADO'])
+    writer.writerow(['Estado', 'Cantidad'])
+
+    conteo_por_estado = base_query.values('estado').annotate(total=Count('ticket_id')).order_by('estado')
+    for item in conteo_por_estado:
+        estado_display = dict(Ticket.ESTADO_CHOICES).get(item['estado'], item['estado'])
+        writer.writerow([estado_display, item['total']])
+
+    writer.writerow([])
+
+    # --- SECCIÓN 3: TICKETS POR CATEGORÍA ---
+    writer.writerow(['TICKETS POR CATEGORÍA'])
+    writer.writerow(['Categoría', 'Cantidad'])
+
+    conteo_por_categoria = base_query.values('categoria__nombre').annotate(total=Count('ticket_id')).order_by('categoria__nombre')
+    for item in conteo_por_categoria:
+        categoria = item['categoria__nombre'] if item['categoria__nombre'] else 'Sin categoría'
+        writer.writerow([categoria, item['total']])
+
+    writer.writerow([])
+
+    # --- SECCIÓN 4: TICKETS POR PRIORIDAD ---
+    writer.writerow(['TICKETS POR PRIORIDAD'])
+    writer.writerow(['Prioridad', 'Cantidad'])
+
+    conteo_por_prioridad = base_query.values('prioridad__Tipo_Nivel').annotate(total=Count('ticket_id')).order_by('prioridad__Tipo_Nivel')
+    prioridad_map = dict(Prioridad.NIVEL_CHOICES)
+    
+    for item in conteo_por_prioridad:
+        prioridad = prioridad_map.get(item['prioridad__Tipo_Nivel'], 'Desconocida')
+        writer.writerow([prioridad, item['total']])
+
+    writer.writerow([])
+
+    # --- SECCIÓN 5: COMPARACIÓN MENSUAL ---
+    ahora = timezone.now()
+    mes_actual = ahora.month
+    anio_actual = ahora.year
+    
+    if mes_actual == 1:
+        mes_anterior = 12
+        anio_anterior = anio_actual - 1
+    else:
+        mes_anterior = mes_actual - 1
+        anio_anterior = anio_actual
+    
+    tickets_mes_actual = Ticket.objects.filter(
+        fecha_creacion__year=anio_actual,
+        fecha_creacion__month=mes_actual
+    ).count()
+    
+    tickets_mes_anterior = Ticket.objects.filter(
+        fecha_creacion__year=anio_anterior,
+        fecha_creacion__month=mes_anterior
+    ).count()
+    
+    if tickets_mes_anterior > 0:
+        porcentaje_cambio = ((tickets_mes_actual - tickets_mes_anterior) / tickets_mes_anterior) * 100
+    else:
+        porcentaje_cambio = 100 if tickets_mes_actual > 0 else 0
+    
+    meses_es = {
+        1: 'Enero', 2: 'Febrero', 3: 'Marzo', 4: 'Abril',
+        5: 'Mayo', 6: 'Junio', 7: 'Julio', 8: 'Agosto',
+        9: 'Septiembre', 10: 'Octubre', 11: 'Noviembre', 12: 'Diciembre'
+    }
+    
+    writer.writerow(['COMPARACIÓN MENSUAL'])
+    writer.writerow(['Mes', 'Cantidad'])
+    writer.writerow([f'{meses_es[mes_anterior]} {anio_anterior}', tickets_mes_anterior])
+    writer.writerow([f'{meses_es[mes_actual]} {anio_actual}', tickets_mes_actual])
+    writer.writerow(['Variación', f'{porcentaje_cambio:+.1f}%'])
+
+    return response
 
 @require_POST
 @login_required

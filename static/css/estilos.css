@@ -25,7 +25,7 @@ body{
   margin:0;
   font:15px/1.35 system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Arial;
   color:var(--text);
-  background:linear-gradient(90deg,var(--lavender) 0 90px, var(--bg) 90px 100%);
+  background:var(--bg);
 }
 
 /* ===================== */
@@ -37,9 +37,19 @@ body{
   background:var(--indigo-800);
   color:#fff;
   padding:18px 14px;
-  display:flex; flex-direction:column; 
+  display:flex; 
+  flex-direction:column; 
   gap:14px;
 }
+
+/* Contenedor principal de la sidebar con flex para empujar el usuario al fondo */
+.sidebar-content {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+  flex: 1;
+}
+
 .brand{display:flex;align-items:center;gap:10px}
 .logo{width:38px;height:38px;border-radius:10px;background:#fff;color:var(--indigo-800);display:grid;place-items:center;font-weight:800}
 .logo-img{width:38px;height:38px;object-fit:contain}
@@ -179,13 +189,13 @@ body{
 /* Layout de la vista de lista + detalle */
 .app.view-tickets{
   display:grid;
-  grid-template-columns: 280px 1fr 460px;
+  grid-template-columns: 260px 1fr 460px;
   grid-template-rows: 64px 1fr;
   grid-template-areas:
     "sidebar header header"
     "sidebar list   detail";
   min-height:100vh;
-  overflow: hidden; /* Evita que el contenedor principal se desplace */
+  overflow: hidden;
   transition: grid-template-columns 0.3s ease-in-out;
 }
 .view-tickets .sidebar{grid-area:sidebar}
@@ -193,11 +203,11 @@ body{
 
 .view-tickets .list {
     grid-area: list;
-    height: calc(100vh - 64px); /* <-- AÑADE ESTA LÍNEA */
+    height: calc(100vh - 64px);
 }
 .view-tickets .detail {
     grid-area: detail;
-    height: calc(100vh - 64px); /* <-- AÑADE ESTA LÍNEA */
+    height: calc(100vh - 64px);
 }
 
 /* Lista de tickets (componentes existentes) */
@@ -526,13 +536,13 @@ textarea.form-input {
 /* Redefine la grilla para ocultar la sidebar y expandir el contenido */
 .app.view-landing {
   display: grid;
-  grid-template-columns: 1fr; /* Una sola columna */
-  grid-template-rows: 64px 1fr; /* Fila para header, fila para main */
+  grid-template-columns: 1fr;
+  grid-template-rows: 64px 1fr;
   grid-template-areas:
-    "header" /* Header ocupa la primera fila */
-    "main";   /* Main ocupa la segunda */
+    "header"
+    "main";
   min-height: 100vh;
-  background: var(--bg); /* Fondo simple, sin gradiente lateral */
+  background: var(--bg);
 }
 
 /* Oculta la sidebar específicamente en esta vista */
@@ -542,19 +552,19 @@ textarea.form-input {
 
 /* Asigna las áreas a los elementos correspondientes */
 .app.view-landing .header {
-  background: var(--indigo-800); /* Fondo oscuro como la sidebar */
-  color: #fff; /* Texto blanco */
+  background: var(--indigo-800);
+  color: #fff;
 }
 
 /* Estilos para el <main> DENTRO de view-landing */
 .app.view-landing main {
-  grid-area: main; /* Asegura que ocupe el área 'main' */
-  display: flex; /* Usa flexbox para centrar su contenido */
+  grid-area: main;
+  display: flex;
   flex-direction: column;
-  align-items: center; /* Centra horizontalmente la tarjeta */
-  justify-content: center; /* Centra verticalmente la tarjeta */
-  padding: 30px 16px; /* Espaciado interno */
-  overflow-y: auto; /* Scroll si el contenido es muy alto */
+  align-items: center;
+  justify-content: center;
+  padding: 30px 16px;
+  overflow-y: auto;
 }
 
 /* ===== FIN LAYOUT LANDING PAGE ===== */
@@ -734,6 +744,13 @@ textarea.form-input {
 /* 8) Perfil de usuario en sidebar       */
 /* ===================================== */
 
+/* Contenedor del usuario que se queda al fondo */
+.user-section {
+  margin-top: auto;
+  padding-top: 20px;
+  position: relative;
+}
+
 .user-profile {
     display: flex;
     align-items: center;
@@ -761,26 +778,27 @@ textarea.form-input {
 }
 
 .user-info {
-    flex: 1;
-    min-width: 0;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
 }
 
 .user-name {
-    font-weight: 600;
-    color: #fff;
-    font-size: 14px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+  font-weight: 600;
+  color: #fff;
+  font-size: 14px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .user-role {
-    font-size: 12px;
-    opacity: 0.7;
-    color: #fff;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+  font-size: 12px;
+  opacity: 0.7;
+  color: #fff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .user-menu-icon {
@@ -797,9 +815,14 @@ textarea.form-input {
     background: #fff;
     border-radius: 10px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    margin-bottom: 8px;
+    margin-bottom: 8px; /* Cambiado: ahora está ARRIBA del perfil */
     overflow: hidden;
     animation: slideUp 0.2s ease-out;
+    position: absolute;
+    bottom: 100%; /* Posicionado arriba del perfil */
+    left: 0;
+    right: 0;
+    z-index: 1000;
 }
 
 @keyframes slideUp {
@@ -828,16 +851,20 @@ textarea.form-input {
     background: var(--bg);
 }
 
-.user-menu a.logout-link {
-    color: var(--red);
-}
-
 .user-menu .menu-icon {
     width: 16px;
     height: 16px;
     stroke: currentColor;
     fill: none;
     stroke-width: 2;
+}
+
+.user-menu .logout-link {
+    color: var(--red);
+}
+
+.user-menu .logout-link:hover {
+    background: #fff5f5;
 }
 
 .user-menu form {
