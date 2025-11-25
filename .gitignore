@@ -37,3 +37,22 @@ ticketera_mobile/**/build/**
 
 # Chrome device data (contiene APIs de Google)
 **/chrome-device/**
+
+# Android
+ticketera_mobile/android/.gradle/
+ticketera_mobile/android/local.properties
+ticketera_mobile/android/app/build/
+ticketera_mobile/android/app/debug/
+ticketera_mobile/android/app/profile/
+ticketera_mobile/android/app/release/
+ticketera_mobile/android/.idea/
+ticketera_mobile/android/captures/
+
+# APKs y AABs
+*.apk
+*.aab
+
+# Keys de firma (IMPORTANTE: nunca commitear)
+*.keystore
+*.jks
+key.properties

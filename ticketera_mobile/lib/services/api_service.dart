@@ -4,11 +4,15 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
 class ApiService {
-  // IMPORTANTE: Cambia esta URL por la de tu servidor
-  // Para testing local en emulador Android usa: http://10.0.2.2:8000
-  // Para testing local en tu PC/Chrome usa: http://localhost:8000
-  // Para producciÃ³n usa: https://ticketeraprime.com
-  static const String baseUrl = 'http://localhost:8000/api/v1';
+  // URLs según el entorno
+  // DESARROLLO (localhost/Chrome): http://localhost:8000/api/v1
+  // DESARROLLO (Android Emulator): http://10.0.2.2:8000/api/v1
+  // PRODUCCIÓN: https://ticketeraprime.com/api/v1
+  
+  static const String baseUrl = 'http://10.0.2.2:8000/api/v1';
+  
+  // Para compilar para producción, cambia a:
+  // static const String baseUrl = 'https://ticketeraprime.com/api/v1';
   
   // ==========================================
   // AUTENTICACIÃ“N
