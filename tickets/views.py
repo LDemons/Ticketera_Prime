@@ -322,6 +322,11 @@ def mis_tickets_view(request, ticket_id=None):
         'orden_actual': orden,
         'estados_posibles': Ticket.ESTADO_CHOICES
     }
+    
+    # Si hay ticket_id, renderizar el template de detalle en móvil
+    if ticket_id:
+        return render(request, 'mis_tickets_detalle.html', context)
+    
     return render(request, 'mis_tickets.html', context)
 
 
@@ -432,6 +437,11 @@ def mis_asignaciones_view(request, ticket_id=None):
         'orden_actual': orden,
         'estados_posibles': Ticket.ESTADO_CHOICES
     }
+    
+    # Si hay ticket_id, renderizar el template de detalle en móvil
+    if ticket_id:
+        return render(request, 'mis_asignaciones_detalle.html', context)
+    
     return render(request, 'mis_asignaciones.html', context)
 
 

@@ -7,14 +7,14 @@
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <title>{% block title %}Ticketera{% endblock %}</title>
     <link rel="icon" type="image/png" href="{% static 'img/logo png sin letras.png' %}" />
-    <link rel="stylesheet" href="{% static 'css/estilos.css' %}?v=1.5" />
+    <link rel="stylesheet" href="{% static 'css/estilos.css' %}?v=3.4" />
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
 <body>
     <div class="app {{ view_class }}">
         
         <aside class="sidebar">
-            <!-- Brand (logo) siempre visible -->
+            <!-- Brand (logo) con margen en móvil -->
             <div class="brand">
                 <a href="{% url 'index' %}" style="display: inline-flex; align-items: center; text-decoration: none; color: inherit;">
                     <img src="{% static 'img/icono png full blanco.png' %}" alt="Logo Ticketera" class="logo-img">
@@ -89,14 +89,13 @@
                     {% endif %}
                 </nav>
                 {% endif %}
-        </aside>
 
-        <!-- Usuario en la parte inferior FIJO -->
+        <!-- Usuario en la parte inferior del sidebar -->
         <div class="user-section">
                 <div class="divider"></div>
                 
                 <!-- Menú desplegable (aparece ARRIBA del perfil) -->
-                <div id="userMenu" class="user-menu">
+                <div id="userMenu" class="user-menu" style="display: none;">
                     <a href="#" onclick="event.preventDefault(); mostrarModalPerfil();">
                         <svg viewBox="0 0 24 24" class="menu-icon">
                             <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle>
@@ -114,8 +113,8 @@
                     </form>
                 </div>
 
-                <!-- Perfil de usuario (clickeable) -->
-                <div class="user-profile" onclick="toggleUserMenu()">
+                <!-- Perfil de usuario (clickeable) - Abre menú directamente -->
+                <div class="user-profile" onclick="toggleUserMenu(event)" style="cursor: pointer;">
                     <div class="avatar" style="background: {{ request.user.username|user_color }};">
                         {{ request.user.first_name|default:request.user.username|first|upper }}
                     </div>
@@ -128,10 +127,11 @@
                         </div>
                     </div>
                     <svg viewBox="0 0 24 24" class="user-menu-icon">
-                        <circle cx="12" cy="12" r="1"/><circle cx="12" cy="5" r="1"/><circle cx="12" cy="19" r="1"/>
+                        <polyline points="18 15 12 9 6 15"></polyline>
                     </svg>
                 </div>
-            </div>
+        </div>
+        </aside>
     
         {% block content %}
         {% endblock %}
@@ -140,9 +140,23 @@
 
     <script>
     // Toggle del menú de usuario
-    function toggleUserMenu() {
+    function toggleUserMenu(event) {
+        if (event) {
+            event.stopPropagation();
+        }
         const menu = document.getElementById('userMenu');
-        menu.style.display = menu.style.display === 'none' ? 'block' : 'none';
+        const isVisible = menu.style.display === 'block';
+        menu.style.display = isVisible ? 'none' : 'block';
+    }
+
+    // Función para cerrar sidebar en móvil
+    function closeSidebarMobile() {
+        const sidebar = document.querySelector('.sidebar');
+        const overlay = document.querySelector('.sidebar-overlay');
+        if (sidebar && overlay) {
+            sidebar.classList.remove('active');
+            overlay.classList.remove('active');
+        }
     }
 
     // Cerrar menú al hacer clic fuera
@@ -153,6 +167,53 @@
         if (userProfile && !userProfile.contains(event.target) && !userMenu.contains(event.target)) {
             userMenu.style.display = 'none';
         }
+    });
+
+    // --- Menú móvil ---
+    document.addEventListener('DOMContentLoaded', function() {
+        // Crear botón de menú móvil
+        const menuToggle = document.createElement('button');
+        menuToggle.className = 'mobile-menu-toggle';
+        menuToggle.setAttribute('aria-label', 'Abrir menú');
+        menuToggle.innerHTML = '<svg viewBox="0 0 24 24" style="width: 24px; height: 24px; stroke: currentColor; fill: none; stroke-width: 2;"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>';
+        document.body.insertBefore(menuToggle, document.body.firstChild);
+
+        // Crear overlay
+        const overlay = document.createElement('div');
+        overlay.className = 'sidebar-overlay';
+        document.body.insertBefore(overlay, document.body.firstChild);
+
+        const sidebar = document.querySelector('.sidebar');
+
+        // Toggle del sidebar
+        function toggleSidebar() {
+            sidebar.classList.toggle('active');
+            overlay.classList.toggle('active');
+            
+            // Cambiar ícono
+            if (sidebar.classList.contains('active')) {
+                menuToggle.innerHTML = '<svg viewBox="0 0 24 24" style="width: 24px; height: 24px; stroke: currentColor; fill: none; stroke-width: 2;"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>';
+                menuToggle.setAttribute('aria-label', 'Cerrar menú');
+            } else {
+                menuToggle.innerHTML = '<svg viewBox="0 0 24 24" style="width: 24px; height: 24px; stroke: currentColor; fill: none; stroke-width: 2;"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>';
+                menuToggle.setAttribute('aria-label', 'Abrir menú');
+            }
+        }
+
+        menuToggle.addEventListener('click', toggleSidebar);
+        overlay.addEventListener('click', toggleSidebar);
+
+        // Cerrar sidebar al hacer clic en un enlace (en móvil)
+        const sidebarLinks = sidebar.querySelectorAll('a');
+        sidebarLinks.forEach(link => {
+            link.addEventListener('click', function() {
+                if (window.innerWidth <= 768) {
+                    sidebar.classList.remove('active');
+                    overlay.classList.remove('active');
+                    menuToggle.innerHTML = '<svg viewBox="0 0 24 24" style="width: 24px; height: 24px; stroke: currentColor; fill: none; stroke-width: 2;"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>';
+                }
+            });
+        });
     });
 
     // Modal para editar perfil

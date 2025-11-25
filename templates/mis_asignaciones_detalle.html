@@ -1,0 +1,135 @@
+{% extends 'base.html' %}
+{% load ticket_tags %}
+
+{% block title %}Gestionar Ticket #T{{ ticket.ticket_id|stringformat:"03d" }}{% endblock %}
+
+{% block content %}
+    <header class="header">
+        <div style="display: flex; align-items: center; gap: 10px; width: 100%;">
+            <a href="{% url 'mis_asignaciones' %}?estado={{ estado_actual }}&orden={{ orden_actual }}" class="btn-icon" style="flex-shrink: 0;">
+                <svg viewBox="0 0 24 24" style="width: 20px; height: 20px; stroke: currentColor; fill: none; stroke-width: 2;">
+                    <polyline points="15 18 9 12 15 6"></polyline>
+                </svg>
+            </a>
+            <div style="flex: 1; min-width: 0;">
+                <h1 class="page-title" style="font-size: 18px; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ ticket_seleccionado.titulo }}</h1>
+                <p class="small muted" style="margin: 4px 0 0 0;">#T{{ ticket_seleccionado.ticket_id|stringformat:"03d" }}</p>
+            </div>
+        </div>
+    </header>
+
+    <main style="padding: 16px; overflow-y: auto; height: calc(100vh - 120px);">
+        <!-- Info del ticket -->
+        <div class="card" style="margin-bottom: 16px;">
+            <div class="card-head" style="background: var(--bg);">
+                <div style="display: flex; align-items: center; gap: 10px; width: 100%;">
+                    <div class="avatar" style="background: {{ ticket_seleccionado.usuario_creador.nombre|user_color }}; width: 42px; height: 42px; font-size: 18px;">
+                        {{ ticket_seleccionado.usuario_creador.nombre|first }}
+                    </div>
+                    <div style="flex: 1; min-width: 0;">
+                        <div style="font-weight: 700;">{{ ticket_seleccionado.usuario_creador.nombre }}</div>
+                        <div class="small muted">{{ ticket_seleccionado.fecha_creacion|date:"d/m/Y H:i" }}</div>
+                    </div>
+                </div>
+            </div>
+            <div style="padding: 16px;">
+                <div style="margin-bottom: 12px;">
+                    <strong style="display: block; margin-bottom: 6px; color: var(--muted); font-size: 13px;">Descripción:</strong>
+                    <p style="margin: 0; line-height: 1.6;">{{ ticket_seleccionado.descripcion }}</p>
+                </div>
+                <div style="display: flex; flex-wrap: wrap; gap: 10px; margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--line);">
+                    <span style="font-size: 13px;">
+                        <strong>Estado:</strong>
+                        {% if ticket_seleccionado.estado == 'ABIERTO' %}<b class="tag tag--open">{{ ticket_seleccionado.get_estado_display }}</b>
+                        {% elif ticket_seleccionado.estado == 'EN_PROGRESO' %}<b class="tag tag--progress">{{ ticket_seleccionado.get_estado_display }}</b>
+                        {% elif ticket_seleccionado.estado == 'RESUELTO' %}<b class="tag tag--resolved">{{ ticket_seleccionado.get_estado_display }}</b>
+                        {% elif ticket_seleccionado.estado == 'CERRADO' %}<b class="tag tag--closed">{{ ticket_seleccionado.get_estado_display }}</b>
+                        {% else %}<b class="tag">{{ ticket_seleccionado.get_estado_display }}</b>
+                        {% endif %}
+                    </span>
+                    <span style="font-size: 13px;">
+                        <strong>Prioridad:</strong>
+                        {% if ticket_seleccionado.prioridad.Tipo_Nivel == 'ALTO' %}<b class="tag tag--high">ALTO</b>
+                        {% elif ticket_seleccionado.prioridad.Tipo_Nivel == 'MEDIO' %}<b class="tag tag--medium">MEDIO</b>
+                        {% else %}<b class="tag tag--low">BAJO</b>
+                        {% endif %}
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Comentarios -->
+        <div class="card" style="margin-bottom: 100px;">
+            <div class="card-head">
+                <h2 style="margin: 0;">Historial</h2>
+            </div>
+            <div style="padding: 16px; display: flex; flex-direction: column; gap: 12px;">
+                {% for comentario in comentarios %}
+                <div style="background: {% if comentario.autor.rol.nombre == 'TI' %}var(--blue-100){% else %}var(--bg){% endif %}; 
+                            border: 1px solid var(--line); 
+                            border-radius: 10px; 
+                            padding: 12px;">
+                    <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 8px;">
+                        <div>
+                            <strong style="font-size: 14px;">{{ comentario.autor.nombre }}</strong>
+                            <span class="muted small" style="margin-left: 6px;">({{ comentario.autor.rol.nombre }})</span>
+                        </div>
+                        <span class="muted small">{{ comentario.fecha_creacion|date:"d/m/Y H:i" }}</span>
+                    </div>
+                    <p style="margin: 0; line-height: 1.5; font-size: 14px;">{{ comentario.contenido|linebreaksbr }}</p>
+                </div>
+                {% empty %}
+                <div class="bulk-bar" style="text-align: center; padding: 20px;">
+                    No hay comentarios previos en este ticket.
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </main>
+
+    <!-- Formulario fijo en la parte inferior -->
+    <div style="position: fixed; bottom: 0; left: 0; right: 0; background: #fff; border-top: 2px solid var(--line); z-index: 200; box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.1);">
+        <form method="post" action="{% url 'mis_asignaciones_detalle' ticket_seleccionado.ticket_id %}?estado={{ estado_actual }}&orden={{ orden_actual }}" style="padding: 14px;">
+            {% csrf_token %}
+            <div style="margin-bottom: 10px;">
+                <div class="select" style="width: 100%; margin-bottom: 10px;">
+                    {{ form_gestion.estado }}
+                </div>
+                {{ form_gestion.contenido }}
+                {% if form_gestion.contenido.errors %}
+                    <small style="color: var(--red); font-size: 12px;">{{ form_gestion.contenido.errors|first }}</small>
+                {% endif %}
+            </div>
+            <button type="submit" class="btn-link" style="background: var(--indigo-800); color: #fff; width: 100%; padding: 12px; font-size: 15px; font-weight: 700; border: none;">
+                Actualizar Ticket
+            </button>
+        </form>
+    </div>
+
+    <style>
+        /* Asegurar que el formulario no tenga el estilo composer */
+        form .composer {
+            background: transparent;
+            border: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        form textarea {
+            width: 100%;
+            border: 1px solid var(--line);
+            border-radius: 10px;
+            padding: 12px;
+            font-family: inherit;
+            font-size: 14px;
+            resize: vertical;
+            min-height: 60px;
+            max-height: 120px;
+        }
+
+        form textarea:focus {
+            outline: none;
+            border-color: var(--indigo-800);
+        }
+    </style>
+{% endblock %}
