@@ -7,7 +7,7 @@
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <title>{% block title %}Ticketera{% endblock %}</title>
     <link rel="icon" type="image/png" href="{% static 'img/logo png sin letras.png' %}" />
-    <link rel="stylesheet" href="{% static 'css/estilos.css' %}?v=3.4" />
+    <link rel="stylesheet" href="{% static 'css/estilos.css' %}?v=3.6" />
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
 <body>
@@ -146,7 +146,20 @@
         }
         const menu = document.getElementById('userMenu');
         const isVisible = menu.style.display === 'block';
-        menu.style.display = isVisible ? 'none' : 'block';
+        
+        if (isVisible) {
+            menu.style.display = 'none';
+        } else {
+            menu.style.display = 'block';
+            menu.style.visibility = 'visible';
+            menu.style.opacity = '1';
+            
+            // Debug: agregar borde visible temporalmente
+            console.log('Menú abierto:', menu);
+            console.log('Position:', window.getComputedStyle(menu).position);
+            console.log('Bottom:', window.getComputedStyle(menu).bottom);
+            console.log('Z-index:', window.getComputedStyle(menu).zIndex);
+        }
     }
 
     // Función para cerrar sidebar en móvil

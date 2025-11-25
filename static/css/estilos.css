@@ -749,10 +749,12 @@ textarea.form-input {
   margin-top: auto;
   background: var(--indigo-800);
   padding: 14px;
+  padding-bottom: 20px;
   border-top: 1px solid rgba(255, 255, 255, 0.1);
   position: relative;
   overflow: visible !important;
   z-index: 2000;
+  min-height: 100px;
 }
 
 /* En desktop, hacerlo fixed */
@@ -763,6 +765,8 @@ textarea.form-input {
     left: 0;
     width: 244px;
     z-index: 1000;
+    padding-bottom: 14px;
+    min-height: auto;
   }
 }
 
@@ -835,20 +839,31 @@ textarea.form-input {
     background: #fff;
     border-radius: 10px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-    margin-bottom: 8px;
-    overflow: hidden;
-    animation: slideUp 0.2s ease-out;
-    position: absolute;
-    bottom: 100%;
-    left: 0;
-    right: 0;
+    overflow: visible;
+    animation: slideDown 0.2s ease-out;
+    position: fixed;
+    bottom: 90px;
+    left: 14px;
+    right: 14px;
     z-index: 9999;
+    max-width: 232px;
 }
 
 @keyframes slideUp {
     from {
         opacity: 0;
         transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
     }
     to {
         opacity: 1;
@@ -1010,6 +1025,13 @@ textarea.form-input {
     /* Agregar margen superior al logo en móvil para que no lo tape el botón hamburguesa */
     .sidebar .brand {
         margin-top: 50px;
+    }
+
+    /* Ajustar menú de usuario en móvil */
+    .user-menu {
+        left: 14px;
+        right: 14px;
+        max-width: calc(260px - 28px);
     }
 
     .sidebar.active {
