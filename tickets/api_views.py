@@ -11,6 +11,8 @@ from rest_framework.authtoken.models import Token
 from rest_framework.authtoken.views import ObtainAuthToken
 from django.contrib.auth.hashers import check_password
 from django.shortcuts import get_object_or_404
+from django.views.decorators.csrf import csrf_exempt
+from django.utils.decorators import method_decorator
 from .models import Ticket, Usuario, Comentario, Notificacion, Categoria, Prioridad
 from .serializers import (
     TicketListSerializer, TicketDetailSerializer, TicketCreateSerializer,
@@ -23,6 +25,7 @@ from .serializers import (
 # AUTENTICACIÓN
 # ==========================================
 
+@method_decorator(csrf_exempt, name='dispatch')
 class CustomAuthToken(ObtainAuthToken):
     """
     Vista personalizada para autenticación con email y contraseña.
@@ -299,7 +302,7 @@ class CategoriaListView(generics.ListAPIView):
     """
     queryset = Categoria.objects.all()
     serializer_class = CategoriaSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = []  # Sin autenticación para facilitar uso en app móvil
 
 
 class PrioridadListView(generics.ListAPIView):
@@ -310,7 +313,7 @@ class PrioridadListView(generics.ListAPIView):
     """
     queryset = Prioridad.objects.all()
     serializer_class = PrioridadSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = []  # Sin autenticación para facilitar uso en app móvil
 
 
 @api_view(['GET'])

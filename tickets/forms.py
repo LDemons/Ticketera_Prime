@@ -6,12 +6,27 @@ class TicketForm(forms.ModelForm):
     class Meta:
         model = Ticket
         # Estos son los campos que aparecerán en el formulario
-        fields = ['titulo', 'descripcion']
+        fields = ['titulo', 'descripcion', 'categoria', 'prioridad']
         
         # Esto hace que los campos se vean un poco mejor
         widgets = {
-            'titulo': forms.TextInput(attrs={'class': 'form-input'}),
-            'descripcion': forms.Textarea(attrs={'class': 'form-input', 'rows': 4}),
+            'titulo': forms.TextInput(attrs={
+                'class': 'form-input',
+                'placeholder': 'Ej: Problema con proyector sala 201'
+            }),
+            'descripcion': forms.Textarea(attrs={
+                'class': 'form-input',
+                'rows': 4,
+                'placeholder': 'Describe el problema con el mayor detalle posible...'
+            }),
+            'categoria': forms.Select(attrs={'class': 'form-select'}),
+            'prioridad': forms.Select(attrs={'class': 'form-select'}),
+        }
+        labels = {
+            'titulo': 'Título del Ticket',
+            'descripcion': 'Descripción',
+            'categoria': 'Categoría',
+            'prioridad': 'Prioridad',
         }
 
 class AsignacionTicketForm(forms.ModelForm):

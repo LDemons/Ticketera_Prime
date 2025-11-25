@@ -36,6 +36,12 @@ PRODUCTION = os.getenv('PRODUCTION', 'False') == 'True'
 
 ALLOWED_HOSTS = ['ticketeraprime.com', 'www.ticketeraprime.com', 'localhost', '127.0.0.1']
 
+# CORS Configuration para Flutter
+CORS_ALLOWED_ORIGINS = [
+    'http://localhost:8080',
+    'http://127.0.0.1:8080',
+]
+CORS_ALLOW_CREDENTIALS = True
 
 # Application definition
 
@@ -46,6 +52,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'corsheaders',
     'tickets',
     'rest_framework',
     'rest_framework.authtoken',
@@ -55,6 +62,7 @@ MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     # Añadimos WhiteNoise para servir archivos estáticos tras collectstatic
     'whitenoise.middleware.WhiteNoiseMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -87,19 +95,28 @@ WSGI_APPLICATION = 'ticketera_project.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
+# Usar SQLite para desarrollo/pruebas
 DATABASES = {
     'default': {
-        'ENGINE': 'mssql',
-        'NAME': os.getenv('DB_NAME'),
-        'USER': os.getenv('DB_USER'),
-        'PASSWORD': os.getenv('DB_PASSWORD'),
-        'HOST': os.getenv('DB_HOST'),
-        'PORT': '1433',
-        'OPTIONS': {
-            'driver': 'ODBC Driver 18 for SQL Server',
-        },
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
+
+# SQL Server (descomentar para producción)
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'mssql',
+#         'NAME': os.getenv('DB_NAME'),
+#         'USER': os.getenv('DB_USER'),
+#         'PASSWORD': os.getenv('DB_PASSWORD'),
+#         'HOST': os.getenv('DB_HOST'),
+#         'PORT': '1433',
+#         'OPTIONS': {
+#             'driver': 'ODBC Driver 18 for SQL Server',
+#         },
+#     }
+# }
 
 
 # Password validation
@@ -189,8 +206,16 @@ else:
     CSRF_COOKIE_SECURE = False
     CSRF_TRUSTED_ORIGINS = [
         'http://localhost:8000',
-        'http://127.0.0.1:8000'
+        'http://127.0.0.1:8000',
+        'http://localhost:8080',
+        'http://127.0.0.1:8080'
     ]
+
+# Excluir las rutas de API del CSRF para permitir llamadas desde Flutter
+CSRF_TRUSTED_ORIGINS.extend([
+    'http://localhost:8080',
+    'http://127.0.0.1:8080'
+])
 
 # Logging para debug en Linux
 if IS_LINUX:
