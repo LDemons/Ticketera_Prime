@@ -46,21 +46,15 @@
             </div>
             <div>
                 <div class="ticket-title">
-                    {{ ticket.titulo }}
+                    {{ ticket.titulo }} <span class="muted">#T{{ ticket.ticket_id|stringformat:"03d" }}</span>
                 </div>
                 <div class="ticket-meta">
-                    <span>Creado: {{ ticket.fecha_creacion }}</span>
+                    <span>Creado: {{ ticket.fecha_creacion|date:"d/m/Y" }}</span>
                     <span class="dot"></span>
-                    <span>Estado: <b>{{ ticket.get_estado_display }}</b></span>
-                    <span class="dot"></span>
-                    <span>Prioridad:
-                        {% if ticket.prioridad.Tipo_Nivel == 'ALTO' %}
-                            <b class="tag tag--high">{{ ticket.prioridad.Tipo_Nivel }}</b>
-                        {% elif ticket.prioridad.Tipo_Nivel == 'MEDIO' %}
-                            <b class="tag tag--medium">{{ ticket.prioridad.Tipo_Nivel }}</b>
-                        {% else %}
-                            <b class="tag tag--low">{{ ticket.prioridad.Tipo_Nivel }}</b>
-                        {% endif %}
+                    <span class="muted">
+                        Estado: <b class="tag {% if ticket.estado == 'ABIERTO' %}tag--open{% elif ticket.estado == 'EN_PROGRESO' %}tag--progress{% elif ticket.estado == 'RESUELTO' %}tag--closed{% else %}tag--closed{% endif %}">
+                            {{ ticket.get_estado_display }}
+                        </b>
                     </span>
                 </div>
             </div>
@@ -70,7 +64,7 @@
                 <form method="POST"
                     action="{% url 'borrar_mi_ticket' ticket.ticket_id %}?estado={{ estado_actual }}&orden={{ orden_actual }}"
                     class="form-borrar" 
-                    style="display: inline;"> {# Quitamos onsubmit #}
+                    style="display: inline;">
                     {% csrf_token %}
                     <button type="submit" class="btn-link" style="color: var(--red); border-color: var(--red);">Borrar</button>
                 </form>
@@ -90,20 +84,25 @@
                 <div class="muted small">Estado: <b>{{ ticket_seleccionado.get_estado_display }}</b></div>
             </div>
         </div>
+        
+        <!-- Contenedor con scroll para los comentarios -->
         <div class="detail-body">
             <div class="bubble" style="background: var(--card); border: 1px solid var(--line); margin-bottom: 10px;">
                 <p><strong>Tu descripción original:</strong></p>
                 <p>{{ ticket_seleccionado.descripcion }}</p>
             </div>
+            
             {% for comentario in comentarios %}
             <div class="bubble"
-                 style="background: {% if comentario.autor.rol.nombre == 'TI' %}var(--blue-100){% else %}var(--card){% endif %}; border: 1px solid var(--line); margin-bottom: 10px;">
+                 style="background: {% if comentario.autor.rol.nombre == 'TI' %}var(--blue-100){% else %}var(--card){% endif %}; 
+                        border: 1px solid var(--line); 
+                        margin-bottom: 10px;">
                 <p>
                     <strong>{{ comentario.autor.nombre }}</strong>
                     <span class="muted small">({{ comentario.autor.rol.nombre }})</span>
-                    <span class="muted small" style="float: right;">{{ comentario.fecha_creacion|date:"d/m/Y" }}</span>
+                    <span class="muted small" style="float: right;">{{ comentario.fecha_creacion|date:"d/m/Y H:i" }}</span>
                 </p>
-                <p>{{ comentario.contenido|linebreaksbr }}</p>
+                <p style="margin-top: 8px;">{{ comentario.contenido|linebreaksbr }}</p>
             </div>
             {% empty %}
             <div class="bulk-bar" style="margin: 10px 0;">
@@ -111,6 +110,8 @@
             </div>
             {% endfor %}
         </div>
+        
+        <!-- Formulario fijo en la parte inferior -->
         <form class="composer" method="post" action="{% url 'mis_tickets_detalle' ticket_seleccionado.ticket_id %}?estado={{ estado_actual }}&orden={{ orden_actual }}">
             {% csrf_token %}
             {{ form_comentario.contenido }}
@@ -119,5 +120,16 @@
             </button>
         </form>
     </aside>
+    
+    <script>
+        // Auto-scroll al último mensaje cuando se carga la página
+        document.addEventListener('DOMContentLoaded', function() {
+            const detailBody = document.querySelector('.detail-body');
+            if (detailBody) {
+                detailBody.scrollTop = detailBody.scrollHeight;
+            }
+        });
+    </script>
     {% endif %}
+
 {% endblock %}

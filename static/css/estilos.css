@@ -221,29 +221,81 @@ body{
 
 
 /* Panel de detalle */
-.detail{border-left:1px solid var(--line);background:#fafbff;display:flex;flex-direction:column}
-.detail-head{padding:14px 16px;display:flex;align-items:center;gap:10px;background:#fff;border-bottom:1px solid var(--line)}
+.detail{
+    border-left:1px solid var(--line);
+    background:#fafbff;
+    display:flex;
+    flex-direction:column;
+    height: calc(100vh - 64px);
+    overflow: hidden;
+}
+
+.detail-head{
+    padding:14px 16px;
+    display:flex;
+    align-items:center;
+    gap:10px;
+    background:#fff;
+    border-bottom:1px solid var(--line);
+    flex-shrink: 0;
+}
+
 .user-name{font-weight:700}
+
 .detail-body {
     padding: 16px;
     display: flex;
     flex-direction: column;
-    gap: 16px;
-    flex: 1 1 auto;     
-    overflow-y: auto;   
-    min-height: 100px; 
+    gap: 12px;
+    flex: 1 1 auto;
+    overflow-y: auto;
+    min-height: 100px;
+    scroll-behavior: smooth;
 }
-.bubble{background:#5fb3cc;border-radius:14px;padding:12px;min-height:70px}
-.bubble--small{width:60%;height:46px}
+
+.bubble{
+    background:#5fb3cc;
+    border-radius:14px;
+    padding:12px 14px;
+    min-height: auto; /* Cambiar de 70px fijo a auto */
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    word-wrap: break-word; /* Rompe palabras largas */
+    overflow-wrap: break-word; /* Asegura que el texto largo se ajuste */
+}
+
+.bubble p {
+    margin: 0;
+    line-height: 1.5;
+    word-wrap: break-word;
+}
+
+.bubble p + p {
+    margin-top: 8px;
+}
+
+.bubble strong {
+    display: inline-block;
+    margin-bottom: 4px;
+}
+
 .composer{
-  background:#fff;
-  border:1px solid var(--line);
-  border-radius:14px;
-  padding:10px;
-  margin: 0 16px 16px 16px;
-  flex-shrink: 0;
+    background:#fff;
+    border:1px solid var(--line);
+    border-radius:14px;
+    padding:10px;
+    margin: 0 16px 16px 16px;
+    flex-shrink: 0;
 }
-.composer textarea{width:100%;border:none;outline:none;min-height:44px;font:inherit}
+
+.composer textarea{
+    width:100%;
+    border:none;
+    outline:none;
+    min-height:44px;
+    max-height: 200px;
+    font:inherit;
+    resize: vertical;
+}
 
 /* ===================== */
 /* 4) Vista: DASHBOARD   */

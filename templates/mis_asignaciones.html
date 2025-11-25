@@ -1,25 +1,7 @@
 {% extends 'base.html' %}
-{% load ticket_tags %}  {# <-- AÑADIR ESTA LÍNEA si no está #}
+{% load ticket_tags %}
 
 {% block title %}Ticketera · Mis Asignaciones{% endblock %}
-
-{# --- INICIO: BLOQUE DE ESTILO DE EMERGENCIA (v2) --- #}
-<style>
-    .app.view-tickets .detail {
-        height: calc(100vh - 64px) !important;
-    }
-
-    .detail-body {
-        flex: 1 1 auto !important;     
-        overflow-y: auto !important;   
-        min-height: 100px !important;  
-    }
-
-    .composer {
-        flex-shrink: 0 !important;     
-    }
-</style>
-{# --- FIN: BLOQUE DE ESTILO --- #}
 
 {% block content %}
     <header class="header">
@@ -90,6 +72,7 @@
              </div>
         </div>
 
+        <!-- Contenedor con scroll para los comentarios -->
         <div class="detail-body">
             <div class="bubble" style="background: var(--card); border: 1px solid var(--line); margin-bottom: 10px;">
                 <p><strong>Descripción del solicitante:</strong></p>
@@ -98,13 +81,15 @@
 
             {% for comentario in comentarios %}
             <div class="bubble"
-                 style="background: {% if comentario.autor.rol.nombre == 'TI' %}var(--blue-100){% else %}var(--card){% endif %}; border: 1px solid var(--line); margin-bottom: 10px;">
+                 style="background: {% if comentario.autor.rol.nombre == 'TI' %}var(--blue-100){% else %}var(--card){% endif %}; 
+                        border: 1px solid var(--line); 
+                        margin-bottom: 10px;">
                 <p>
                     <strong>{{ comentario.autor.nombre }}</strong>
                     <span class="muted small">({{ comentario.autor.rol.nombre }})</span>
-                    <span class="muted small" style="float: right;">{{ comentario.fecha_creacion|date:"d/m/Y" }}</span>
+                    <span class="muted small" style="float: right;">{{ comentario.fecha_creacion|date:"d/m/Y H:i" }}</span>
                 </p>
-                <p>{{ comentario.contenido|linebreaksbr }}</p>
+                <p style="margin-top: 8px;">{{ comentario.contenido|linebreaksbr }}</p>
             </div>
             {% empty %}
             <div class="bulk-bar" style="margin: 10px 0;">
@@ -113,6 +98,7 @@
             {% endfor %}
         </div>
 
+        <!-- Formulario de gestión fijo en la parte inferior -->
         <form class="composer" method="post" action="{% url 'mis_asignaciones_detalle' ticket_seleccionado.ticket_id %}?estado={{ estado_actual }}&orden={{ orden_actual }}">
             {% csrf_token %}
             <div style="padding: 10px;">
@@ -134,4 +120,4 @@
         </form>
     </aside>
     {% endif %}
-    {% endblock %}
+{% endblock %}
