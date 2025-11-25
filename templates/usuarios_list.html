@@ -1,0 +1,118 @@
+{% extends 'base.html' %}
+
+{% block title %}Ticketera · Gestión de Usuarios{% endblock %}
+
+{% block content %}
+    <header class="header">
+        <h1 class="page-title">Gestión de Usuarios</h1>
+        <div class="filters">
+            <a href="{% url 'usuario_create' %}" class="btn-link" style="background: var(--indigo-800); color: #fff;">
+                + Crear Usuario
+            </a>
+        </div>
+    </header>
+
+    <main style="padding: 16px;">
+        <!-- Filtros de búsqueda -->
+        <section class="card" style="margin-bottom: 20px;">
+            <div class="card-head">
+                <h2>Filtros</h2>
+            </div>
+            <form method="GET" action="{% url 'usuarios_list' %}" style="padding: 15px; display: grid; grid-template-columns: 1fr 1fr 2fr auto; gap: 15px; align-items: end;">
+                <div>
+                    <label for="rol-select" style="display: block; margin-bottom: 5px; font-size: 13px; color: var(--muted);">Rol:</label>
+                    <div class="select" style="width: 100%;">
+                        <select id="rol-select" name="rol">
+                            <option value="">Todos los roles</option>
+                            {% for rol in roles_disponibles %}
+                            <option value="{{ rol.nombre }}" {% if rol_filtro == rol.nombre %}selected{% endif %}>{{ rol.nombre }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+
+                <div>
+                    <label for="estado-select" style="display: block; margin-bottom: 5px; font-size: 13px; color: var(--muted);">Estado:</label>
+                    <div class="select" style="width: 100%;">
+                        <select id="estado-select" name="estado">
+                            <option value="">Todos</option>
+                            <option value="activo" {% if estado_filtro == 'activo' %}selected{% endif %}>Activos</option>
+                            <option value="inactivo" {% if estado_filtro == 'inactivo' %}selected{% endif %}>Inactivos</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div>
+                    <label for="busqueda" style="display: block; margin-bottom: 5px; font-size: 13px; color: var(--muted);">Buscar:</label>
+                    <input type="text" id="busqueda" name="busqueda" value="{{ busqueda }}" placeholder="Nombre o email..." 
+                           style="width: 100%; padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px;">
+                </div>
+
+                <div style="display: flex; gap: 10px;">
+                    <button type="submit" class="btn-link" style="background: var(--indigo-800); color: #fff;">Filtrar</button>
+                    <a href="{% url 'usuarios_list' %}" class="btn-link">Limpiar</a>
+                </div>
+            </form>
+        </section>
+
+        <!-- Lista de usuarios -->
+        <section class="card">
+            <div class="card-head">
+                <h2>Usuarios Registrados ({{ usuarios|length }})</h2>
+            </div>
+            <div class="table" style="padding: 6px 10px 12px;">
+                <div class="thead" style="display: grid; grid-template-columns: 100px 1.5fr 1.5fr 100px 100px 120px 200px; gap: 10px;">
+                    <div>RUT</div>
+                    <div>Nombre</div>
+                    <div>Email</div>
+                    <div>Rol</div>
+                    <div>Estado</div>
+                    <div>Fecha Creación</div>
+                    <div style="text-align: right;">Acciones</div>
+                </div>
+                {% for usuario in usuarios %}
+                <div class="trow {% if not usuario.activo %}muted{% endif %}" style="display: grid; grid-template-columns: 100px 1.5fr 1.5fr 100px 100px 120px 200px; gap: 10px; align-items: center;">
+                    <div class="muted">{{ usuario.rut }}-{{ usuario.dv }}</div>
+                    <div>
+                        <a href="{% url 'usuario_detail' usuario.rut %}" style="color: var(--text); text-decoration: none; font-weight: 600;">
+                            {{ usuario.nombre }}
+                        </a>
+                    </div>
+                    <div class="muted" style="font-size: 13px;">{{ usuario.email }}</div>
+                    <div>
+                        {% if usuario.rol.nombre == 'Admin' %}
+                            <b class="tag" style="background: #e3f2fd; color: #1976d2; border: 1px solid #90caf9;">Admin</b>
+                        {% elif usuario.rol.nombre == 'TI' %}
+                            <b class="tag" style="background: #f3e5f5; color: #7b1fa2; border: 1px solid #ce93d8;">TI</b>
+                        {% elif usuario.rol.nombre == 'Superadmin' %}
+                            <b class="tag" style="background: #fce4ec; color: #c2185b; border: 1px solid #f48fb1;">Superadmin</b>
+                        {% else %}
+                            <b class="tag" style="background: #e8f5e9; color: #388e3c; border: 1px solid #a5d6a7;">Docente</b>
+                        {% endif %}
+                    </div>
+                    <div>
+                        {% if usuario.activo %}
+                            <b class="tag tag--open">Activo</b>
+                        {% else %}
+                            <b class="tag" style="background: #ffebee; color: #c62828; border: 1px solid #ef9a9a;">Inactivo</b>
+                        {% endif %}
+                    </div>
+                    <div class="muted" style="font-size: 13px;">{{ usuario.fecha_creacion|date:"d/m/Y" }}</div>
+                    <div style="display: flex; gap: 6px; justify-content: flex-end;">
+                        <a href="{% url 'usuario_detail' usuario.rut %}" class="btn-link" style="padding: 6px 10px; font-size: 12px;">Ver</a>
+                        <a href="{% url 'usuario_edit' usuario.rut %}" class="btn-link" style="padding: 6px 10px; font-size: 12px;">Editar</a>
+                        <a href="{% url 'usuario_toggle_estado' usuario.rut %}" class="btn-link" 
+                           style="padding: 6px 10px; font-size: 12px; {% if usuario.activo %}color: var(--red); border-color: var(--red);{% else %}color: var(--green); border-color: var(--green);{% endif %}">
+                            {% if usuario.activo %}Desactivar{% else %}Activar{% endif %}
+                        </a>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="bulk-bar" style="margin: 10px 0;">
+                    No se encontraron usuarios con los filtros seleccionados.
+                </div>
+                {% endfor %}
+            </div>
+        </section>
+    </main>
+{% endblock %}

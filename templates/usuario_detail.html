@@ -1,0 +1,117 @@
+{% extends 'base.html' %}
+
+{% block title %}Ticketera · Detalle de Usuario{% endblock %}
+
+{% block content %}
+    <header class="header">
+        <h1 class="page-title">Detalles del Usuario</h1>
+        <div class="filters">
+            <a href="{% url 'usuarios_list' %}" class="btn-link">← Volver a la lista</a>
+            <a href="{% url 'usuario_edit' usuario_detalle.rut %}" class="btn-link">Editar Usuario</a>
+        </div>
+    </header>
+
+    <main style="padding: 16px; display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+        <!-- Información del Usuario -->
+        <section class="card">
+            <div class="card-head">
+                <h2>Información Personal</h2>
+                {% if usuario_detalle.activo %}
+                    <b class="tag tag--open">Activo</b>
+                {% else %}
+                    <b class="tag" style="background: #ffebee; color: #c62828; border: 1px solid #ef9a9a;">Inactivo</b>
+                {% endif %}
+            </div>
+            <div style="padding: 20px;">
+                <div style="margin-bottom: 15px;">
+                    <span style="color: var(--muted); font-size: 13px; display: block; margin-bottom: 5px;">RUT</span>
+                    <span style="font-weight: 600; font-size: 16px;">{{ usuario_detalle.rut }}-{{ usuario_detalle.dv }}</span>
+                </div>
+
+                <div style="margin-bottom: 15px;">
+                    <span style="color: var(--muted); font-size: 13px; display: block; margin-bottom: 5px;">Nombre Completo</span>
+                    <span style="font-weight: 600; font-size: 16px;">{{ usuario_detalle.nombre }}</span>
+                </div>
+
+                <div style="margin-bottom: 15px;">
+                    <span style="color: var(--muted); font-size: 13px; display: block; margin-bottom: 5px;">Correo Electrónico</span>
+                    <span style="font-weight: 600; font-size: 16px;">{{ usuario_detalle.email }}</span>
+                </div>
+
+                <div style="margin-bottom: 15px;">
+                    <span style="color: var(--muted); font-size: 13px; display: block; margin-bottom: 5px;">Rol</span>
+                    {% if usuario_detalle.rol.nombre == 'Admin' %}
+                        <b class="tag" style="background: #e3f2fd; color: #1976d2; border: 1px solid #90caf9;">{{ usuario_detalle.rol.nombre }}</b>
+                    {% elif usuario_detalle.rol.nombre == 'TI' %}
+                        <b class="tag" style="background: #f3e5f5; color: #7b1fa2; border: 1px solid #ce93d8;">{{ usuario_detalle.rol.nombre }}</b>
+                    {% else %}
+                        <b class="tag" style="background: #e8f5e9; color: #388e3c; border: 1px solid #a5d6a7;">{{ usuario_detalle.rol.nombre }}</b>
+                    {% endif %}
+                </div>
+
+                <div style="margin-bottom: 15px;">
+                    <span style="color: var(--muted); font-size: 13px; display: block; margin-bottom: 5px;">Fecha de Creación</span>
+                    <span style="font-weight: 600;">{{ usuario_detalle.fecha_creacion|date:"d/m/Y H:i" }}</span>
+                </div>
+
+                <hr style="border: 0; border-top: 1px solid var(--line); margin: 20px 0;">
+
+                <div style="display: flex; gap: 10px;">
+                    <a href="{% url 'usuario_edit' usuario_detalle.rut %}" class="btn-link" style="flex: 1; text-align: center;">
+                        Editar
+                    </a>
+                    <a href="{% url 'usuario_toggle_estado' usuario_detalle.rut %}" class="btn-link" 
+                       style="flex: 1; text-align: center; {% if usuario_detalle.activo %}color: var(--red); border-color: var(--red);{% else %}color: var(--green); border-color: var(--green);{% endif %}">
+                        {% if usuario_detalle.activo %}Desactivar{% else %}Activar{% endif %}
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <!-- Estadísticas -->
+        <section class="card">
+            <div class="card-head">
+                <h2>Estadísticas de Actividad</h2>
+            </div>
+            <div style="padding: 20px;">
+                <div class="kpis" style="display: grid; grid-template-columns: 1fr; gap: 15px;">
+                    <article class="kpi" style="text-align: left;">
+                        <div class="kpi-title">Tickets Creados</div>
+                        <div class="kpi-value">{{ tickets_creados }}</div>
+                        <div class="kpi-foot">
+                            <span class="dot dot--blue"></span>
+                            Como solicitante
+                        </div>
+                    </article>
+
+                    <article class="kpi" style="text-align: left;">
+                        <div class="kpi-title">Tickets Asignados</div>
+                        <div class="kpi-value">{{ tickets_asignados }}</div>
+                        <div class="kpi-foot">
+                            <span class="dot dot--green"></span>
+                            Como técnico
+                        </div>
+                    </article>
+
+                    <article class="kpi" style="text-align: left;">
+                        <div class="kpi-title">Comentarios Realizados</div>
+                        <div class="kpi-value">{{ comentarios_realizados }}</div>
+                        <div class="kpi-foot">
+                            <span class="dot"></span>
+                            Total de interacciones
+                        </div>
+                    </article>
+                </div>
+
+                <hr style="border: 0; border-top: 1px solid var(--line); margin: 20px 0;">
+
+                <div style="background: var(--bg); padding: 15px; border-radius: 10px;">
+                    <p style="margin: 0; font-size: 13px; color: var(--muted);">
+                        <strong>Descripción del Rol:</strong><br>
+                        {{ usuario_detalle.rol.descripcion }}
+                    </p>
+                </div>
+            </div>
+        </section>
+    </main>
+{% endblock %}

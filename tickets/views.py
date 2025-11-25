@@ -1,8 +1,8 @@
 from django.shortcuts import render, redirect
-from .models import Ticket, Usuario, AsignacionTicket, Comentario, Prioridad, Categoria, Notificacion
+from .models import Ticket, Usuario, AsignacionTicket, Comentario, Prioridad, Categoria, Notificacion, Rol
 from django.shortcuts import render, redirect, get_object_or_404, reverse
 from django.contrib.auth.decorators import login_required 
-from .forms import TicketForm, AsignacionTicketForm, GestionTicketForm, ComentarioForm
+from .forms import TicketForm, AsignacionTicketForm, GestionTicketForm, ComentarioForm, UsuarioForm
 from django.utils import timezone
 import json
 from datetime import timedelta, date, datetime
@@ -143,7 +143,7 @@ def ticket_list_view(request, ticket_id=None):
     # --- BLOQUE DE PERMISO ---
     try:
         usuario = Usuario.objects.get(email=request.user.email)
-        if usuario.rol.nombre != 'Admin':
+        if usuario.rol.nombre not in ['Admin', 'Superadmin']:
             return redirect('index')
     except Usuario.DoesNotExist:
         return redirect('index')
@@ -458,11 +458,9 @@ def borrar_ticket_admin_view(request, ticket_id):
     # --- BLOQUE DE PERMISO ---
     try:
         usuario = Usuario.objects.get(email=request.user.email)
-        if usuario.rol.nombre != 'Admin':
-            # Si no es Admin, no puede borrar tickets
+        if usuario.rol.nombre not in ['Admin', 'Superadmin']:
             return redirect('index') 
     except Usuario.DoesNotExist:
-        # Superuser de Django sin Usuario en app? Permitir o redirigir
         if not request.user.is_superuser:
             return redirect('index')
     # --- FIN DEL BLOQUE ---
@@ -654,10 +652,10 @@ def panel_principal_view(request):
     """
     Vista del Panel Principal con KPIs y vistas resumidas (sin gráficos).
     """
-    # --- BLOQUE DE PERMISO (Solo Admin) ---
+    # --- BLOQUE DE PERMISO (Admin y Superadmin) ---
     try:
         usuario = Usuario.objects.get(email=request.user.email)
-        if usuario.rol.nombre != 'Admin':
+        if usuario.rol.nombre not in ['Admin', 'Superadmin']:
             return redirect('index')
     except Usuario.DoesNotExist:
         if not request.user.is_superuser:
@@ -811,3 +809,187 @@ def panel_principal_view(request):
         'cumplimiento_sla': cumplimiento_sla,
     }
     return render(request, 'panel_principal.html', context)
+
+# ==========================================
+# VISTAS DE GESTIÓN DE USUARIOS (SUPERADMIN)
+# ==========================================
+
+@login_required
+def usuarios_list_view(request):
+    """
+    Lista todos los usuarios del sistema (solo para Superadmin).
+    """
+    # --- BLOQUE DE PERMISO ---
+    try:
+        usuario = Usuario.objects.get(email=request.user.email)
+        if usuario.rol.nombre not in ['Superadmin', 'Admin']:
+            return redirect('index')
+    except Usuario.DoesNotExist:
+        if not request.user.is_superuser:
+            return redirect('index')
+    # --- FIN DEL BLOQUE ---
+
+    # Obtener parámetros de filtro
+    rol_filtro = request.GET.get('rol', '')
+    estado_filtro = request.GET.get('estado', '')  # 'activo' o 'inactivo'
+    busqueda = request.GET.get('busqueda', '')
+
+    # Query base
+    usuarios_query = Usuario.objects.select_related('rol').all()
+
+    # Filtrar por rol
+    if rol_filtro:
+        usuarios_query = usuarios_query.filter(rol__nombre=rol_filtro)
+
+    # Filtrar por estado (activo/inactivo)
+    if estado_filtro == 'activo':
+        usuarios_query = usuarios_query.filter(activo=True)
+    elif estado_filtro == 'inactivo':
+        usuarios_query = usuarios_query.filter(activo=False)
+
+    # Búsqueda por nombre o email
+    if busqueda:
+        usuarios_query = usuarios_query.filter(
+            nombre__icontains=busqueda
+        ) | usuarios_query.filter(
+            email__icontains=busqueda
+        )
+
+    # Ordenar por fecha de creación (más recientes primero)
+    usuarios_list = usuarios_query.order_by('-fecha_creacion')
+
+    # Obtener lista de roles para el filtro
+    roles_disponibles = Rol.objects.all()
+
+    context = {
+        'view_class': 'view-dashboard',
+        'usuarios': usuarios_list,
+        'roles_disponibles': roles_disponibles,
+        'rol_filtro': rol_filtro,
+        'estado_filtro': estado_filtro,
+        'busqueda': busqueda,
+    }
+    return render(request, 'usuarios_list.html', context)
+
+
+@login_required
+def usuario_create_view(request):
+    """
+    Crear un nuevo usuario (solo para Superadmin).
+    """
+    # --- BLOQUE DE PERMISO ---
+    try:
+        usuario = Usuario.objects.get(email=request.user.email)
+        if usuario.rol.nombre not in ['Superadmin', 'Admin']:
+            return redirect('index')
+    except Usuario.DoesNotExist:
+        if not request.user.is_superuser:
+            return redirect('index')
+    # --- FIN DEL BLOQUE ---
+
+    if request.method == 'POST':
+        form = UsuarioForm(request.POST, is_edit=False)
+        if form.is_valid():
+            form.save()
+            return redirect('usuarios_list')
+    else:
+        form = UsuarioForm(is_edit=False)
+
+    context = {
+        'view_class': 'view-dashboard',
+        'form': form,
+        'titulo': 'Crear Nuevo Usuario',
+        'boton_texto': 'Crear Usuario',
+    }
+    return render(request, 'usuario_form.html', context)
+
+
+@login_required
+def usuario_edit_view(request, rut):
+    """
+    Editar un usuario existente (solo para Superadmin).
+    """
+    # --- BLOQUE DE PERMISO ---
+    try:
+        usuario_actual = Usuario.objects.get(email=request.user.email)
+        if usuario_actual.rol.nombre not in ['Superadmin', 'Admin']:
+            return redirect('index')
+    except Usuario.DoesNotExist:
+        if not request.user.is_superuser:
+            return redirect('index')
+    # --- FIN DEL BLOQUE ---
+
+    usuario_editar = get_object_or_404(Usuario, pk=rut)
+
+    if request.method == 'POST':
+        form = UsuarioForm(request.POST, instance=usuario_editar, is_edit=True)
+        if form.is_valid():
+            form.save()
+            return redirect('usuarios_list')
+    else:
+        form = UsuarioForm(instance=usuario_editar, is_edit=True)
+
+    context = {
+        'view_class': 'view-dashboard',
+        'form': form,
+        'usuario_editar': usuario_editar,
+        'titulo': f'Editar Usuario: {usuario_editar.nombre}',
+        'boton_texto': 'Guardar Cambios',
+    }
+    return render(request, 'usuario_form.html', context)
+
+
+@login_required
+def usuario_toggle_estado_view(request, rut):
+    """
+    Activar/Desactivar un usuario (cambiar campo 'activo').
+    """
+    # --- BLOQUE DE PERMISO ---
+    try:
+        usuario_actual = Usuario.objects.get(email=request.user.email)
+        if usuario_actual.rol.nombre not in ['Superadmin', 'Admin']:
+            return redirect('index')
+    except Usuario.DoesNotExist:
+        if not request.user.is_superuser:
+            return redirect('index')
+    # --- FIN DEL BLOQUE ---
+
+    usuario = get_object_or_404(Usuario, pk=rut)
+    
+    # Cambiar estado
+    usuario.activo = not usuario.activo
+    usuario.save()
+
+    return redirect('usuarios_list')
+
+
+@login_required
+def usuario_detail_view(request, rut):
+    """
+    Ver detalles de un usuario específico.
+    """
+    # --- BLOQUE DE PERMISO ---
+    try:
+        usuario_actual = Usuario.objects.get(email=request.user.email)
+        if usuario_actual.rol.nombre not in ['Superadmin', 'Admin']:
+            return redirect('index')
+    except Usuario.DoesNotExist:
+        if not request.user.is_superuser:
+            return redirect('index')
+    # --- FIN DEL BLOQUE ---
+
+    usuario = get_object_or_404(Usuario.objects.select_related('rol'), pk=rut)
+    
+    # Estadísticas del usuario
+    tickets_creados = Ticket.objects.filter(usuario_creador=usuario).count()
+    tickets_asignados = AsignacionTicket.objects.filter(usuario_asignado=usuario).count()
+    comentarios_realizados = Comentario.objects.filter(autor=usuario).count()
+
+    context = {
+        'view_class': 'view-dashboard',
+        'usuario_detalle': usuario,
+        'tickets_creados': tickets_creados,
+        'tickets_asignados': tickets_asignados,
+        'comentarios_realizados': comentarios_realizados,
+    }
+    return render(request, 'usuario_detail.html', context)

@@ -1,5 +1,6 @@
 from django import forms
 from .models import Ticket, AsignacionTicket, Usuario, Rol, Comentario, Prioridad, Categoria
+from django.contrib.auth.hashers import make_password
 
 class TicketForm(forms.ModelForm):
     class Meta:
@@ -100,3 +101,82 @@ class ComentarioForm(forms.ModelForm):
         labels = {
             'contenido': 'Añadir Comentario:'
         }
+
+class UsuarioForm(forms.ModelForm):
+    """
+    Formulario para crear/editar usuarios desde el panel de Superadmin.
+    """
+    # Campo para la contraseña (no se guarda directamente en el modelo)
+    contrasenia = forms.CharField(
+        widget=forms.PasswordInput(attrs={'class': 'form-input'}),
+        required=False,  # Opcional en edición
+        label='Contraseña',
+        help_text='Deja en blanco para mantener la contraseña actual (solo en edición)'
+    )
+    
+    confirmar_contrasenia = forms.CharField(
+        widget=forms.PasswordInput(attrs={'class': 'form-input'}),
+        required=False,
+        label='Confirmar Contraseña'
+    )
+
+    class Meta:
+        model = Usuario
+        fields = ['rut', 'dv', 'nombre', 'email', 'rol', 'activo']
+        widgets = {
+            'rut': forms.NumberInput(attrs={'class': 'form-input', 'placeholder': '12345678'}),
+            'dv': forms.Select(attrs={'class': 'form-select'}),
+            'nombre': forms.TextInput(attrs={'class': 'form-input', 'placeholder': 'Juan Pérez'}),
+            'email': forms.EmailInput(attrs={'class': 'form-input', 'placeholder': 'usuario@colegio.cl'}),
+            'rol': forms.Select(attrs={'class': 'form-select'}),
+            'activo': forms.CheckboxInput(attrs={'class': 'form-checkbox'}),
+        }
+        labels = {
+            'rut': 'RUT (sin puntos ni guión)',
+            'dv': 'Dígito Verificador',
+            'nombre': 'Nombre Completo',
+            'email': 'Correo Electrónico',
+            'rol': 'Rol del Usuario',
+            'activo': 'Usuario Activo',
+        }
+
+    def __init__(self, *args, **kwargs):
+        self.is_edit = kwargs.pop('is_edit', False)  # Flag para saber si es edición
+        super().__init__(*args, **kwargs)
+        
+        # En modo edición, el RUT no se puede cambiar (es la PK)
+        if self.is_edit:
+            self.fields['rut'].disabled = True
+            self.fields['contrasenia'].required = False
+            self.fields['confirmar_contrasenia'].required = False
+        else:
+            # En creación, la contraseña es obligatoria
+            self.fields['contrasenia'].required = True
+            self.fields['confirmar_contrasenia'].required = True
+
+    def clean(self):
+        cleaned_data = super().clean()
+        contrasenia = cleaned_data.get('contrasenia')
+        confirmar = cleaned_data.get('confirmar_contrasenia')
+
+        # Validar contraseñas solo si se ingresaron
+        if contrasenia or confirmar:
+            if contrasenia != confirmar:
+                raise forms.ValidationError('Las contraseñas no coinciden.')
+            
+            if len(contrasenia) < 6:
+                raise forms.ValidationError('La contraseña debe tener al menos 6 caracteres.')
+
+        return cleaned_data
+
+    def save(self, commit=True):
+        usuario = super().save(commit=False)
+        
+        # Si se ingresó una nueva contraseña, hashearla
+        contrasenia = self.cleaned_data.get('contrasenia')
+        if contrasenia:
+            usuario.contrasenia_hash = make_password(contrasenia)
+        
+        if commit:
+            usuario.save()
+        return usuario

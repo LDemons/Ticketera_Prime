@@ -56,33 +56,64 @@
                 {% elif usuario.rol.nombre == 'Admin' %}
     <p>Como <strong>Administrador</strong>, tienes acceso al panel general, la gestión de todos los tickets y los reportes.</p>
     <div style="display: flex; flex-wrap: wrap; gap: 15px; justify-content: center; margin-top: 20px;">
-        {# Botón Principal (Panel Principal) #}
         <a href="{% url 'panel_principal' %}" class="btn-link" 
         style="background: var(--indigo-800); color: #fff; border-color: var(--indigo-800); padding: 12px 20px;"
         onmouseover="this.style.backgroundColor='#fff'; this.style.color='var(--indigo-800)'; this.style.borderColor='var(--indigo-800)';" 
         onmouseout="this.style.backgroundColor='var(--indigo-800)'; this.style.color='#fff'; this.style.borderColor='var(--indigo-800)';">
-            Ir al Panel Principal
+            Panel Principal
         </a>
-        {# Botón Secundario (Gráficos) #}
         <a href="{% url 'dashboard' %}" class="btn-link" 
         style="background: var(--indigo-800); color: #fff; border-color: var(--indigo-800); padding: 12px 20px;"
         onmouseover="this.style.backgroundColor='#fff'; this.style.color='var(--indigo-800)'; this.style.borderColor='var(--indigo-800)';" 
         onmouseout="this.style.backgroundColor='var(--indigo-800)'; this.style.color='#fff'; this.style.borderColor='var(--indigo-800)';">
-            Ver Gráficos
+            Gráficos
         </a>
-        {# Botón Secundario (Gestionar) #}
         <a href="{% url 'ticket_list' %}" class="btn-link" 
         style="background: var(--indigo-800); color: #fff; border-color: var(--indigo-800); padding: 12px 20px;"
         onmouseover="this.style.backgroundColor='#fff'; this.style.color='var(--indigo-800)'; this.style.borderColor='var(--indigo-800)';" 
         onmouseout="this.style.backgroundColor='var(--indigo-800)'; this.style.color='#fff'; this.style.borderColor='var(--indigo-800)';">
             Gestionar Tickets
         </a>
-        {# Botón Secundario (Reportes) #}
         <a href="{% url 'reportes' %}" class="btn-link" 
         style="background: var(--indigo-800); color: #fff; border-color: var(--indigo-800); padding: 12px 20px;"
         onmouseover="this.style.backgroundColor='#fff'; this.style.color='var(--indigo-800)'; this.style.borderColor='var(--indigo-800)';" 
         onmouseout="this.style.backgroundColor='var(--indigo-800)'; this.style.color='#fff'; this.style.borderColor='var(--indigo-800)';">
-            Ver Reportes
+            Reportes
+        </a>
+    </div>
+
+                {% elif usuario.rol.nombre == 'Superadmin' %}
+    <p>Como <strong>Superadministrador</strong>, tienes control total sobre usuarios, tickets, reportes y configuración del sistema.</p>
+    <div style="display: flex; flex-wrap: wrap; gap: 15px; justify-content: center; margin-top: 20px;">
+        <a href="{% url 'usuarios_list' %}" class="btn-link" 
+        style="background: var(--indigo-800); color: #fff; border-color: var(--indigo-800); padding: 12px 20px;"
+        onmouseover="this.style.backgroundColor='#fff'; this.style.color='var(--indigo-800)'; this.style.borderColor='var(--indigo-800)';" 
+        onmouseout="this.style.backgroundColor='var(--indigo-800)'; this.style.color='#fff'; this.style.borderColor='var(--indigo-800)';">
+            Gestión de Usuarios
+        </a>
+        <a href="{% url 'panel_principal' %}" class="btn-link" 
+        style="background: var(--indigo-800); color: #fff; border-color: var(--indigo-800); padding: 12px 20px;"
+        onmouseover="this.style.backgroundColor='#fff'; this.style.color='var(--indigo-800)'; this.style.borderColor='var(--indigo-800)';" 
+        onmouseout="this.style.backgroundColor='var(--indigo-800)'; this.style.color='#fff'; this.style.borderColor='var(--indigo-800)';">
+            Panel Principal
+        </a>
+        <a href="{% url 'ticket_list' %}" class="btn-link" 
+        style="background: var(--indigo-800); color: #fff; border-color: var(--indigo-800); padding: 12px 20px;"
+        onmouseover="this.style.backgroundColor='#fff'; this.style.color='var(--indigo-800)'; this.style.borderColor='var(--indigo-800)';" 
+        onmouseout="this.style.backgroundColor='var(--indigo-800)'; this.style.color='#fff'; this.style.borderColor='var(--indigo-800)';">
+            Gestionar Tickets
+        </a>
+        <a href="{% url 'dashboard' %}" class="btn-link" 
+        style="background: var(--indigo-800); color: #fff; border-color: var(--indigo-800); padding: 12px 20px;"
+        onmouseover="this.style.backgroundColor='#fff'; this.style.color='var(--indigo-800)'; this.style.borderColor='var(--indigo-800)';" 
+        onmouseout="this.style.backgroundColor='var(--indigo-800)'; this.style.color='#fff'; this.style.borderColor='var(--indigo-800)';">
+            Gráficos
+        </a>
+        <a href="{% url 'reportes' %}" class="btn-link" 
+        style="background: var(--indigo-800); color: #fff; border-color: var(--indigo-800); padding: 12px 20px;"
+        onmouseover="this.style.backgroundColor='#fff'; this.style.color='var(--indigo-800)'; this.style.borderColor='var(--indigo-800)';" 
+        onmouseout="this.style.backgroundColor='var(--indigo-800)'; this.style.color='#fff'; this.style.borderColor='var(--indigo-800)';">
+            Reportes
         </a>
     </div>
 

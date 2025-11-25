@@ -43,6 +43,13 @@ urlpatterns = [
     # --- URL DE NOTIFICACIONES ---
     path('notificaciones/', views.notificaciones_view, name='notificaciones'),
 
+    # --- GESTIÓN DE USUARIOS (SUPERADMIN) ---
+    path('usuarios/', views.usuarios_list_view, name='usuarios_list'),
+    path('usuarios/crear/', views.usuario_create_view, name='usuario_create'),
+    path('usuarios/<int:rut>/editar/', views.usuario_edit_view, name='usuario_edit'),
+    path('usuarios/<int:rut>/toggle/', views.usuario_toggle_estado_view, name='usuario_toggle_estado'),
+    path('usuarios/<int:rut>/detalle/', views.usuario_detail_view, name='usuario_detail'),
+
     # --- BORRAR TICKET ---
     path('mis-tickets/borrar/<int:ticket_id>/', views.borrar_mi_ticket_view, name='borrar_mi_ticket'),
     path('tickets/borrar/<int:ticket_id>/', views.borrar_ticket_admin_view, name='borrar_ticket_admin'),
