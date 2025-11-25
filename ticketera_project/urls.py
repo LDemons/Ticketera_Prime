@@ -60,6 +60,9 @@ urlpatterns = [
 
     # --- FIJAR TICKET (TI) ---
     path('mis-asignaciones/fijar/<int:ticket_id>/', views.toggle_fijar_ticket_view, name='toggle_fijar_ticket'),
+
+    # --- API REST PARA APP MÓVIL ---
+    path('api/v1/', include('tickets.api_urls')),
 ]
 
 if settings.DEBUG or not settings.PRODUCTION:
