@@ -27,3 +27,16 @@ db.sqlite3
 
 .vscode/
 .idea/
+
+# Flutter/Dart
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+.pub-cache/
+.pub/
+build/
+
+# Flutter Chrome/Web device files (contienen datos sensibles de sesión)
+**/chrome-device/
+**/.dart_tool/chrome-device/**
