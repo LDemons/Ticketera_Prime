@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load ticket_tags %}  {# <-- AÑADIR ESTA LÍNEA #}
 
 {% block title %}Ticketera · Panel Principal{% endblock %}
 
@@ -114,7 +115,11 @@
                 {% for ticket in tickets_recientes %}
                 <div class="trow {% if ticket.prioridad.Tipo_Nivel == 'ALTO' %}warn{% endif %}">
                     <div class="muted">#T{{ ticket.ticket_id|stringformat:"03d" }}</div>
-                    <div>
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        {# Avatar con color generado #}
+                        <div class="avatar" style="background: {{ ticket.usuario_creador.nombre|user_color }}; width: 24px; height: 24px; font-size: 11px;">
+                            {{ ticket.usuario_creador.nombre|first }}
+                        </div>
                         <a href="{% url 'ticket_detail' ticket.ticket_id %}" style="color: var(--text); text-decoration: none;">
                             {{ ticket.titulo|truncatewords:8 }}
                         </a>

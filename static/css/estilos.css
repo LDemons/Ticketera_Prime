@@ -204,11 +204,12 @@ body{
   padding:12px;display:grid;grid-template-columns:34px 1fr auto;gap:12px
 }
 .avatar{width:34px;height:34px;border-radius:8px;display:grid;place-items:center;font-weight:700;color:#fff}
-.avatar--R{background:#4aa3d7}
-.avatar--C{background:#58b676}
-.avatar--S{background:#d58f44}
-.avatar--B{background:#c35656}
-.avatar--A{background:#c06bcf}
+/* Remover o comentar estas líneas: */
+/* .avatar--R{background:#4aa3d7} */
+/* .avatar--C{background:#58b676} */
+/* .avatar--S{background:#d58f44} */
+/* .avatar--B{background:#c35656} */
+/* .avatar--A{background:#c06bcf} */
 .ticket-head{display:flex;gap:8px;flex-wrap:wrap}
 .ticket-title{margin:6px 0 4px;font-weight:700}
 .ticket-meta{display:flex;gap:14px;color:var(--muted);font-size:14px}
