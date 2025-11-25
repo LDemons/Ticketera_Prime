@@ -8,7 +8,8 @@ import 'package:intl/intl.dart';
 class NotificacionesScreen extends StatefulWidget {
   const NotificacionesScreen({super.key});
 
-  @'State<NotificacionesScreen> createState() => _NotificacionesScreenState();
+  @override
+  State<NotificacionesScreen> createState() => _NotificacionesScreenState();
 }
 
 class _NotificacionesScreenState extends State<NotificacionesScreen> {
@@ -17,7 +18,7 @@ class _NotificacionesScreenState extends State<NotificacionesScreen> {
   bool _isLoading = true;
   int _unreadCount = 0;
 
-  @'override
+  @override
   void initState() {
     super.initState();
     _loadNotificaciones();
@@ -27,16 +28,16 @@ class _NotificacionesScreenState extends State<NotificacionesScreen> {
     setState(() => _isLoading = true);
     
     try {
-      final prefs = await SharedPreferences.getInstance();
-      final token = prefs.getString('auth_token');
+      final notificaciones = await _apiService.getNotificaciones();
+      final List<Notificacion> notificacionesList = notificaciones
+          .map((json) => Notificacion.fromJson(json))
+          .toList();
       
-      if (token != null) {
-        _apiService.setToken(token);
-        final notificaciones = await _apiService.getNotificaciones();
+      if (mounted) {
         
         setState(() {
-          _notificaciones = notificaciones;
-          _unreadCount = notificaciones.where((n) => !n.leida).length;
+          _notificaciones = notificacionesList;
+          _unreadCount = notificacionesList.where((n) => !n.leida).length;
           _isLoading = false;
         });
       }
@@ -111,7 +112,7 @@ class _NotificacionesScreenState extends State<NotificacionesScreen> {
     }
   }
 
-  @'override
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(

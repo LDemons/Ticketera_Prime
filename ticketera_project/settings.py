@@ -37,10 +37,11 @@ PRODUCTION = os.getenv('PRODUCTION', 'False') == 'True'
 ALLOWED_HOSTS = ['ticketeraprime.com', 'www.ticketeraprime.com', 'localhost', '127.0.0.1']
 
 # CORS Configuration para Flutter
-CORS_ALLOWED_ORIGINS = [
-    'http://localhost:8080',
-    'http://127.0.0.1:8080',
-]
+CORS_ALLOW_ALL_ORIGINS = True  # Para desarrollo, permite todos los orígenes
+# CORS_ALLOWED_ORIGINS = [
+#     'http://localhost:8080',
+#     'http://127.0.0.1:8080',
+# ]
 CORS_ALLOW_CREDENTIALS = True
 
 # Application definition

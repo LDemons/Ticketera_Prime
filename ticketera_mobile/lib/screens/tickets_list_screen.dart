@@ -8,7 +8,7 @@ import 'notificaciones_screen.dart';
 class TicketsListScreen extends StatefulWidget {
   const TicketsListScreen({super.key});
 
-  @'override
+  @override
   State<TicketsListScreen> createState() => _TicketsListScreenState();
 }
 
@@ -19,7 +19,7 @@ class _TicketsListScreenState extends State<TicketsListScreen> {
   String? _errorMessage;
   int _unreadNotifications = 0;
 
-  @'override
+  @override
   void initState() {
     super.initState();
     _loadData();
@@ -89,7 +89,7 @@ class _TicketsListScreenState extends State<TicketsListScreen> {
     return estado.replaceAll('_', ' ');
   }
 
-  @'override
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(

@@ -1,6 +1,6 @@
 ﻿import 'package:flutter/material.dart';
 import '../services/api_service.dart';
-import 'create_ticket_screen.dart';
+import 'tickets_list_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -46,7 +46,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(
-          builder: (context) => const CreateTicketScreen(),
+          builder: (context) => const TicketsListScreen(),
         ),
       );
     } catch (e) {

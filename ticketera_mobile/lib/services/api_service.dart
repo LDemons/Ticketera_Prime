@@ -277,6 +277,19 @@ class ApiService {
       throw Exception('Error de conexiÃ³n: $e');
     }
   }
+
+  // Métodos alias en español
+  Future<void> marcarNotificacionLeida(int notificacionId) async {
+    await markNotificationAsRead(notificacionId);
+  }
+
+  Future<void> marcarTodasNotificacionesLeidas() async {
+    await markAllNotificationsAsRead();
+  }
+
+  void setToken(String token) async {
+    await _saveToken(token);
+  }
   
   // ==========================================
   // DATOS AUXILIARES
