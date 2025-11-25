@@ -71,7 +71,7 @@ class TicketDetailSerializer(serializers.ModelSerializer):
         fields = [
             'ticket_id', 'titulo', 'descripcion', 'estado', 'estado_display',
             'usuario_creador', 'categoria', 'prioridad', 
-            'fecha_creacion', 'fecha_resolucion', 'fijado', 'comentarios'
+            'fecha_creacion', 'fijado', 'comentarios'
         ]
         read_only_fields = ['ticket_id', 'fecha_creacion']
 
