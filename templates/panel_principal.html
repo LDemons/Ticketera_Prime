@@ -6,13 +6,15 @@
 {% block content %}
     <header class="header">
         <h1 class="page-title">Panel principal</h1>
-        <div class="filters">
-            <a href="{% url 'dashboard' %}" class="btn-link">Ver Gráficos</a>
-            <a href="{% url 'reportes' %}" class="btn-link">Ver Reportes</a>
-        </div>
     </header>
 
     <main style="padding: 16px;">
+        
+        <!-- Botones de navegación -->
+        <div class="panel-nav-buttons" style="display: flex; gap: 12px; margin-bottom: 20px;">
+            <a href="{% url 'dashboard' %}" class="btn-link" style="flex: 1;">Ver Gráficos</a>
+            <a href="{% url 'reportes' %}" class="btn-link" style="flex: 1;">Ver Reportes</a>
+        </div>
         <!-- KPIs -->
         <section class="kpis" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 20px;">
             <article class="kpi">
@@ -53,7 +55,7 @@
         </section>
 
         <!-- Gráfico de Entradas por Hora + Cumplimiento SLA -->
-        <div style="display: grid; grid-template-columns: 1.5fr 1fr; gap: 16px; margin-bottom: 20px;">
+        <div class="panel-charts-grid" style="display: grid; grid-template-columns: 1.5fr 1fr; gap: 16px; margin-bottom: 20px;">
             <!-- Entradas por hora -->
             <section class="card">
                 <div class="card-head">
@@ -400,4 +402,67 @@
             });
         }
     </script>
+
+    <style>
+        /* Estilos responsive para panel principal */
+        @media (max-width: 768px) {
+            .panel-nav-buttons {
+                flex-direction: column !important;
+                gap: 10px !important;
+            }
+
+            .panel-nav-buttons .btn-link {
+                width: 100% !important;
+                justify-content: center;
+                padding: 12px;
+                font-size: 14px;
+                font-weight: 600;
+            }
+
+            .kpis {
+                grid-template-columns: repeat(2, 1fr) !important;
+                gap: 10px !important;
+            }
+
+            .kpi-value {
+                font-size: 24px !important;
+            }
+
+            .kpi-title {
+                font-size: 12px !important;
+            }
+
+            .kpi-foot {
+                font-size: 11px !important;
+            }
+
+            /* Gráficos en columna */
+            .panel-charts-grid {
+                grid-template-columns: 1fr !important;
+                gap: 16px !important;
+            }
+
+            /* Tabla de Mi Cola */
+            .table .thead,
+            .table .trow {
+                grid-template-columns: auto 1fr !important;
+                font-size: 13px !important;
+            }
+
+            .table .thead > div:not(:first-child):not(:nth-child(2)),
+            .table .trow > div:not(:first-child):not(:nth-child(2)) {
+                display: none !important;
+            }
+
+            /* Kanban en móvil */
+            .kanban-board {
+                grid-template-columns: 1fr !important;
+                gap: 16px !important;
+            }
+
+            .kanban-column {
+                min-width: 100% !important;
+            }
+        }
+    </style>
 {% endblock %}

@@ -5,12 +5,14 @@
 {% block content %}
     <header class="header">
       <h1 class="page-title">Dashboard</h1>
-      <div class="filters">
-        <a href="{% url 'panel_principal' %}" class="btn-link">Ver Panel Principal</a>
-      </div>
     </header>
 
      <main class="dashboard">
+      
+      <!-- Botón de navegación -->
+      <div class="dashboard-nav-button" style="padding: 0 16px; margin-bottom: 20px;">
+        <a href="{% url 'panel_principal' %}" class="btn-link" style="display: block; text-align: center;">Ver Panel Principal</a>
+      </div>
       <div class="cards two-col">
         
         <section class="card">
@@ -156,4 +158,34 @@
             }
         });
     </script>
+
+    <style>
+        /* Estilos responsive para dashboard */
+        @media (max-width: 768px) {
+            .dashboard {
+                padding: 16px;
+            }
+
+            .dashboard-nav-button {
+                padding: 0 !important;
+            }
+
+            .dashboard-nav-button .btn-link {
+                width: 100%;
+                padding: 12px;
+                font-size: 14px;
+                font-weight: 600;
+            }
+
+            .cards.two-col {
+                display: flex !important;
+                flex-direction: column !important;
+                gap: 16px !important;
+            }
+
+            .card canvas {
+                max-height: 250px !important;
+            }
+        }
+    </style>
     {% endblock %}
