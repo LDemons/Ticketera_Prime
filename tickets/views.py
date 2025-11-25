@@ -347,11 +347,8 @@ def mis_tickets_view(request, ticket_id=None):
             if form_creacion.is_valid():
                 ticket_nuevo = form_creacion.save(commit=False)
                 ticket_nuevo.usuario_creador = creador
-                
-                # --- NO asignamos prioridad ni categoría ---
-                # Esto lo hará el Admin al asignar el ticket
-                # prioridad y categoria quedan como None (null en BD)
-
+                ticket_nuevo.estado = 'ABIERTO'
+                # El formulario ya asigna categoría y prioridad por defecto en su método save()
                 ticket_nuevo.save()
                 return redirect(f"{reverse('mis_tickets')}?estado={estado_filtro}&orden={orden}")
     

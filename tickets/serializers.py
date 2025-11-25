@@ -81,7 +81,7 @@ class TicketCreateSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = Ticket
-        fields = ['titulo', 'descripcion', 'categoria', 'prioridad']
+        fields = ['titulo', 'descripcion']
     
     def validate_titulo(self, value):
         """Validar que el título no esté vacío"""
@@ -96,8 +96,27 @@ class TicketCreateSerializer(serializers.ModelSerializer):
         return value.strip()
     
     def create(self, validated_data):
-        """Crear ticket con estado inicial ABIERTO"""
+        """Crear ticket con estado inicial ABIERTO y valores por defecto para categoría y prioridad"""
         validated_data['estado'] = 'ABIERTO'
+        
+        # Asignar categoría por defecto si no existe
+        if 'categoria' not in validated_data:
+            try:
+                categoria_pendiente = Categoria.objects.get(nombre='Pendiente de clasificación')
+            except Categoria.DoesNotExist:
+                # Si no existe, usar la primera categoría disponible
+                categoria_pendiente = Categoria.objects.first()
+            validated_data['categoria'] = categoria_pendiente
+        
+        # Asignar prioridad por defecto si no existe
+        if 'prioridad' not in validated_data:
+            try:
+                prioridad_media = Prioridad.objects.get(Tipo_Nivel='MEDIO')
+            except Prioridad.DoesNotExist:
+                # Si no existe, usar la primera prioridad disponible
+                prioridad_media = Prioridad.objects.first()
+            validated_data['prioridad'] = prioridad_media
+        
         return super().create(validated_data)
 
 

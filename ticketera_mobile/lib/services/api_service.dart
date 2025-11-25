@@ -138,8 +138,6 @@ class ApiService {
   Future<Map<String, dynamic>> createTicket({
     required String titulo,
     required String descripcion,
-    required int categoriaId,
-    required int prioridadId,
   }) async {
     final token = await getToken();
     
@@ -153,8 +151,6 @@ class ApiService {
         body: json.encode({
           'titulo': titulo,
           'descripcion': descripcion,
-          'categoria': categoriaId,
-          'prioridad': prioridadId,
         }),
       );
       

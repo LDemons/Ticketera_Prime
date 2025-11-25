@@ -43,8 +43,6 @@ class _CreateTicketScreenState extends State<CreateTicketScreen> {
       await _apiService.createTicket(
         titulo: _tituloController.text.trim(),
         descripcion: _descripcionController.text.trim(),
-        categoriaId: 6,  // ID de "Otro"
-        prioridadId: 2,  // ID de "MEDIO"
       );
 
       if (!mounted) return;

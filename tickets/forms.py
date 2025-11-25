@@ -3,12 +3,15 @@ from .models import Ticket, AsignacionTicket, Usuario, Rol, Comentario, Priorida
 from django.contrib.auth.hashers import make_password
 
 class TicketForm(forms.ModelForm):
+    """
+    Formulario simplificado para docentes - solo título y descripción.
+    El admin asigna categoría y prioridad al momento de asignar el ticket.
+    """
     class Meta:
         model = Ticket
-        # Estos son los campos que aparecerán en el formulario
-        fields = ['titulo', 'descripcion', 'categoria', 'prioridad']
+        # Solo título y descripción para docentes
+        fields = ['titulo', 'descripcion']
         
-        # Esto hace que los campos se vean un poco mejor
         widgets = {
             'titulo': forms.TextInput(attrs={
                 'class': 'form-input',
@@ -19,15 +22,37 @@ class TicketForm(forms.ModelForm):
                 'rows': 4,
                 'placeholder': 'Describe el problema con el mayor detalle posible...'
             }),
-            'categoria': forms.Select(attrs={'class': 'form-select'}),
-            'prioridad': forms.Select(attrs={'class': 'form-select'}),
         }
         labels = {
             'titulo': 'Título del Ticket',
             'descripcion': 'Descripción',
-            'categoria': 'Categoría',
-            'prioridad': 'Prioridad',
         }
+    
+    def save(self, commit=True):
+        """
+        Al guardar, asignar categoría y prioridad por defecto.
+        """
+        ticket = super().save(commit=False)
+        
+        # Asignar categoría por defecto si no existe
+        if not ticket.categoria_id:
+            try:
+                categoria_pendiente = Categoria.objects.get(nombre='Pendiente de clasificación')
+            except Categoria.DoesNotExist:
+                categoria_pendiente = Categoria.objects.first()
+            ticket.categoria = categoria_pendiente
+        
+        # Asignar prioridad por defecto si no existe
+        if not ticket.prioridad_id:
+            try:
+                prioridad_media = Prioridad.objects.get(Tipo_Nivel='MEDIO')
+            except Prioridad.DoesNotExist:
+                prioridad_media = Prioridad.objects.first()
+            ticket.prioridad = prioridad_media
+        
+        if commit:
+            ticket.save()
+        return ticket
 
 class AsignacionTicketForm(forms.ModelForm):
     """

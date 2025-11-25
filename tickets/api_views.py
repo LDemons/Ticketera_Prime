@@ -28,32 +28,43 @@ from .serializers import (
 @method_decorator(csrf_exempt, name='dispatch')
 class CustomAuthToken(ObtainAuthToken):
     """
-    Vista personalizada para autenticación con email y contraseña.
-    Devuelve el token y datos del usuario.
+    Vista personalizada para autenticación con username y contraseña.
+    Usa el sistema de autenticación estándar de Django.
     
     POST /api/v1/auth/login/
-    Body: {"email": "user@example.com", "password": "password123"}
+    Body: {"email": "PauloG", "password": "password123"}
     Response: {"token": "...", "user": {...}}
     """
     def post(self, request, *args, **kwargs):
-        email = request.data.get('email')
+        username = request.data.get('email')  # Mantener nombre del campo por compatibilidad
         password = request.data.get('password')
         
-        if not email or not password:
+        if not username or not password:
             return Response(
-                {'error': 'Email y contraseña son requeridos'},
+                {'error': 'Usuario y contraseña son requeridos'},
                 status=status.HTTP_400_BAD_REQUEST
             )
         
         try:
-            # Buscar usuario en nuestro modelo
-            usuario_app = Usuario.objects.select_related('rol').get(email=email)
+            # Autenticar con el sistema de Django
+            from django.contrib.auth import authenticate
+            from django.contrib.auth.models import User
             
-            # Verificar contraseña
-            if not check_password(password, usuario_app.contrasenia_hash):
+            django_user = authenticate(username=username, password=password)
+            
+            if not django_user:
                 return Response(
                     {'error': 'Credenciales inválidas'},
                     status=status.HTTP_401_UNAUTHORIZED
+                )
+            
+            # Buscar usuario en el modelo de la app por email
+            try:
+                usuario_app = Usuario.objects.select_related('rol').get(email=django_user.email)
+            except Usuario.DoesNotExist:
+                return Response(
+                    {'error': 'Usuario no encontrado en el sistema'},
+                    status=status.HTTP_404_NOT_FOUND
                 )
             
             # Verificar que esté activo
@@ -62,13 +73,6 @@ class CustomAuthToken(ObtainAuthToken):
                     {'error': 'Usuario inactivo'},
                     status=status.HTTP_403_FORBIDDEN
                 )
-            
-            # Obtener o crear el usuario de Django para autenticación
-            from django.contrib.auth.models import User
-            django_user, created = User.objects.get_or_create(
-                username=email,
-                defaults={'email': email}
-            )
             
             # Obtener o crear token
             token, created = Token.objects.get_or_create(user=django_user)
@@ -83,10 +87,10 @@ class CustomAuthToken(ObtainAuthToken):
                 }
             })
             
-        except Usuario.DoesNotExist:
+        except Exception as e:
             return Response(
-                {'error': 'Credenciales inválidas'},
-                status=status.HTTP_401_UNAUTHORIZED
+                {'error': 'Error en la autenticación'},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
 
