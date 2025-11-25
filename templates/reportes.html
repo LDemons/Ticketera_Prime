@@ -5,90 +5,84 @@
 {% block content %}
     <header class="header">
       <h1 class="page-title">Reportes Simples</h1>
-
-            <form method="GET" action="{% url 'reportes' %}" class="filters">
-                <div style="display: flex; align-items: center; gap: 5px;">
-                    <label for="fecha_desde" style="font-size: 14px; color: var(--muted);">Desde:</label>
-                    <input type="date" id="fecha_desde" name="fecha_desde" 
-                        value="{{ fecha_desde_str|default:'' }}" 
-                        style="padding: 6px 8px; border: 1px solid var(--line); border-radius: 6px;">
-                </div>
-                <div style="display: flex; align-items: center; gap: 5px;">
-                    <label for="fecha_hasta" style="font-size: 14px; color: var(--muted);">Hasta:</label>
-                    <input type="date" id="fecha_hasta" name="fecha_hasta" 
-                        value="{{ fecha_hasta_str|default:'' }}" 
-                        style="padding: 6px 8px; border: 1px solid var(--line); border-radius: 6px;">
-                </div>
-                <button type="submit" class="btn-link" style="padding: 7px 15px;">Filtrar</button>
-
-                {% if fecha_desde_str or fecha_hasta_str %}
-                <a href="{% url 'reportes' %}" class="btn-link" 
-                style="padding: 7px 15px; border-color: var(--indigo-800); color: var(--indigo-800);">
-                Limpiar Filtros
-                </a>
-                {% endif %}
-
-                <a href="{% url 'descargar_reporte_csv' %}?fecha_desde={{ fecha_desde_str }}&fecha_hasta={{ fecha_hasta_str }}" 
-                   class="btn-link" 
-                   style="padding: 7px 15px; background: var(--green); color: #fff; border-color: var(--green);">
-                    <svg viewBox="0 0 24 24" style="width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2; vertical-align: middle; margin-right: 5px;">
-                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                        <polyline points="7 10 12 15 17 10"></polyline>
-                        <line x1="12" y1="15" x2="12" y2="3"></line>
-                    </svg>
-                    Descargar CSV
-                </a>
-            </form>
-      </header>
+    </header>
 
      <main style="padding: 16px;">
 
+        <!-- Filtros -->
+        <form method="GET" action="{% url 'reportes' %}" class="filters filters-reportes" style="margin-bottom: 20px;">
+            <div class="filter-date-group">
+                <label for="fecha_desde">Desde:</label>
+                <input type="date" id="fecha_desde" name="fecha_desde" value="{{ fecha_desde_str|default:'' }}">
+            </div>
+            <div class="filter-date-group">
+                <label for="fecha_hasta">Hasta:</label>
+                <input type="date" id="fecha_hasta" name="fecha_hasta" value="{{ fecha_hasta_str|default:'' }}">
+            </div>
+            <button type="submit" class="btn-link btn-filtrar">Filtrar</button>
+
+            {% if fecha_desde_str or fecha_hasta_str %}
+            <a href="{% url 'reportes' %}" class="btn-link btn-limpiar">Limpiar</a>
+            {% endif %}
+
+            <a href="{% url 'descargar_reporte_csv' %}?fecha_desde={{ fecha_desde_str }}&fecha_hasta={{ fecha_hasta_str }}" class="btn-link btn-descargar">
+                <svg viewBox="0 0 24 24" class="btn-icon-svg">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                    <polyline points="7 10 12 15 17 10"></polyline>
+                    <line x1="12" y1="15" x2="12" y2="3"></line>
+                </svg>
+                <span class="btn-text-desktop">Descargar CSV</span>
+                <span class="btn-text-mobile">CSV</span>
+            </a>
+        </form>
+
         <!-- Comparación Mensual -->
-        <section class="card" style="margin-bottom: 20px;">
+        <section class="card comparacion-mensual" style="margin-bottom: 20px;">
             <div class="card-head">
                 <h2>Comparación Mensual</h2>
             </div>
-            <div style="padding: 20px; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; align-items: center;">
+            <div class="comparacion-grid">
                 <!-- Mes Anterior -->
-                <div style="text-align: center;">
-                    <div style="font-size: 14px; color: var(--muted); margin-bottom: 5px;">{{ comparacion_mensual.mes_anterior }}</div>
-                    <div style="font-size: 32px; font-weight: 700; color: var(--text);">{{ comparacion_mensual.tickets_mes_anterior }}</div>
-                    <div style="font-size: 13px; color: var(--muted);">tickets creados</div>
+                <div class="comparacion-item">
+                    <div class="comparacion-label">{{ comparacion_mensual.mes_anterior }}</div>
+                    <div class="comparacion-valor">{{ comparacion_mensual.tickets_mes_anterior }}</div>
+                    <div class="comparacion-sublabel">tickets creados</div>
                 </div>
 
                 <!-- Indicador de Cambio -->
-                <div style="text-align: center;">
+                <div class="comparacion-indicador">
                     {% if comparacion_mensual.aumento %}
-                        <svg viewBox="0 0 24 24" style="width: 48px; height: 48px; stroke: var(--red); fill: none; stroke-width: 2; margin-bottom: 10px;">
+                        <svg viewBox="0 0 24 24" class="comparacion-icon comparacion-icon--negativo">
                             <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>
                             <polyline points="17 6 23 6 23 12"></polyline>
                         </svg>
-                        <div style="font-size: 28px; font-weight: 800; color: var(--red);">
+                        <div class="comparacion-porcentaje comparacion-porcentaje--negativo">
                             +{{ comparacion_mensual.porcentaje_cambio }}%
                         </div>
-                        <div style="font-size: 13px; color: var(--muted);">incremento</div>
+                        <div class="comparacion-sublabel">incremento</div>
                     {% else %}
-                        <svg viewBox="0 0 24 24" style="width: 48px; height: 48px; stroke: var(--green); fill: none; stroke-width: 2; margin-bottom: 10px;">
+                        <svg viewBox="0 0 24 24" class="comparacion-icon comparacion-icon--positivo">
                             <polyline points="23 18 13.5 8.5 8.5 13.5 1 6"></polyline>
                             <polyline points="17 18 23 18 23 12"></polyline>
                         </svg>
-                        <div style="font-size: 28px; font-weight: 800; color: var(--green);">
+                        <div class="comparacion-porcentaje comparacion-porcentaje--positivo">
                             {{ comparacion_mensual.porcentaje_cambio }}%
                         </div>
-                        <div style="font-size: 13px; color: var(--muted);">reducción</div>
+                        <div class="comparacion-sublabel">reducción</div>
                     {% endif %}
                 </div>
 
                 <!-- Mes Actual -->
-                <div style="text-align: center;">
-                    <div style="font-size: 14px; color: var(--muted); margin-bottom: 5px;">{{ comparacion_mensual.mes_actual }}</div>
-                    <div style="font-size: 32px; font-weight: 700; color: var(--text);">{{ comparacion_mensual.tickets_mes_actual }}</div>
-                    <div style="font-size: 13px; color: var(--muted);">tickets creados</div>
+                <div class="comparacion-item">
+                    <div class="comparacion-label">{{ comparacion_mensual.mes_actual }}</div>
+                    <div class="comparacion-valor">{{ comparacion_mensual.tickets_mes_actual }}</div>
+                    <div class="comparacion-sublabel">tickets creados</div>
                 </div>
             </div>
         </section>
 
-        <div class="cards"> <section class="card">
+        <div class="cards reportes-grid">
+            <section class="card">
                 <div class="card-head">
                     <h2>Tickets por Estado</h2>
                 </div>
@@ -177,4 +171,268 @@
                 </div>
             </section>
             </div> </main>
+
+    <style>
+        /* Estilos para filtros de reportes */
+        .filter-date-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .filter-date-group label {
+            font-size: 14px;
+            color: var(--muted);
+            white-space: nowrap;
+        }
+
+        .filter-date-group input[type="date"] {
+            padding: 8px 10px;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 14px;
+        }
+
+        .btn-limpiar {
+            border-color: var(--indigo-800);
+            color: var(--indigo-800);
+            background: #fff;
+        }
+
+        .btn-descargar {
+            background: var(--green);
+            color: #fff;
+            border-color: var(--green);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn-icon-svg {
+            width: 16px;
+            height: 16px;
+            fill: none;
+            stroke: currentColor;
+            stroke-width: 2;
+        }
+
+        .btn-text-mobile {
+            display: none;
+        }
+
+        /* Estilos responsive para reportes */
+        @media (max-width: 768px) {
+            .filters-reportes {
+                display: flex !important;
+                flex-direction: column !important;
+                gap: 12px !important;
+                padding: 16px !important;
+                background: #fff;
+                border-radius: 12px;
+                box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            }
+
+            .filter-date-group {
+                width: 100%;
+            }
+
+            .filter-date-group label {
+                min-width: 60px;
+                font-weight: 500;
+            }
+
+            .filter-date-group input[type="date"] {
+                flex: 1;
+                width: 100%;
+            }
+
+            .filters-reportes .btn-link {
+                width: 100%;
+                justify-content: center;
+                padding: 12px 16px;
+                font-size: 14px;
+                font-weight: 600;
+                display: flex;
+                align-items: center;
+                gap: 8px;
+            }
+
+            .btn-text-desktop {
+                display: none;
+            }
+
+            .btn-text-mobile {
+                display: inline;
+            }
+
+            /* Comparación mensual responsive */
+            .comparacion-grid {
+                display: flex !important;
+                flex-direction: column !important;
+                gap: 20px !important;
+                padding: 20px !important;
+            }
+
+            .comparacion-item {
+                text-align: center !important;
+                padding: 15px;
+                background: var(--bg);
+                border-radius: 10px;
+            }
+
+            .comparacion-indicador {
+                text-align: center !important;
+                order: -1; /* Mover el indicador arriba */
+                padding: 20px;
+                background: var(--bg);
+                border-radius: 10px;
+            }
+
+            .comparacion-label {
+                font-size: 13px !important;
+                color: var(--muted) !important;
+                margin-bottom: 8px !important;
+            }
+
+            .comparacion-valor {
+                font-size: 28px !important;
+                font-weight: 700 !important;
+                color: var(--text) !important;
+                margin: 5px 0 !important;
+            }
+
+            .comparacion-sublabel {
+                font-size: 12px !important;
+                color: var(--muted) !important;
+                margin-top: 5px !important;
+            }
+
+            .comparacion-icon {
+                width: 40px !important;
+                height: 40px !important;
+                margin-bottom: 10px !important;
+            }
+
+            .comparacion-icon--positivo {
+                stroke: var(--green) !important;
+            }
+
+            .comparacion-icon--negativo {
+                stroke: var(--red) !important;
+            }
+
+            .comparacion-porcentaje {
+                font-size: 24px !important;
+                font-weight: 800 !important;
+                margin: 8px 0 !important;
+            }
+
+            .comparacion-porcentaje--positivo {
+                color: var(--green) !important;
+            }
+
+            .comparacion-porcentaje--negativo {
+                color: var(--red) !important;
+            }
+
+            /* Tarjetas de reportes */
+            .reportes-grid {
+                display: flex !important;
+                flex-direction: column !important;
+                gap: 16px !important;
+            }
+
+            .card .table {
+                overflow-x: auto;
+            }
+
+            .card .table table {
+                font-size: 13px;
+            }
+
+            .card .table th,
+            .card .table td {
+                padding: 8px 5px !important;
+            }
+
+            /* Ajustar tags en tablas */
+            .tag {
+                font-size: 10px;
+                padding: 2px 6px;
+            }
+        }
+
+        @media (min-width: 769px) {
+            .btn-text-mobile {
+                display: none;
+            }
+
+            .btn-text-desktop {
+                display: inline;
+            }
+
+            .comparacion-grid {
+                padding: 20px;
+                display: grid;
+                grid-template-columns: 1fr 1fr 1fr;
+                gap: 20px;
+                align-items: center;
+            }
+
+            .comparacion-item {
+                text-align: center;
+            }
+
+            .comparacion-indicador {
+                text-align: center;
+            }
+
+            .comparacion-label {
+                font-size: 14px;
+                color: var(--muted);
+                margin-bottom: 5px;
+            }
+
+            .comparacion-valor {
+                font-size: 32px;
+                font-weight: 700;
+                color: var(--text);
+            }
+
+            .comparacion-sublabel {
+                font-size: 13px;
+                color: var(--muted);
+            }
+
+            .comparacion-icon {
+                width: 48px;
+                height: 48px;
+                fill: none;
+                stroke-width: 2;
+                margin-bottom: 10px;
+            }
+
+            .comparacion-icon--positivo {
+                stroke: var(--green);
+            }
+
+            .comparacion-icon--negativo {
+                stroke: var(--red);
+            }
+
+            .comparacion-porcentaje {
+                font-size: 28px;
+                font-weight: 800;
+            }
+
+            .comparacion-porcentaje--positivo {
+                color: var(--green);
+            }
+
+            .comparacion-porcentaje--negativo {
+                color: var(--red);
+            }
+        }
+    </style>
 {% endblock %}
