@@ -37,17 +37,10 @@ body{
   background:var(--indigo-800);
   color:#fff;
   padding:18px 14px;
+  padding-bottom: 100px;
   display:flex; 
   flex-direction:column; 
   gap:14px;
-}
-
-/* Contenedor principal de la sidebar con flex para empujar el usuario al fondo */
-.sidebar-content {
-  display: flex;
-  flex-direction: column;
-  min-height: 100%;
-  flex: 1;
 }
 
 .brand{display:flex;align-items:center;gap:10px}
@@ -744,11 +737,15 @@ textarea.form-input {
 /* 8) Perfil de usuario en sidebar       */
 /* ===================================== */
 
-/* Contenedor del usuario que se queda al fondo */
+/* Contenedor del usuario que se queda al fondo FIJO */
 .user-section {
-  margin-top: auto;
-  padding-top: 20px;
-  position: relative;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 244px;
+  background: var(--indigo-800);
+  padding: 14px;
+  z-index: 1000;
 }
 
 .user-profile {
