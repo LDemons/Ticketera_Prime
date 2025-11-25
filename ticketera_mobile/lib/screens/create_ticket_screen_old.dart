@@ -1,6 +1,5 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import '../services/api_service.dart';
-import '../utils/app_colors.dart';
 import 'login_screen.dart';
 
 class CreateTicketScreen extends StatefulWidget {
@@ -17,6 +16,12 @@ class _CreateTicketScreenState extends State<CreateTicketScreen> {
   final _apiService = ApiService();
 
   bool _isLoading = false;
+  Map<String, dynamic>? _userData;
+
+  @override
+  void initState() {
+    super.initState();
+  }
 
   @override
   void dispose() {
@@ -45,12 +50,14 @@ class _CreateTicketScreenState extends State<CreateTicketScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('✓ Ticket creado exitosamente'),
-          backgroundColor: AppColors.green,
+          backgroundColor: Color(0xFF2fb171),
           duration: Duration(seconds: 2),
         ),
       );
 
-      Navigator.pop(context, true); // Retornar true para indicar que se creó
+      _tituloController.clear();
+      _descripcionController.clear();
+      _formKey.currentState!.reset();
     } catch (e) {
       if (!mounted) return;
 
@@ -58,7 +65,7 @@ class _CreateTicketScreenState extends State<CreateTicketScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Error: $errorMsg'),
-          backgroundColor: AppColors.red,
+          backgroundColor: const Color(0xFFea5573),
         ),
       );
     } finally {
@@ -83,7 +90,9 @@ class _CreateTicketScreenState extends State<CreateTicketScreen> {
           ),
           ElevatedButton(
             onPressed: () => Navigator.pop(context, true),
-            style: ElevatedButton.styleFrom(backgroundColor: AppColors.red),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFea5573),
+            ),
             child: const Text('Cerrar Sesión'),
           ),
         ],
@@ -92,10 +101,13 @@ class _CreateTicketScreenState extends State<CreateTicketScreen> {
 
     if (confirm == true && mounted) {
       await _apiService.logout();
+
       if (!mounted) return;
-      Navigator.of(context).pushAndRemoveUntil(
-        MaterialPageRoute(builder: (context) => const LoginScreen()),
-        (route) => false,
+
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(
+          builder: (context) => const LoginScreen(),
+        ),
       );
     }
   }
@@ -103,179 +115,118 @@ class _CreateTicketScreenState extends State<CreateTicketScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.bg,
       appBar: AppBar(
-        backgroundColor: AppColors.indigo800,
-        foregroundColor: Colors.white,
-        elevation: 0,
         title: Row(
-          children: const [
-            Icon(Icons.add_circle_outline, size: 24),
-            SizedBox(width: 12),
-            Text('Nuevo Ticket'),
+          children: [
+            const Icon(Icons.confirmation_number, size: 24),
+            const SizedBox(width: 12),
+            const Text('Ticketera Prime'),
           ],
         ),
         actions: [
+          if (_userData != null)
+            Padding(
+              padding: const EdgeInsets.only(right: 16),
+              child: Center(
+                child: Text(
+                  _userData!['nombre'] ?? '',
+                  style: const TextStyle(fontSize: 14),
+                ),
+              ),
+            ),
           IconButton(
-            icon: const Icon(Icons.logout_outlined),
+            icon: const Icon(Icons.logout),
             onPressed: _handleLogout,
-            tooltip: 'Cerrar sesión',
+            tooltip: 'Cerrar Sesión',
           ),
         ],
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(24),
         child: Center(
           child: Container(
-            constraints: const BoxConstraints(maxWidth: 600),
+            constraints: const BoxConstraints(maxWidth: 800),
             child: Card(
-              elevation: 0,
+              elevation: 2,
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(14),
-                side: const BorderSide(color: AppColors.line),
+                borderRadius: BorderRadius.circular(12),
               ),
-              color: Colors.white,
               child: Padding(
-                padding: const EdgeInsets.all(24),
+                padding: const EdgeInsets.all(32),
                 child: Form(
                   key: _formKey,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Título de la sección
                       Text(
                         'Crear un Nuevo Ticket',
-                        style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                        style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                           fontWeight: FontWeight.bold,
-                          color: AppColors.indigo800,
+                          color: const Color(0xFF2a0441),
                         ),
                       ),
                       const SizedBox(height: 8),
-                      const Text(
+                      Text(
                         'Describe tu problema y el equipo técnico lo atenderá',
-                        style: TextStyle(
-                          color: AppColors.muted,
-                          fontSize: 14,
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          color: const Color(0xFF6b6b7a),
                         ),
                       ),
                       const SizedBox(height: 24),
 
-                      // Campo Título
-                      const Text(
-                        'Título del Ticket',
-                        style: TextStyle(
-                          fontWeight: FontWeight.w600,
-                          fontSize: 14,
-                          color: AppColors.muted,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
+                      // Título
                       TextFormField(
                         controller: _tituloController,
                         decoration: const InputDecoration(
+                          labelText: 'Título del Ticket',
                           hintText: 'Ej: Problema con proyector sala 201',
-                          hintStyle: TextStyle(color: AppColors.muted),
                         ),
                         validator: (value) {
-                          if (value == null || value.trim().isEmpty) {
+                          if (value == null || value.isEmpty) {
                             return 'Por favor ingresa un título';
                           }
                           return null;
                         },
-                        enabled: !_isLoading,
                       ),
                       const SizedBox(height: 20),
 
-                      // Campo Descripción
-                      const Text(
-                        'Descripción',
-                        style: TextStyle(
-                          fontWeight: FontWeight.w600,
-                          fontSize: 14,
-                          color: AppColors.muted,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
+                      // Descripción
                       TextFormField(
                         controller: _descripcionController,
-                        maxLines: 6,
                         decoration: const InputDecoration(
+                          labelText: 'Descripción',
                           hintText: 'Describe el problema con el mayor detalle posible...',
-                          hintStyle: TextStyle(color: AppColors.muted),
                           alignLabelWithHint: true,
                         ),
+                        maxLines: 6,
                         validator: (value) {
-                          if (value == null || value.trim().isEmpty) {
+                          if (value == null || value.isEmpty) {
                             return 'Por favor ingresa una descripción';
                           }
                           return null;
-                        ),
-                        enabled: !_isLoading,
+                        },
                       ),
-                      const SizedBox(height: 24),
-
-                      // Nota informativa
-                      Container(
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: AppColors.blue100,
-                          borderRadius: BorderRadius.circular(10),
-                          border: Border.all(color: AppColors.blue.withOpacity(0.3)),
-                        ),
-                        child: Row(
-                          children: const [
-                            Icon(Icons.info_outline, color: AppColors.blue, size: 20),
-                            SizedBox(width: 12),
-                            Expanded(
-                              child: Text(
-                                'El administrador asignará la categoría y prioridad de tu ticket',
-                                style: TextStyle(
-                                  fontSize: 13,
-                                  color: AppColors.blue,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 24),
+                      const SizedBox(height: 32),
 
                       // Botón Enviar
                       SizedBox(
                         width: double.infinity,
-                        height: 50,
                         child: ElevatedButton(
                           onPressed: _isLoading ? null : _handleSubmit,
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColors.indigo800,
-                            foregroundColor: Colors.white,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            elevation: 0,
-                          ),
                           child: _isLoading
                               ? const SizedBox(
                                   height: 20,
                                   width: 20,
                                   child: CircularProgressIndicator(
                                     strokeWidth: 2,
-                                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                                    valueColor: AlwaysStoppedAnimation<Color>(
+                                      Colors.white,
+                                    ),
                                   ),
                                 )
-                              : Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: const [
-                                    Icon(Icons.send, size: 20),
-                                    SizedBox(width: 8),
-                                    Text(
-                                      'Enviar Ticket',
-                                      style: TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.w600,
-                                      ),
-                                    ),
-                                  ],
+                              : const Text(
+                                  'Enviar Ticket',
+                                  style: TextStyle(fontSize: 16),
                                 ),
                         ),
                       ),
