@@ -10,50 +10,57 @@ from django.db.models import F, ExpressionWrapper, fields, Avg, Min, Func, Value
 from django.views.decorators.http import require_POST
 
 
-@login_required
-def landing_view(request):
-    """
-    Muestra una página de bienvenida con opciones según el rol.
-    """
-    usuario_app = None # Variable para nuestro modelo Usuario
-    try:
-        # Buscamos el usuario de nuestro modelo basado en el usuario de Django
-        usuario_app = Usuario.objects.get(email=request.user.email)
-    except Usuario.DoesNotExist:
-        # Si no existe en nuestro modelo, puede ser un superuser de Django
-        if not request.user.is_superuser:
-            # Si no es superuser y no existe, algo anda mal, lo sacamos.
-             return redirect('login') 
-             # O podrías mostrar un mensaje de error en landing.html si prefieres
-
-    context = {
-        # Pasamos el usuario de nuestra app (si existe) para los 'if' de rol
-        'usuario': usuario_app, 
-        # Podemos usar una clase diferente si queremos estilos específicos
-        'view_class': 'view-landing' 
-    }
-    return render(request, 'landing.html', context)
+# @login_required
+# def landing_view(request):
+#     """
+#     Muestra una página de bienvenida con opciones según el rol.
+#     FUNCIÓN ELIMINADA: Ahora index_view redirecciona directamente según el rol.
+#     """
+#     usuario_app = None # Variable para nuestro modelo Usuario
+#     try:
+#         # Buscamos el usuario de nuestro modelo basado en el usuario de Django
+#         usuario_app = Usuario.objects.get(email=request.user.email)
+#     except Usuario.DoesNotExist:
+#         # Si no existe en nuestro modelo, puede ser un superuser de Django
+#         if not request.user.is_superuser:
+#             # Si no es superuser y no existe, algo anda mal, lo sacamos.
+#              return redirect('login') 
+#              # O podrías mostrar un mensaje de error en landing.html si prefieres
+# 
+#     context = {
+#         # Pasamos el usuario de nuestra app (si existe) para los 'if' de rol
+#         'usuario': usuario_app, 
+#         # Podemos usar una clase diferente si queremos estilos específicos
+#         'view_class': 'view-landing' 
+#     }
+#     return render(request, 'landing.html', context)
 
 @login_required
 def index_view(request):
     """
-    Redirige SIEMPRE a la página de bienvenida después del login.
-    La vista 'landing_view' se encargará de mostrar lo correcto.
+    Redirige a la vista principal según el rol del usuario.
     """
-    # Verificamos si el usuario logueado existe en nuestro modelo Usuario
-    # o si es un superuser de Django. Si no, lo mandamos al login.
-    # (Esto es una seguridad extra por si acaso)
     try:
-        Usuario.objects.get(email=request.user.email)
-        # Si existe, lo mandamos a la landing page
-        return redirect('landing_page') 
-    except Usuario.DoesNotExist:
-        # Si no existe, vemos si es superuser de Django
-        if request.user.is_superuser:
-            # El superuser también va a la landing page (ella decidirá qué mostrar)
-             return redirect('landing_page')
+        usuario_app = Usuario.objects.get(email=request.user.email)
+        
+        # Redirigir según el rol
+        if usuario_app.rol.nombre == 'Docente':
+            return redirect('mis_tickets')
+        elif usuario_app.rol.nombre == 'TI':
+            return redirect('mis_asignaciones')
+        elif usuario_app.rol.nombre == 'Admin':
+            return redirect('panel_principal')
+        elif usuario_app.rol.nombre == 'Superadmin':
+            return redirect('usuarios_list')
         else:
-            # Si no es superuser y no existe en Usuario, algo raro pasa, al login.
+            # Rol no reconocido, mostrar error o redirigir al login
+            return redirect('login')
+            
+    except Usuario.DoesNotExist:
+        # Si es un superuser de Django sin registro en Usuario
+        if request.user.is_superuser:
+            return redirect('usuarios_list')  # O al admin de Django: '/admin/'
+        else:
             return redirect('login')
 
 

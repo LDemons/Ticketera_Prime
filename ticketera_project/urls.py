@@ -24,7 +24,6 @@ from tickets import views
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', views.index_view, name='index'),
-    path('bienvenido/', views.landing_view, name='landing_page'),
     path('panel-principal/', views.panel_principal_view, name='panel_principal'),  # <- NUEVO
     path('dashboard/', views.dashboard_view, name='dashboard'),  # <- Ahora solo gráficos
     path('tickets/', views.ticket_list_view, name='ticket_list'),
