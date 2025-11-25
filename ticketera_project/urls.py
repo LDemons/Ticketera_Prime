@@ -27,7 +27,8 @@ urlpatterns = [
     path('panel-principal/', views.panel_principal_view, name='panel_principal'),  # <- NUEVO
     path('dashboard/', views.dashboard_view, name='dashboard'),  # <- Ahora solo gráficos
     path('tickets/', views.ticket_list_view, name='ticket_list'),
-    path('tickets/<int:ticket_id>/', views.ticket_list_view, name='ticket_detail'),
+    path('tickets/<int:ticket_id>/', views.ticket_list_view, name='ticket_detail'),  # Panel lateral (desktop)
+    path('tickets/<int:ticket_id>/detalle/', views.ticket_detail_full_view, name='ticket_detail_full'),  # Página completa (móvil)
 
     # --- RUTAS DE "MIS TICKETS" (DOCENTE) ---
     path('mis-tickets/', views.mis_tickets_view, name='mis_tickets'),

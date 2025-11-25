@@ -57,10 +57,10 @@
                 </div>
             </div>
             <div class="ticket-actions">
-                <a href="{% url 'ticket_detail' ticket.ticket_id %}?estado={{ estado_actual }}&orden={{ orden_actual }}" class="btn-link">Abrir</a>
+                <a href="{% url 'ticket_detail_full' ticket.ticket_id %}?estado={{ estado_actual }}&orden={{ orden_actual }}" class="btn-link" data-ticket-id="{{ ticket.ticket_id }}" onclick="return handleTicketClickAdmin(this, event)">Abrir</a>
 
                 <div class="ticket-menu-wrapper">
-                    <button type="button" class="btn-icon" onclick="toggleTicketMenu({{ ticket.ticket_id }})" aria-label="Más opciones">
+                    <button type="button" class="btn-icon ticket-menu-toggle" aria-label="Más opciones">
                         <svg viewBox="0 0 24 24" style="width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 2;">
                             <circle cx="12" cy="12" r="1"/>
                             <circle cx="12" cy="5" r="1"/>
@@ -92,31 +92,46 @@
     </main>
 
     <script>
-        // Toggle del menú de opciones del ticket
-        function toggleTicketMenu(ticketId) {
-            const menu = document.getElementById('ticketMenu' + ticketId);
-            const allMenus = document.querySelectorAll('.ticket-dropdown-menu');
+        // Función para manejar clic en botón de abrir
+        function handleTicketClickAdmin(element, event) {
+            console.log('Ancho de pantalla:', window.innerWidth);
+            // En móvil (<= 768px), permitir navegación normal al detalle completo
+            if (window.innerWidth <= 768) {
+                console.log('MÓVIL: Navegando a página completa');
+                return true; // Navegar a ticket_detail_full
+            }
             
-            // Cerrar todos los demás menús
-            allMenus.forEach(m => {
-                if (m.id !== 'ticketMenu' + ticketId) {
-                    m.style.display = 'none';
-                }
-            });
-            
-            // Toggle del menú actual
-            menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
+            // En desktop (> 768px), prevenir navegación y abrir panel lateral
+            console.log('DESKTOP: Abriendo panel lateral');
+            event.preventDefault();
+            const ticketId = element.getAttribute('data-ticket-id');
+            const estado = new URLSearchParams(window.location.search).get('estado') || 'todos';
+            const orden = new URLSearchParams(window.location.search).get('orden') || 'reciente';
+            window.location.href = `{% url 'ticket_list' %}${ticketId}/?estado=${estado}&orden=${orden}`;
+            return false;
         }
+
+        // Toggle del menú de opciones (3 puntos)
+        document.querySelectorAll('.ticket-menu-toggle').forEach(toggle => {
+            toggle.addEventListener('click', function(event) {
+                event.preventDefault();
+                event.stopPropagation();
+                
+                const menu = this.nextElementSibling;
+                const isVisible = menu.style.display === 'block';
+                
+                // Cerrar todos los menús abiertos
+                document.querySelectorAll('.ticket-dropdown-menu').forEach(m => m.style.display = 'none');
+                
+                // Abrir/cerrar el menú actual
+                menu.style.display = isVisible ? 'none' : 'block';
+            });
+        });
 
         // Cerrar menús al hacer clic fuera
         document.addEventListener('click', function(event) {
-            const isMenuButton = event.target.closest('.btn-icon');
-            const isMenuContent = event.target.closest('.ticket-dropdown-menu');
-            
-            if (!isMenuButton && !isMenuContent) {
-                document.querySelectorAll('.ticket-dropdown-menu').forEach(menu => {
-                    menu.style.display = 'none';
-                });
+            if (!event.target.closest('.ticket-menu-wrapper')) {
+                document.querySelectorAll('.ticket-dropdown-menu').forEach(m => m.style.display = 'none');
             }
         });
     </script>

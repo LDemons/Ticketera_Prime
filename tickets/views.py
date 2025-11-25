@@ -223,6 +223,49 @@ def ticket_list_view(request, ticket_id=None):
     return render(request, 'tickets_list.html', context)
 
 @login_required
+def ticket_detail_full_view(request, ticket_id):
+    """Vista para mostrar el detalle completo del ticket en móvil (Admin)"""
+    try:
+        usuario = Usuario.objects.get(email=request.user.email)
+        if usuario.rol.nombre not in ['Admin', 'Superadmin']:
+            return redirect('index')
+    except Usuario.DoesNotExist:
+        return redirect('index')
+
+    ticket_seleccionado = get_object_or_404(Ticket, pk=ticket_id)
+    
+    # Procesar POST (asignación del ticket)
+    if request.method == 'POST':
+        form = AsignacionTicketForm(request.POST, ticket=ticket_seleccionado)
+        if form.is_valid():
+            ticket_seleccionado.prioridad = form.cleaned_data['prioridad']
+            ticket_seleccionado.categoria = form.cleaned_data['categoria']
+            ticket_seleccionado.estado = 'EN_PROGRESO'
+            ticket_seleccionado.save()
+
+            asignacion = AsignacionTicket(
+                ticket=ticket_seleccionado,
+                usuario_asignado=form.cleaned_data['usuario_asignado'],
+                comentarios=form.cleaned_data['comentarios'] or ''
+            )
+            asignacion.save()
+
+            estado_filtro = request.GET.get('estado', 'todos')
+            orden = request.GET.get('orden', 'reciente')
+            return redirect(f"{reverse('ticket_detail_full', args=[ticket_id])}?estado={estado_filtro}&orden={orden}")
+    else:
+        form = AsignacionTicketForm(ticket=ticket_seleccionado)
+    
+    context = {
+        'ticket_seleccionado': ticket_seleccionado,
+        'asignacion_form': form,
+        'estado_actual': request.GET.get('estado', 'todos'),
+        'orden_actual': request.GET.get('orden', 'reciente'),
+    }
+    
+    return render(request, 'ticket_detail_full.html', context)
+
+@login_required
 def ticket_detail_view(request, ticket_id):
     # Busca el ticket por su ID. Si no lo encuentra, muestra un error 404.
     ticket = get_object_or_404(Ticket, pk=ticket_id)
