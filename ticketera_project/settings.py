@@ -34,7 +34,7 @@ IS_WINDOWS = platform.system() == 'Windows'
 DEBUG = os.getenv('DEBUG', 'False') == 'True'
 PRODUCTION = os.getenv('PRODUCTION', 'False') == 'True'
 
-ALLOWED_HOSTS = ['ticketeraprime.com', 'www.ticketeraprime.com', 'localhost', '127.0.0.1']
+ALLOWED_HOSTS = ['ticketeraprime.com', 'www.ticketeraprime.com', 'localhost', '127.0.0.1', 'localhost']
 
 # CORS Configuration para Flutter
 CORS_ALLOW_ALL_ORIGINS = True  # Para desarrollo, permite todos los orígenes

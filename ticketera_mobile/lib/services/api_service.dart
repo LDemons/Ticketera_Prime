@@ -4,31 +4,94 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
 class ApiService {
-  // URLs según el entorno
-  // DESARROLLO (localhost/Chrome): http://localhost:8000/api/v1
-  // DESARROLLO (Android Emulator): http://10.0.2.2:8000/api/v1
-  // PRODUCCIÓN: https://ticketeraprime.com/api/v1
+  // Lista de servidores a probar en orden de prioridad
+  static const List<String> _serverUrls = [
+    'https://ticketeraprime.com/api/v1',      // Producción
+    'http://localhost:8000/api/v1',        // Desarrollo local (WiFi)
+    'http://10.0.2.2:8000/api/v1',            // Emulador Android
+  ];
   
-  static const String baseUrl = 'http://10.0.2.2:8000/api/v1';
+  static String? _workingUrl;
   
-  // Para compilar para producción, cambia a:
-  // static const String baseUrl = 'https://ticketeraprime.com/api/v1';
+  // Obtiene la URL del servidor que funciona
+  static Future<String> _getWorkingUrl() async {
+    // Si ya encontramos una URL que funciona, usarla
+    if (_workingUrl != null) return _workingUrl!;
+    
+    // Probar cada servidor
+    for (String url in _serverUrls) {
+      try {
+        final testResponse = await http.get(
+          Uri.parse('${url.replaceAll('/api/v1', '')}/'),
+        ).timeout(const Duration(seconds: 3));
+        
+        if (testResponse.statusCode < 500) {
+          _workingUrl = url;
+          print('✓ Servidor conectado: $url');
+          return url;
+        }
+      } catch (e) {
+        print('✗ Servidor no disponible: $url');
+        continue;
+      }
+    }
+    
+    // Si ninguno funciona, usar el primero por defecto
+    _workingUrl = _serverUrls[0];
+    return _workingUrl!;
+  }
+  
+  static String get baseUrl => _workingUrl ?? _serverUrls[0];
+  
+  // Helper para hacer requests con auto-detección de servidor
+  Future<http.Response> _makeRequest(
+    String endpoint,
+    String method, {
+    Map<String, String>? headers,
+    Object? body,
+  }) async {
+    final url = await _getWorkingUrl();
+    final uri = Uri.parse('$url$endpoint');
+    final token = await getToken();
+    
+    final defaultHeaders = {
+      'Content-Type': 'application/json',
+      if (token != null) 'Authorization': 'Token $token',
+      ...?headers,
+    };
+    
+    switch (method) {
+      case 'GET':
+        return await http.get(uri, headers: defaultHeaders).timeout(const Duration(seconds: 10));
+      case 'POST':
+        return await http.post(uri, headers: defaultHeaders, body: body).timeout(const Duration(seconds: 10));
+      case 'PUT':
+        return await http.put(uri, headers: defaultHeaders, body: body).timeout(const Duration(seconds: 10));
+      case 'DELETE':
+        return await http.delete(uri, headers: defaultHeaders).timeout(const Duration(seconds: 10));
+      default:
+        throw Exception('Método HTTP no soportado: $method');
+    }
+  }
   
   // ==========================================
-  // AUTENTICACIÃ“N
+  // AUTENTICACIÓN
   // ==========================================
   
   /// Login - Devuelve token y datos del usuario
   Future<Map<String, dynamic>> login(String email, String password) async {
+    // Obtener servidor que funciona
+    final url = await _getWorkingUrl();
+    
     try {
       final response = await http.post(
-        Uri.parse('$baseUrl/auth/login/'),
+        Uri.parse('$url/auth/login/'),
         headers: {'Content-Type': 'application/json'},
         body: json.encode({
           'email': email,
           'password': password,
         }),
-      );
+      ).timeout(const Duration(seconds: 10));
       
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
@@ -37,10 +100,10 @@ class ApiService {
         await _saveUserData(data['user']);
         return data;
       } else {
-        throw Exception('Credenciales invÃ¡lidas');
+        throw Exception('Credenciales inválidas');
       }
     } catch (e) {
-      throw Exception('Error de conexiÃ³n: $e');
+      throw Exception('Error de conexión: $e');
     }
   }
   
@@ -89,44 +152,28 @@ class ApiService {
   // TICKETS
   // ==========================================
   
-  /// Listar tickets del usuario (filtrado automÃ¡tico por rol)
+  /// Listar tickets del usuario (filtrado automático por rol)
   Future<List<dynamic>> getTickets() async {
-    final token = await getToken();
-    
     try {
-      final response = await http.get(
-        Uri.parse('$baseUrl/tickets/'),
-        headers: {
-          'Authorization': 'Token $token',
-          'Content-Type': 'application/json',
-        },
-      );
+      final response = await _makeRequest('/tickets/', 'GET');
       
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         return data['results'] ?? [];
       } else if (response.statusCode == 401) {
-        throw Exception('SesiÃ³n expirada');
+        throw Exception('Sesión expirada');
       } else {
         throw Exception('Error al cargar tickets');
       }
     } catch (e) {
-      throw Exception('Error de conexiÃ³n: $e');
+      throw Exception('Error de conexión: $e');
     }
   }
   
   /// Obtener detalle de un ticket
   Future<Map<String, dynamic>> getTicketDetail(int ticketId) async {
-    final token = await getToken();
-    
     try {
-      final response = await http.get(
-        Uri.parse('$baseUrl/tickets/$ticketId/'),
-        headers: {
-          'Authorization': 'Token $token',
-          'Content-Type': 'application/json',
-        },
-      );
+      final response = await _makeRequest('/tickets/$ticketId/', 'GET');
       
       if (response.statusCode == 200) {
         return json.decode(response.body);
@@ -134,7 +181,7 @@ class ApiService {
         throw Exception('Error al cargar detalle del ticket');
       }
     } catch (e) {
-      throw Exception('Error de conexiÃ³n: $e');
+      throw Exception('Error de conexión: $e');
     }
   }
   
@@ -143,15 +190,10 @@ class ApiService {
     required String titulo,
     required String descripcion,
   }) async {
-    final token = await getToken();
-    
     try {
-      final response = await http.post(
-        Uri.parse('$baseUrl/tickets/'),
-        headers: {
-          'Authorization': 'Token $token',
-          'Content-Type': 'application/json',
-        },
+      final response = await _makeRequest(
+        '/tickets/',
+        'POST',
         body: json.encode({
           'titulo': titulo,
           'descripcion': descripcion,
@@ -165,28 +207,23 @@ class ApiService {
         throw Exception(error['error'] ?? 'Error al crear ticket');
       }
     } catch (e) {
-      throw Exception('Error de conexiÃ³n: $e');
+      throw Exception('Error de conexión: $e');
     }
   }
   
-  /// AÃ±adir comentario a un ticket
+  /// Añadir comentario a un ticket
   Future<Map<String, dynamic>> addComment(int ticketId, String contenido) async {
-    final token = await getToken();
-    
     try {
-      final response = await http.post(
-        Uri.parse('$baseUrl/tickets/$ticketId/add_comment/'),
-        headers: {
-          'Authorization': 'Token $token',
-          'Content-Type': 'application/json',
-        },
+      final response = await _makeRequest(
+        '/tickets/$ticketId/add_comment/',
+        'POST',
         body: json.encode({'contenido': contenido}),
       );
       
       if (response.statusCode == 201) {
         return json.decode(response.body);
       } else {
-        throw Exception('Error al aÃ±adir comentario');
+        throw Exception('Error al añadir comentario');
       }
     } catch (e) {
       throw Exception('Error de conexiÃ³n: $e');
