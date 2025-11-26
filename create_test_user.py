@@ -21,9 +21,9 @@ rol_docente, created = Rol.objects.get_or_create(
     defaults={'nombre': 'Docente'}
 )
 if created:
-    print("✓ Rol 'Docente' creado")
+    print("[OK] Rol 'Docente' creado")
 else:
-    print("✓ Rol 'Docente' ya existe")
+    print("[INFO] Rol 'Docente' ya existe")
 
 # Crear o actualizar usuario de prueba
 try:
@@ -31,7 +31,7 @@ try:
     # Si existe, actualizar contraseña
     usuario.contraseña = make_password(TEST_PASSWORD)
     usuario.save()
-    print(f"✓ Usuario '{TEST_EMAIL}' actualizado")
+    print(f"[OK] Usuario '{TEST_EMAIL}' actualizado")
 except Usuario.DoesNotExist:
     # Si no existe, crearlo
     usuario = Usuario.objects.create(
@@ -42,7 +42,7 @@ except Usuario.DoesNotExist:
         rol=rol_docente,
         activo=True
     )
-    print(f"✓ Usuario '{TEST_EMAIL}' creado")
+    print(f"[OK] Usuario '{TEST_EMAIL}' creado")
 
 print("\n" + "="*50)
 print("USUARIO DE PRUEBA CREADO")

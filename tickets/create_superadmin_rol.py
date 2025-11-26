@@ -14,8 +14,8 @@ superadmin_rol, created = Rol.objects.get_or_create(
 )
 
 if created:
-    print(f"✅ Rol 'Superadmin' creado exitosamente con ID: {superadmin_rol.rol_id}")
+    print(f"[OK] Rol 'Superadmin' creado exitosamente con ID: {superadmin_rol.rol_id}")
 else:
-    print(f"ℹ️  El rol 'Superadmin' ya existe con ID: {superadmin_rol.rol_id}")
+    print(f"[INFO] El rol 'Superadmin' ya existe con ID: {superadmin_rol.rol_id}")
 
 print(f"Descripción: {superadmin_rol.descripcion}")
