@@ -7,7 +7,6 @@ class ApiService {
   // Lista de servidores a probar en orden de prioridad
   static const List<String> _serverUrls = [
     'https://ticketeraprime.com/api/v1',      // Producción
-    'http://localhost:8000/api/v1',        // Desarrollo local (WiFi)
     'http://10.0.2.2:8000/api/v1',            // Emulador Android
   ];
   

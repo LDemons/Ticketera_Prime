@@ -24,7 +24,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-@2pkqf62#yzwaerb#@aerix4-u@$k#=@lvocgjcv#n-$tgntht'
+SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-dev-key-change-in-production')
 
 # Detectar sistema operativo
 IS_LINUX = platform.system() == 'Linux'
@@ -34,7 +34,7 @@ IS_WINDOWS = platform.system() == 'Windows'
 DEBUG = os.getenv('DEBUG', 'False') == 'True'
 PRODUCTION = os.getenv('PRODUCTION', 'False') == 'True'
 
-ALLOWED_HOSTS = ['ticketeraprime.com', 'www.ticketeraprime.com', 'localhost', '127.0.0.1', 'localhost']
+ALLOWED_HOSTS = ['ticketeraprime.com', 'www.ticketeraprime.com', 'localhost', '127.0.0.1', '*']
 
 # CORS Configuration para Flutter
 CORS_ALLOW_ALL_ORIGINS = True  # Para desarrollo, permite todos los orígenes

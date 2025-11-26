@@ -86,11 +86,9 @@ try:
     print("\n" + "="*50)
     print("✨ DATOS DE PRUEBA LISTOS")
     print("="*50)
-    print(f"\n📧 Email: docente@test.com")
-    print(f"🔑 Password: test123")
+    print(f"\n📧 Usuario de prueba creado")
     print(f"👥 Rol: Docente")
-    print(f"📝 RUT: 12345678-9")
-    print("\n¡Puedes usar estas credenciales en la app móvil!\n")
+    print("\n¡Verifica las credenciales en tu gestor de contraseñas!\n")
     
 except Exception as e:
     print(f"  ❌ Error: {e}")

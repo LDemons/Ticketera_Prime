@@ -11,6 +11,10 @@ django.setup()
 from tickets.models import Usuario, Rol
 from django.contrib.auth.hashers import make_password
 
+# NOTA: Cambiar estos valores antes de usar en producción
+TEST_EMAIL = 'docente@test.com'
+TEST_PASSWORD = 'test123'  # Solo para desarrollo local
+
 # Crear o actualizar rol Docente
 rol_docente, created = Rol.objects.get_or_create(
     rol_id=4,
@@ -23,26 +27,25 @@ else:
 
 # Crear o actualizar usuario de prueba
 try:
-    usuario = Usuario.objects.get(email='docente@test.com')
+    usuario = Usuario.objects.get(email=TEST_EMAIL)
     # Si existe, actualizar contraseña
-    usuario.contraseña = make_password('test123')
+    usuario.contraseña = make_password(TEST_PASSWORD)
     usuario.save()
-    print("✓ Usuario 'docente@test.com' actualizado con contraseña 'test123'")
+    print(f"✓ Usuario '{TEST_EMAIL}' actualizado")
 except Usuario.DoesNotExist:
     # Si no existe, crearlo
     usuario = Usuario.objects.create(
         rut=12345678,
         nombre='Docente Test',
-        email='docente@test.com',
-        contraseña=make_password('test123'),
+        email=TEST_EMAIL,
+        contraseña=make_password(TEST_PASSWORD),
         rol=rol_docente,
         activo=True
     )
-    print("✓ Usuario 'docente@test.com' creado con contraseña 'test123'")
+    print(f"✓ Usuario '{TEST_EMAIL}' creado")
 
 print("\n" + "="*50)
-print("CREDENCIALES PARA LA APP MÓVIL:")
+print("USUARIO DE PRUEBA CREADO")
 print("="*50)
-print(f"Email:    docente@test.com")
-print(f"Password: test123")
+print("Verifica las credenciales en tu gestor de contraseñas local")
 print("="*50)
