@@ -21,6 +21,6 @@ categoria, created = Categoria.objects.get_or_create(
 )
 
 if created:
-    print(f"✓ Categoría creada: {categoria.nombre} (ID: {categoria.categoria_id})")
+    print(f"[OK] Categoria creada: {categoria.nombre} (ID: {categoria.categoria_id})")
 else:
-    print(f"✓ La categoría ya existe: {categoria.nombre} (ID: {categoria.categoria_id})")
+    print(f"[INFO] La categoria ya existe: {categoria.nombre} (ID: {categoria.categoria_id})")

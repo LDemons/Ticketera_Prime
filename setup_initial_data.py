@@ -10,7 +10,7 @@ django.setup()
 from django.contrib.auth.models import User
 from tickets.models import Rol, Categoria, Prioridad, Usuario
 
-print("🔧 Configurando datos iniciales...\n")
+print("Configurando datos iniciales...\n")
 
 # Crear roles (con IDs específicos)
 roles_data = [
@@ -20,13 +20,13 @@ roles_data = [
     {'rol_id': 4, 'nombre': 'Docente', 'descripcion': 'Docente que puede crear y consultar tickets'},
 ]
 
-print("📋 Creando roles...")
+print("Creando roles...")
 for rol_data in roles_data:
     rol, created = Rol.objects.get_or_create(
         rol_id=rol_data['rol_id'],
         defaults={'nombre': rol_data['nombre'], 'descripcion': rol_data['descripcion']}
     )
-    status = "✅ Creado" if created else "ℹ️  Ya existe"
+    status = "[CREADO]" if created else "[YA EXISTE]"
     print(f"  {status}: {rol.nombre}")
 
 # Crear categorías
@@ -39,10 +39,10 @@ categorias_data = [
     'Otro'
 ]
 
-print("\n📁 Creando categorías...")
+print("\nCreando categorias...")
 for nombre in categorias_data:
     cat, created = Categoria.objects.get_or_create(nombre=nombre)
-    status = "✅ Creada" if created else "ℹ️  Ya existe"
+    status = "[CREADA]" if created else "[YA EXISTE]"
     print(f"  {status}: {nombre}")
 
 # Crear prioridades
@@ -52,17 +52,17 @@ prioridades_data = [
     {'Tipo_Nivel': 'ALTO', 'sla_horas': 24},   # 1 día
 ]
 
-print("\n⚡ Creando prioridades...")
+print("\nCreando prioridades...")
 for prior_data in prioridades_data:
     prior, created = Prioridad.objects.get_or_create(
         Tipo_Nivel=prior_data['Tipo_Nivel'],
         defaults={'sla_horas': prior_data['sla_horas']}
     )
-    status = "✅ Creada" if created else "ℹ️  Ya existe"
+    status = "[CREADA]" if created else "[YA EXISTE]"
     print(f"  {status}: {prior.Tipo_Nivel} (SLA: {prior.sla_horas}h)")
 
 # Crear usuario de prueba
-print("\n👤 Creando usuario de prueba...")
+print("\nCreando usuario de prueba...")
 try:
     from django.contrib.auth.hashers import make_password
     
@@ -80,15 +80,15 @@ try:
         }
     )
     
-    status = "✅ Creado" if created else "ℹ️  Ya existe"
+    status = "[CREADO]" if created else "[YA EXISTE]"
     print(f"  {status}: {usuario.email}")
     
     print("\n" + "="*50)
-    print("✨ DATOS DE PRUEBA LISTOS")
+    print("DATOS DE PRUEBA LISTOS")
     print("="*50)
-    print(f"\n📧 Usuario de prueba creado")
-    print(f"👥 Rol: Docente")
-    print("\n¡Verifica las credenciales en tu gestor de contraseñas!\n")
+    print(f"\nUsuario de prueba creado")
+    print(f"Rol: Docente")
+    print("\nVerifica las credenciales en tu gestor de contrasenas\n")
     
 except Exception as e:
-    print(f"  ❌ Error: {e}")
+    print(f"  [ERROR]: {e}")
