@@ -896,6 +896,7 @@ textarea.form-input {
     text-decoration: none;
     transition: background 0.2s;
     font-size: 14px;
+    border-radius: 8px;
 }
 
 .user-menu a:hover {

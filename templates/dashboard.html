@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block title %}Ticketera · Dashboard{% endblock %}
 
@@ -54,9 +55,11 @@
       </div>
       </main>
 
+    <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-
+    
+    <!-- Cargar funciones de charts -->
+    <script src="{% static 'js/charts.js' %}"></script>
 
     <style>
         /* Estilos responsive para dashboard */
@@ -91,104 +94,223 @@
 
 {% block extra_js %}
     <script>
-        // --- GRÁFICO 1: TICKETS POR ESTADO (PIE) ---
-        const labelsEstado = {{ labels_estado_json|safe }};
-        const dataEstado = {{ data_estado_json|safe }};
-        const ctxEstado = document.getElementById('chartEstado').getContext('2d');
-        const colorsEstado = getChartColors();
-        new Chart(ctxEstado, {
-            type: 'pie',
-            data: {
-                labels: labelsEstado,
-                datasets: [{
-                    label: 'Tickets',
-                    data: dataEstado,
-                    backgroundColor: [
-                        'rgba(255, 99, 132, 0.7)', // Rojo claro
-                        'rgba(54, 162, 235, 0.7)', // Azul claro
-                        'rgba(255, 206, 86, 0.7)', // Amarillo
-                        'rgba(75, 192, 192, 0.7)', // Verde
-                        'rgba(153, 102, 255, 0.7)' // Púrpura
-                    ],
-                    borderColor: colorsEstado.cardBg,
-                    borderWidth: 1
-                }]
-            },
-            options: { responsive: true, aspectRatio: 2, plugins: { legend: { position: 'top' } } }
-        });
+        // Esperar a que charts.js esté cargado
+        document.addEventListener('DOMContentLoaded', function() {
+            // Obtener colores del tema
+            const colors = getChartColors();
 
-        // --- GRÁFICO 2: TICKETS POR CATEGORÍA (BARRAS) ---
-        const labelsCategoria = {{ labels_categoria_json|safe }};
-        const dataCategoria = {{ data_categoria_json|safe }};
-        const ctxCategoria = document.getElementById('chartCategoria').getContext('2d');
-        new Chart(ctxCategoria, {
-            type: 'bar',
-            data: {
-                labels: labelsCategoria,
-                datasets: [{
-                    label: 'Nº de Tickets',
-                    data: dataCategoria,
-                    backgroundColor: 'rgba(121, 47, 217, 0.7)',
-                    borderColor: 'rgba(121, 47, 217, 0.7)',
-                    borderWidth: 1
-                }]
-            },
-            options: { responsive: true, aspectRatio: 2, scales: { y: { beginAtZero: true } }, plugins: { legend: { display: false } } }
-        });
+            // --- GRÁFICO 1: TICKETS POR ESTADO (PIE) ---
+            const labelsEstado = {{ labels_estado_json|safe }};
+            const dataEstado = {{ data_estado_json|safe }};
+            const ctxEstado = document.getElementById('chartEstado').getContext('2d');
+            
+            new Chart(ctxEstado, {
+                type: 'pie',
+                data: {
+                    labels: labelsEstado,
+                    datasets: [{
+                        label: 'Tickets',
+                        data: dataEstado,
+                        backgroundColor: [
+                            'rgba(47, 115, 217, 0.8)',   // Azul - ABIERTO
+                            'rgba(255, 156, 91, 0.8)',   // Naranja - EN_PROGRESO
+                            'rgba(47, 177, 113, 0.8)',   // Verde - RESUELTO
+                            'rgba(234, 85, 115, 0.8)',   // Rojo - CERRADO
+                            'rgba(107, 107, 122, 0.8)',  // Gris - PENDIENTE
+                        ],
+                        borderColor: colors.tooltipBorder,
+                        borderWidth: 1
+                    }]
+                },
+                options: { 
+                    responsive: true, 
+                    aspectRatio: 2, 
+                    plugins: { 
+                        legend: { 
+                            position: 'top',
+                            labels: {
+                                color: colors.textColor
+                            }
+                        },
+                        tooltip: {
+                            backgroundColor: colors.tooltipBg,
+                            titleColor: colors.textColor,
+                            bodyColor: colors.textColor,
+                            borderColor: colors.tooltipBorder,
+                            borderWidth: 1
+                        }
+                    } 
+                }
+            });
 
-        // --- GRÁFICO 3: TICKETS CREADOS POR DÍA (LÍNEAS) ---
-        const labelsCreadosDia = {{ labels_creados_dia_json|safe }};
-        const dataCreadosDia = {{ data_creados_dia_json|safe }};
-        const ctxCreadosDia = document.getElementById('chartCreadosDia').getContext('2d');
-        new Chart(ctxCreadosDia, {
-            type: 'line',
-            data: {
-                labels: labelsCreadosDia,
-                datasets: [{
-                    label: 'Tickets Creados',
-                    data: dataCreadosDia,
-                    borderColor: 'rgba(153, 102, 255, 1)',
-                    backgroundColor: 'rgba(153, 102, 255, 0.2)',
-                    fill: true,
-                    tension: 0.3
-                }]
-            },
-            options: {
-                responsive: true,
-                aspectRatio: 2,
-                scales: { y: { beginAtZero: true } },
-                plugins: { legend: { display: false } }
-            }
-        });
+            // --- GRÁFICO 2: TICKETS POR CATEGORÍA (BARRAS) ---
+            const labelsCategoria = {{ labels_categoria_json|safe }};
+            const dataCategoria = {{ data_categoria_json|safe }};
+            const ctxCategoria = document.getElementById('chartCategoria').getContext('2d');
+            
+            new Chart(ctxCategoria, {
+                type: 'bar',
+                data: {
+                    labels: labelsCategoria,
+                    datasets: [{
+                        label: 'Nº de Tickets',
+                        data: dataCategoria,
+                        backgroundColor: 'rgba(121, 47, 217, 0.7)',
+                        borderColor: 'rgba(121, 47, 217, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: { 
+                    responsive: true, 
+                    aspectRatio: 2, 
+                    scales: { 
+                        y: { 
+                            beginAtZero: true,
+                            ticks: {
+                                color: colors.textColor
+                            },
+                            grid: {
+                                color: colors.gridColor
+                            }
+                        },
+                        x: {
+                            ticks: {
+                                color: colors.textColor
+                            },
+                            grid: {
+                                color: colors.gridColor
+                            }
+                        }
+                    }, 
+                    plugins: { 
+                        legend: { 
+                            display: false 
+                        },
+                        tooltip: {
+                            backgroundColor: colors.tooltipBg,
+                            titleColor: colors.textColor,
+                            bodyColor: colors.textColor,
+                            borderColor: colors.tooltipBorder,
+                            borderWidth: 1
+                        }
+                    } 
+                }
+            });
 
-        // --- GRÁFICO 4: TICKETS ABIERTOS POR PRIORIDAD (BARRAS) ---
-        const labelsPrioridad = {{ labels_prioridad_json|safe }};
-        const dataPrioridad = {{ data_prioridad_json|safe }};
-        const ctxPrioridad = document.getElementById('chartPrioridad').getContext('2d');
-        new Chart(ctxPrioridad, {
-            type: 'bar',
-            data: {
-                labels: labelsPrioridad,
-                datasets: [{
-                    label: 'Tickets Abiertos',
-                    data: dataPrioridad,
-                    backgroundColor: [
-                        'rgba(255, 99, 132, 0.7)', // Crítica (rojo)
-                        'rgba(255, 159, 64, 0.7)', // Alta (naranja)
-                        'rgba(255, 206, 86, 0.7)', // Media (amarillo)
-                        'rgba(75, 192, 192, 0.7)', // Baja (verde azulado)
-                        'rgba(54, 162, 235, 0.7)', // Muy Baja (azul)
-                    ],
-                    borderColor: colorsEstado.cardBg,
-                    borderWidth: 1
-                }]
-            },
-            options: {
-                responsive: true,
-                aspectRatio: 2,
-                scales: { y: { beginAtZero: true } },
-                plugins: { legend: { display: false } }
-            }
+            // --- GRÁFICO 3: TICKETS CREADOS POR DÍA (LÍNEAS) ---
+            const labelsCreadosDia = {{ labels_creados_dia_json|safe }};
+            const dataCreadosDia = {{ data_creados_dia_json|safe }};
+            const ctxCreadosDia = document.getElementById('chartCreadosDia').getContext('2d');
+            
+            new Chart(ctxCreadosDia, {
+                type: 'line',
+                data: {
+                    labels: labelsCreadosDia,
+                    datasets: [{
+                        label: 'Tickets Creados',
+                        data: dataCreadosDia,
+                        borderColor: 'rgba(153, 102, 255, 1)',
+                        backgroundColor: 'rgba(153, 102, 255, 0.2)',
+                        fill: true,
+                        tension: 0.3
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    aspectRatio: 2,
+                    scales: { 
+                        y: { 
+                            beginAtZero: true,
+                            ticks: {
+                                color: colors.textColor
+                            },
+                            grid: {
+                                color: colors.gridColor
+                            }
+                        },
+                        x: {
+                            ticks: {
+                                color: colors.textColor
+                            },
+                            grid: {
+                                color: colors.gridColor
+                            }
+                        }
+                    },
+                    plugins: { 
+                        legend: { 
+                            display: false 
+                        },
+                        tooltip: {
+                            backgroundColor: colors.tooltipBg,
+                            titleColor: colors.textColor,
+                            bodyColor: colors.textColor,
+                            borderColor: colors.tooltipBorder,
+                            borderWidth: 1
+                        }
+                    }
+                }
+            });
+
+            // --- GRÁFICO 4: TICKETS ABIERTOS POR PRIORIDAD (BARRAS) ---
+            const labelsPrioridad = {{ labels_prioridad_json|safe }};
+            const dataPrioridad = {{ data_prioridad_json|safe }};
+            const ctxPrioridad = document.getElementById('chartPrioridad').getContext('2d');
+            
+            new Chart(ctxPrioridad, {
+                type: 'bar',
+                data: {
+                    labels: labelsPrioridad,
+                    datasets: [{
+                        label: 'Tickets Abiertos',
+                        data: dataPrioridad,
+                        backgroundColor: [
+                            'rgba(255, 99, 132, 0.7)',   // Crítica (rojo)
+                            'rgba(255, 159, 64, 0.7)',   // Alta (naranja)
+                            'rgba(255, 206, 86, 0.7)',   // Media (amarillo)
+                            'rgba(75, 192, 192, 0.7)',   // Baja (verde azulado)
+                            'rgba(54, 162, 235, 0.7)',   // Muy Baja (azul)
+                        ],
+                        borderColor: colors.tooltipBorder,
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    aspectRatio: 2,
+                    scales: { 
+                        y: { 
+                            beginAtZero: true,
+                            ticks: {
+                                color: colors.textColor
+                            },
+                            grid: {
+                                color: colors.gridColor
+                            }
+                        },
+                        x: {
+                            ticks: {
+                                color: colors.textColor
+                            },
+                            grid: {
+                                color: colors.gridColor
+                            }
+                        }
+                    },
+                    plugins: { 
+                        legend: { 
+                            display: false 
+                        },
+                        tooltip: {
+                            backgroundColor: colors.tooltipBg,
+                            titleColor: colors.textColor,
+                            bodyColor: colors.textColor,
+                            borderColor: colors.tooltipBorder,
+                            borderWidth: 1
+                        }
+                    }
+                }
+            });
         });
     </script>
 {% endblock %}
