@@ -8,6 +8,7 @@ import json
 from datetime import timedelta, date, datetime
 from django.db.models import F, ExpressionWrapper, fields, Avg, Min, Func, Value, Count
 from django.views.decorators.http import require_POST
+from .utils import is_mobile_device
 
 
 # @login_required
@@ -492,6 +493,12 @@ def mis_asignaciones_view(request, ticket_id=None):
 @login_required
 def mis_asignaciones_detalle_view(request, ticket_id):
     """Vista para mostrar el detalle completo del ticket en móvil (TI)"""
+    # Si es PC, redirigir a la vista desktop con panel lateral
+    if not is_mobile_device(request):
+        estado = request.GET.get('estado', 'todos')
+        orden = request.GET.get('orden', 'reciente')
+        return redirect(f"{reverse('mis_asignaciones', args=[ticket_id])}?estado={estado}&orden={orden}")
+    
     try:
         usuario = Usuario.objects.get(email=request.user.email)
         if usuario.rol.nombre != 'TI':
@@ -540,6 +547,12 @@ def mis_asignaciones_detalle_view(request, ticket_id):
 @login_required
 def mis_tickets_detalle_view(request, ticket_id):
     """Vista para mostrar el detalle completo del ticket en móvil (Docente)"""
+    # Si es PC, redirigir a la vista desktop con panel lateral
+    if not is_mobile_device(request):
+        estado = request.GET.get('estado', 'todos')
+        orden = request.GET.get('orden', 'reciente')
+        return redirect(f"{reverse('mis_tickets', args=[ticket_id])}?estado={estado}&orden={orden}")
+    
     try:
         usuario = Usuario.objects.get(email=request.user.email)
         if usuario.rol.nombre != 'Docente':

@@ -131,5 +131,39 @@
             outline: none;
             border-color: var(--indigo-800);
         }
+
+        /* Responsive design para desktop */
+        @media (min-width: 768px) {
+            .header {
+                position: static !important;
+                margin-bottom: 20px;
+            }
+
+            main {
+                padding: 20px !important;
+                overflow-y: visible !important;
+                height: auto !important;
+                max-width: 1200px;
+                margin: 0 auto;
+            }
+
+            /* Formulario inline en desktop en lugar de fixed */
+            div[style*="position: fixed"] {
+                position: static !important;
+                background: transparent !important;
+                border-top: none !important;
+                box-shadow: none !important;
+                margin-top: 20px;
+            }
+
+            .card {
+                margin-bottom: 20px !important;
+            }
+
+            /* Ajustar el último card para que no tenga margen extra */
+            .card:last-of-type {
+                margin-bottom: 20px !important;
+            }
+        }
     </style>
 {% endblock %}

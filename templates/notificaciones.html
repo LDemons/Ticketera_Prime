@@ -45,14 +45,8 @@
                             {{ noti.fecha_creacion|date:"d/m/Y H:i" }}
                         </span>
 
-                        {# --- El nuevo botón "Abrir" con el enlace dinámico --- #}
-                        {% if usuario_rol == 'Docente' %}
-                            <a href="{% url 'mis_tickets_detalle' noti.ticket.ticket_id %}" class="btn-link">Abrir</a>
-                        {% elif usuario_rol == 'TI' %}
-                             <a href="{% url 'mis_asignaciones_detalle' noti.ticket.ticket_id %}" class="btn-link">Abrir</a>
-                        {% elif usuario_rol == 'Admin' %}
-                            <a href="{% url 'ticket_detail' noti.ticket.ticket_id %}" class="btn-link">Abrir</a>
-                        {% endif %}
+                        {# --- Botón "Abrir" con URL responsive según dispositivo --- #}
+                        <a href="{% ticket_url noti.ticket.ticket_id usuario_rol %}" class="btn-link">Abrir</a>
                     </div>
 
                 </div>

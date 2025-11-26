@@ -1,5 +1,6 @@
 from django import template
 import hashlib
+from django.urls import reverse
 
 register = template.Library()
 
@@ -38,3 +39,34 @@ def user_color(username):
     lightness = 50   # Luminosidad media
     
     return f'hsl({hue}, {saturation}%, {lightness}%)'
+
+
+@register.simple_tag(takes_context=True)
+def ticket_url(context, ticket_id, rol):
+    """
+    Genera la URL correcta para ver un ticket según el dispositivo y el rol del usuario.
+    - PC: Usa vistas con panel lateral (mis_asignaciones, mis_tickets, ticket_detail)
+    - Móvil: Usa vistas de detalle completo (mis_asignaciones_detalle, mis_tickets_detalle, ticket_detail)
+    """
+    request = context.get('request')
+    
+    # Detectar si es móvil
+    user_agent = request.META.get('HTTP_USER_AGENT', '').lower() if request else ''
+    mobile_keywords = ['android', 'iphone', 'ipad', 'ipod', 'blackberry', 'windows phone', 'mobile', 'webos', 'opera mini', 'palm']
+    is_mobile = any(keyword in user_agent for keyword in mobile_keywords)
+    
+    # Generar URL según rol y dispositivo
+    if rol == 'Docente':
+        if is_mobile:
+            return reverse('mis_tickets_detalle', args=[ticket_id])
+        else:
+            return reverse('mis_tickets', args=[ticket_id])
+    elif rol == 'TI':
+        if is_mobile:
+            return reverse('mis_asignaciones_detalle', args=[ticket_id])
+        else:
+            return reverse('mis_asignaciones', args=[ticket_id])
+    elif rol in ['Admin', 'Superadmin']:
+        return reverse('ticket_detail', args=[ticket_id])
+    else:
+        return '#'
