@@ -104,51 +104,6 @@
         {% endfor %}
     </main>
 
-    <script>
-        // Función para manejar clic en botón de ver detalles
-        function handleTicketClickDocente(element, event) {
-            console.log('Ancho de pantalla:', window.innerWidth);
-            // En móvil (<= 768px), permitir navegación normal al detalle completo
-            if (window.innerWidth <= 768) {
-                console.log('MÓVIL: Navegando a página completa');
-                return true; // Navegar a mis_tickets_detalle
-            }
-            
-            // En desktop (> 768px), prevenir navegación y abrir panel lateral
-            console.log('DESKTOP: Abriendo panel lateral');
-            event.preventDefault();
-            const ticketId = element.getAttribute('data-ticket-id');
-            const estado = new URLSearchParams(window.location.search).get('estado') || 'todos';
-            const orden = new URLSearchParams(window.location.search).get('orden') || 'reciente';
-            window.location.href = `{% url 'mis_tickets' %}${ticketId}/?estado=${estado}&orden=${orden}`;
-            return false;
-        }
-
-        // Toggle del menú de opciones (3 puntos)
-        document.querySelectorAll('.ticket-menu-toggle').forEach(toggle => {
-            toggle.addEventListener('click', function(event) {
-                event.preventDefault();
-                event.stopPropagation();
-                
-                const menu = this.nextElementSibling;
-                const isVisible = menu.style.display === 'block';
-                
-                // Cerrar todos los menús abiertos
-                document.querySelectorAll('.ticket-dropdown-menu').forEach(m => m.style.display = 'none');
-                
-                // Abrir/cerrar el menú actual
-                menu.style.display = isVisible ? 'none' : 'block';
-            });
-        });
-
-        // Cerrar menús al hacer clic fuera
-        document.addEventListener('click', function(event) {
-            if (!event.target.closest('.ticket-menu-wrapper')) {
-                document.querySelectorAll('.ticket-dropdown-menu').forEach(m => m.style.display = 'none');
-            }
-        });
-    </script>
-
     {% if ticket_seleccionado %}
     <aside class="detail" aria-label="Detalle del ticket">
         <div class="detail-head">
@@ -197,15 +152,6 @@
         </form>
     </aside>
     
-    <script>
-        // Auto-scroll al último mensaje cuando se carga la página
-        document.addEventListener('DOMContentLoaded', function() {
-            const detailBody = document.querySelector('.detail-body');
-            if (detailBody) {
-                detailBody.scrollTop = detailBody.scrollHeight;
-            }
-        });
-    </script>
     {% endif %}
 
 {% endblock %}

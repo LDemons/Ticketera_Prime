@@ -327,6 +327,71 @@
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
+    <style>
+        /* Estilos responsive para panel principal */
+        @media (max-width: 768px) {
+            .panel-nav-buttons {
+                flex-direction: column !important;
+                gap: 10px !important;
+            }
+
+            .panel-nav-buttons .btn-link {
+                width: 100% !important;
+                justify-content: center;
+                padding: 12px;
+                font-size: 14px;
+                font-weight: 600;
+            }
+
+            .kpis {
+                grid-template-columns: repeat(2, 1fr) !important;
+                gap: 10px !important;
+            }
+
+            .kpi-value {
+                font-size: 24px !important;
+            }
+
+            .kpi-title {
+                font-size: 12px !important;
+            }
+
+            .kpi-foot {
+                font-size: 11px !important;
+            }
+
+            /* Gráficos en columna */
+            .panel-charts-grid {
+                grid-template-columns: 1fr !important;
+                gap: 16px !important;
+            }
+
+            /* Tabla de Mi Cola */
+            .table .thead,
+            .table .trow {
+                grid-template-columns: auto 1fr !important;
+                font-size: 13px !important;
+            }
+
+            .table .thead > div:not(:first-child):not(:nth-child(2)),
+            .table .trow > div:not(:first-child):not(:nth-child(2)) {
+                display: none !important;
+            }
+
+            /* Kanban en móvil */
+            .kanban-board {
+                grid-template-columns: 1fr !important;
+                gap: 16px !important;
+            }
+
+            .kanban-column {
+                min-width: 100% !important;
+            }
+        }
+    </style>
+{% endblock %}
+
+{% block extra_js %}
     <script>
         // Toggle entre vista Lista y Kanban
         function toggleVista(vista) {
@@ -402,67 +467,4 @@
             });
         }
     </script>
-
-    <style>
-        /* Estilos responsive para panel principal */
-        @media (max-width: 768px) {
-            .panel-nav-buttons {
-                flex-direction: column !important;
-                gap: 10px !important;
-            }
-
-            .panel-nav-buttons .btn-link {
-                width: 100% !important;
-                justify-content: center;
-                padding: 12px;
-                font-size: 14px;
-                font-weight: 600;
-            }
-
-            .kpis {
-                grid-template-columns: repeat(2, 1fr) !important;
-                gap: 10px !important;
-            }
-
-            .kpi-value {
-                font-size: 24px !important;
-            }
-
-            .kpi-title {
-                font-size: 12px !important;
-            }
-
-            .kpi-foot {
-                font-size: 11px !important;
-            }
-
-            /* Gráficos en columna */
-            .panel-charts-grid {
-                grid-template-columns: 1fr !important;
-                gap: 16px !important;
-            }
-
-            /* Tabla de Mi Cola */
-            .table .thead,
-            .table .trow {
-                grid-template-columns: auto 1fr !important;
-                font-size: 13px !important;
-            }
-
-            .table .thead > div:not(:first-child):not(:nth-child(2)),
-            .table .trow > div:not(:first-child):not(:nth-child(2)) {
-                display: none !important;
-            }
-
-            /* Kanban en móvil */
-            .kanban-board {
-                grid-template-columns: 1fr !important;
-                gap: 16px !important;
-            }
-
-            .kanban-column {
-                min-width: 100% !important;
-            }
-        }
-    </style>
 {% endblock %}
