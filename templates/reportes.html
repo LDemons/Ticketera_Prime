@@ -192,21 +192,45 @@
             border-radius: 8px;
             font-family: inherit;
             font-size: 14px;
+            background: var(--bg);
+            color: var(--text);
+        }
+
+        .filter-date-group input[type="date"]:focus {
+            outline: none;
+            border-color: var(--indigo-800);
+        }
+
+        /* Color scheme para el date picker en modo oscuro */
+        [data-theme="dark"] .filter-date-group input[type="date"]::-webkit-calendar-picker-indicator {
+            filter: invert(1);
         }
 
         .btn-limpiar {
             border-color: var(--indigo-800);
             color: var(--indigo-800);
-            background: #fff;
+            background: var(--card);
         }
 
         .btn-descargar {
-            background: var(--green);
-            color: #fff;
-            border-color: var(--green);
+            background: var(--green) !important;
+            color: #fff !important;
+            border-color: var(--green) !important;
             display: flex;
             align-items: center;
             gap: 6px;
+        }
+
+        /* Mantener el botón CSV verde en modo oscuro */
+        [data-theme="dark"] .btn-descargar {
+            background: var(--green) !important;
+            color: #fff !important;
+            border-color: var(--green) !important;
+        }
+
+        [data-theme="dark"] .btn-descargar:hover {
+            background: #3ec97d !important;
+            border-color: #3ec97d !important;
         }
 
         .btn-icon-svg {
@@ -228,7 +252,7 @@
                 flex-direction: column !important;
                 gap: 12px !important;
                 padding: 16px !important;
-                background: #fff;
+                background: var(--card);
                 border-radius: 12px;
                 box-shadow: 0 1px 3px rgba(0,0,0,0.1);
             }

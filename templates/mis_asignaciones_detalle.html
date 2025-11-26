@@ -88,7 +88,7 @@
     </main>
 
     <!-- Formulario fijo en la parte inferior -->
-    <div style="position: fixed; bottom: 0; left: 0; right: 0; background: #fff; border-top: 2px solid var(--line); z-index: 200; box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.1);">
+    <div style="position: fixed; bottom: 0; left: 0; right: 0; background: var(--card); border-top: 2px solid var(--line); z-index: 200; box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.1);">
         <form method="post" action="{% url 'mis_asignaciones_detalle' ticket_seleccionado.ticket_id %}?estado={{ estado_actual }}&orden={{ orden_actual }}" style="padding: 14px;">
             {% csrf_token %}
             <div style="margin-bottom: 10px;">
@@ -117,6 +117,8 @@
 
         form textarea {
             width: 100%;
+            background: var(--bg);
+            color: var(--text);
             border: 1px solid var(--line);
             border-radius: 10px;
             padding: 12px;

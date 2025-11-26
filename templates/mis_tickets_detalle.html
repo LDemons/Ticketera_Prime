@@ -93,10 +93,10 @@
     </main>
 
     <!-- Formulario fijo en la parte inferior -->
-    <div style="position: fixed; bottom: 0; left: 0; right: 0; background: #fff; border-top: 2px solid var(--line); z-index: 200; box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.1);">
+    <div style="position: fixed; bottom: 0; left: 0; right: 0; background: var(--card); border-top: 2px solid var(--line); z-index: 200; box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.1);">
         <form method="post" action="{% url 'mis_tickets_detalle' ticket_seleccionado.ticket_id %}?estado={{ estado_actual }}&orden={{ orden_actual }}" style="padding: 14px;">
             {% csrf_token %}
-            <textarea name="contenido" placeholder="Escribe tu comentario aquí..." style="width: 100%; border: 1px solid var(--line); border-radius: 10px; padding: 12px; font-family: inherit; font-size: 14px; resize: vertical; min-height: 60px; max-height: 120px; margin-bottom: 10px;" required></textarea>
+            <textarea name="contenido" placeholder="Escribe tu comentario aquí..." style="width: 100%; background: var(--bg); color: var(--text); border: 1px solid var(--line); border-radius: 10px; padding: 12px; font-family: inherit; font-size: 14px; resize: vertical; min-height: 60px; max-height: 120px; margin-bottom: 10px;" required></textarea>
             <button type="submit" class="btn-link" style="background: var(--indigo-800); color: #fff; width: 100%; padding: 12px; font-size: 15px; font-weight: 700; border: none;">
                 Enviar Comentario
             </button>
