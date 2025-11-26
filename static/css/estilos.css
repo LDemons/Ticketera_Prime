@@ -19,6 +19,25 @@
   --shadow:0 8px 24px rgba(22,22,26,.06);
 }
 
+/* Variables para modo oscuro */
+[data-theme="dark"] {
+  --indigo-800:#1a0229; /* sidebar más oscuro */
+  --lavender:#9479b8;   /* acento más suave */
+  --bg:#0f0f14;         /* fondo muy oscuro */
+  --card:#1a1a24;       /* cards oscuros */
+  --line:#2a2a3a;       /* líneas sutiles */
+  --text:#e8e8f0;       /* texto claro */
+  --muted:#8f8fa0;      /* texto secundario */
+
+  --blue:#4a8ef5;
+  --blue-100:#1e2840;
+  --green:#3ec97d;
+  --red:#f16b88;
+  --orange:#ffaa70;
+
+  --shadow:0 8px 24px rgba(0,0,0,.4);
+}
+
 *{box-sizing:border-box}
 html,body{height:100%}
 body{
@@ -1354,4 +1373,315 @@ textarea.form-input {
         padding: 8px;
         gap: 10px;
     }
+}
+
+/* ===================================== */
+/* Switch de tema (modo oscuro)          */
+/* ===================================== */
+.theme-switch {
+    position: relative;
+    display: inline-block;
+    width: 44px;
+    height: 24px;
+}
+
+.theme-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.theme-slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #d1d5db;
+    transition: 0.3s;
+    border-radius: 24px;
+}
+
+.theme-slider:before {
+    position: absolute;
+    content: "";
+    height: 18px;
+    width: 18px;
+    left: 3px;
+    bottom: 3px;
+    background-color: white;
+    transition: 0.3s;
+    border-radius: 50%;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+.theme-switch input:checked + .theme-slider {
+    background-color: #6b46c1;
+}
+
+.theme-switch input:checked + .theme-slider:before {
+    transform: translateX(20px);
+}
+
+.theme-switch input:focus + .theme-slider {
+    box-shadow: 0 0 4px rgba(107, 70, 193, 0.5);
+}
+
+/* Mejorar contraste del texto en el toggle de tema */
+[data-theme="light"] .user-menu [style*="border-bottom"] span {
+    color: var(--text) !important;
+    font-weight: 500;
+}
+
+/* ===================================== */
+/* Ajustes específicos para modo oscuro  */
+/* ===================================== */
+
+/* Inputs en modo oscuro */
+[data-theme="dark"] .form-input,
+[data-theme="dark"] .form-select,
+[data-theme="dark"] .form-textarea,
+[data-theme="dark"] .select select,
+[data-theme="dark"] textarea {
+    background-color: var(--card);
+    color: var(--text);
+    border-color: var(--line);
+}
+
+[data-theme="dark"] .form-input::placeholder,
+[data-theme="dark"] textarea::placeholder {
+    color: var(--muted);
+}
+
+/* Botones en modo oscuro */
+[data-theme="dark"] .btn-icon,
+[data-theme="dark"] .btn-link {
+    background: var(--card);
+    color: var(--text);
+    border-color: var(--line);
+}
+
+[data-theme="dark"] .btn-link:hover,
+[data-theme="dark"] .btn-icon:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+/* Menú de usuario en modo oscuro */
+[data-theme="dark"] .user-menu {
+    background: var(--card);
+    border-color: var(--line);
+}
+
+[data-theme="dark"] .user-menu a {
+    color: var(--text);
+}
+
+[data-theme="dark"] .user-menu a:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+/* Logout link hover en modo oscuro */
+[data-theme="dark"] .user-menu .logout-link:hover {
+    background: rgba(234, 85, 115, 0.1);
+}
+
+/* Tickets en modo oscuro */
+[data-theme="dark"] .ticket {
+    background: var(--card);
+    border-color: var(--line);
+}
+
+[data-theme="dark"] .ticket:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+/* Kanban cards en modo oscuro */
+[data-theme="dark"] .kanban-card {
+    background: var(--card);
+    border-color: var(--line);
+}
+
+[data-theme="dark"] .kanban-card:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+/* Tablas en modo oscuro */
+[data-theme="dark"] .table {
+    background: transparent;
+}
+
+[data-theme="dark"] .trow {
+    background: var(--card);
+    border-color: var(--line);
+}
+
+[data-theme="dark"] .trow:hover {
+    background: rgba(255, 255, 255, 0.03);
+}
+
+/* SweetAlert en modo oscuro */
+[data-theme="dark"] .swal2-popup {
+    background: var(--card) !important;
+    color: var(--text) !important;
+}
+
+[data-theme="dark"] .swal2-title,
+[data-theme="dark"] .swal2-html-container {
+    color: var(--text) !important;
+}
+
+[data-theme="dark"] .swal2-input {
+    background: var(--bg) !important;
+    color: var(--text) !important;
+    border-color: var(--line) !important;
+}
+
+/* Dropdown menus en modo oscuro */
+[data-theme="dark"] .ticket-dropdown-menu {
+    background: var(--card);
+    border-color: var(--line);
+}
+
+[data-theme="dark"] .ticket-menu-item {
+    color: var(--text);
+}
+
+[data-theme="dark"] .ticket-menu-item:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+[data-theme="dark"] .ticket-menu-delete:hover {
+    background: rgba(234, 85, 115, 0.1);
+}
+
+/* Detail panel en modo oscuro */
+[data-theme="dark"] .detail {
+    background: var(--bg);
+    border-left-color: var(--line);
+}
+
+[data-theme="dark"] .detail-head {
+    background: var(--card);
+}
+
+[data-theme="dark"] .detail-body {
+    background: var(--bg);
+}
+
+/* Bubble (comentarios) en modo oscuro */
+[data-theme="dark"] .bubble {
+    background: var(--card) !important;
+    border: 1px solid var(--line) !important;
+}
+
+/* Composer en modo oscuro */
+[data-theme="dark"] .composer {
+    background: var(--card);
+    border-color: var(--line);
+}
+
+[data-theme="dark"] .composer textarea {
+    background: transparent;
+    color: var(--text);
+}
+
+/* KPI cards en modo oscuro */
+[data-theme="dark"] .kpi {
+    background: var(--card);
+    border-color: var(--line);
+}
+
+/* Select en modo oscuro */
+[data-theme="dark"] .select {
+    background-color: var(--card);
+    border-color: var(--line);
+}
+
+[data-theme="dark"] .select:hover {
+    background-color: rgba(255, 255, 255, 0.05);
+}
+
+/* Header en modo oscuro */
+[data-theme="dark"] .header {
+    background: var(--card);
+}
+
+/* Card en modo oscuro */
+[data-theme="dark"] .card {
+    background: var(--card);
+    border-color: var(--line);
+}
+
+[data-theme="dark"] .card-head {
+    border-bottom-color: var(--line);
+}
+
+/* Botones generales en modo oscuro */
+[data-theme="dark"] .btn {
+    background: var(--card);
+    border-color: var(--line);
+    color: var(--text);
+}
+
+[data-theme="dark"] .btn:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+/* Pills en modo oscuro */
+[data-theme="dark"] .pill {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: var(--line);
+}
+
+/* Back button en modo oscuro */
+[data-theme="dark"] .back {
+    background: var(--card);
+    border-color: var(--line);
+}
+
+/* Bulk bar en modo oscuro */
+[data-theme="dark"] .bulk-bar {
+    background: var(--card);
+    border-color: var(--line);
+}
+
+/* Progress bars en modo oscuro */
+[data-theme="dark"] .progress-row .bar {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+/* Bars chart en modo oscuro */
+[data-theme="dark"] .bars > div {
+    background: linear-gradient(180deg, var(--blue) 0, var(--blue-100) 100%);
+    border-color: var(--line);
+}
+
+/* Botón con fondo indigo en modo oscuro - más claro */
+[data-theme="dark"] .btn-link[style*="--indigo-800"],
+[data-theme="dark"] button[style*="--indigo-800"] {
+    background: #6b46c1 !important; /* Morado más claro */
+}
+
+[data-theme="dark"] .btn-link[style*="--indigo-800"]:hover,
+[data-theme="dark"] button[style*="--indigo-800"]:hover {
+    background: #7c3aed !important; /* Morado aún más claro al hover */
+}
+
+/* Tickets fijados en modo oscuro - mejor contraste */
+[data-theme="dark"] .ticket[style*="background: linear-gradient"] {
+    background: linear-gradient(135deg, #2d2416 0%, #1a1a24 100%) !important;
+    border-left: 4px solid #ffb84d !important;
+}
+
+[data-theme="dark"] .ticket svg[style*="fill: #ffa726"] {
+    fill: #ffb84d !important;
+}
+
+[data-theme="dark"] .ticket-menu-item[style*="color: #ffa726"] {
+    color: #ffb84d !important;
+}
+
+[data-theme="dark"] .ticket-menu-item svg[style*="fill: #ffa726"] {
+    fill: #ffb84d !important;
 }
