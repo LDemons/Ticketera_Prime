@@ -442,8 +442,8 @@ def mis_asignaciones_view(request, ticket_id=None):
             # 3. Redirigir manteniendo filtros y mostrando el ticket actualizado
             estado_filtro = request.GET.get('estado', '') 
             orden = request.GET.get('orden', 'reciente')
-            # Redirigimos a la vista detalle para ver el resultado
-            return redirect(f"{reverse('mis_asignaciones_detalle', args=[ticket_id])}?estado={estado_filtro}&orden={orden}")
+            # Redirigimos a la misma vista para ver el resultado
+            return redirect(f"{reverse('mis_asignaciones', args=[ticket_id])}?estado={estado_filtro}&orden={orden}")
         else:
             # Si el form falla, preparamos contexto para mostrar error
             ticket_seleccionado = ticket_para_gestionar
