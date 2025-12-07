@@ -28,39 +28,44 @@ from .serializers import (
 @method_decorator(csrf_exempt, name='dispatch')
 class CustomAuthToken(ObtainAuthToken):
     """
-    Vista personalizada para autenticación con username y contraseña.
-    Usa el sistema de autenticación estándar de Django.
+    Vista personalizada para autenticación con email y contraseña.
     
     POST /api/v1/auth/login/
-    Body: {"email": "PauloG", "password": "password123"}
+    Body: {"email": "usuario@colegio.cl", "password": "password123"}
     Response: {"token": "...", "user": {...}}
     """
     def post(self, request, *args, **kwargs):
-        username = request.data.get('email')  # Mantener nombre del campo por compatibilidad
-        password = request.data.get('password')
+        email = request.data.get('email', '').strip()
+        password = request.data.get('password', '')
         
-        if not username or not password:
+        if not email or not password:
             return Response(
-                {'error': 'Usuario y contraseña son requeridos'},
+                {'error': 'Email y contraseña son requeridos'},
                 status=status.HTTP_400_BAD_REQUEST
             )
         
         try:
-            # Autenticar con el sistema de Django
-            from django.contrib.auth import authenticate
+            # Buscar el usuario de Django por email (case-insensitive)
             from django.contrib.auth.models import User
             
-            django_user = authenticate(username=username, password=password)
-            
-            if not django_user:
+            try:
+                django_user = User.objects.get(email__iexact=email)
+            except User.DoesNotExist:
                 return Response(
                     {'error': 'Credenciales inválidas'},
                     status=status.HTTP_401_UNAUTHORIZED
                 )
             
-            # Buscar usuario en el modelo de la app por email
+            # Verificar la contraseña
+            if not django_user.check_password(password):
+                return Response(
+                    {'error': 'Credenciales inválidas'},
+                    status=status.HTTP_401_UNAUTHORIZED
+                )
+            
+            # Buscar usuario en el modelo de la app (case-insensitive)
             try:
-                usuario_app = Usuario.objects.select_related('rol').get(email=django_user.email)
+                usuario_app = Usuario.objects.select_related('rol').get(email__iexact=email)
             except Usuario.DoesNotExist:
                 return Response(
                     {'error': 'Usuario no encontrado en el sistema'},
@@ -337,6 +342,72 @@ def user_profile(request):
         return Response(
             {'error': 'Usuario no encontrado'},
             status=status.HTTP_404_NOT_FOUND
+        )
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def change_password(request):
+    """
+    Cambiar contraseña del usuario autenticado
+    
+    POST /api/v1/auth/change-password/
+    Body: {
+        "current_password": "contraseña_actual",
+        "new_password": "nueva_contraseña",
+        "confirm_password": "nueva_contraseña"
+    }
+    Response: {"message": "Contraseña actualizada exitosamente"}
+    """
+    current_password = request.data.get('current_password', '')
+    new_password = request.data.get('new_password', '')
+    confirm_password = request.data.get('confirm_password', '')
+    
+    # Validaciones
+    if not current_password or not new_password or not confirm_password:
+        return Response(
+            {'error': 'Todos los campos son requeridos'},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+    
+    if new_password != confirm_password:
+        return Response(
+            {'error': 'Las contraseñas no coinciden'},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+    
+    if len(new_password) < 6:
+        return Response(
+            {'error': 'La contraseña debe tener al menos 6 caracteres'},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+    
+    # Verificar contraseña actual
+    if not request.user.check_password(current_password):
+        return Response(
+            {'error': 'La contraseña actual es incorrecta'},
+            status=status.HTTP_401_UNAUTHORIZED
+        )
+    
+    try:
+        # Cambiar contraseña en Django User
+        request.user.set_password(new_password)
+        request.user.save()
+        
+        # Regenerar token (opcional, para mayor seguridad)
+        # Esto invalida el token anterior y crea uno nuevo
+        Token.objects.filter(user=request.user).delete()
+        new_token = Token.objects.create(user=request.user)
+        
+        return Response({
+            'message': 'Contraseña actualizada exitosamente',
+            'token': new_token.key  # Devolver nuevo token
+        })
+        
+    except Exception as e:
+        return Response(
+            {'error': 'Error al actualizar la contraseña'},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
         )
 
 

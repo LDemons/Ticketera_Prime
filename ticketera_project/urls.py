@@ -45,6 +45,10 @@ urlpatterns = [
     # --- URL DE NOTIFICACIONES ---
     path('notificaciones/', views.notificaciones_view, name='notificaciones'),
 
+    # --- CAMBIAR CONTRASEÑA ---
+    path('cambiar-contrasenia/', views.cambiar_contrasenia_view, name='cambiar_contrasenia'),
+    path('cambiar-contrasenia-ajax/', views.cambiar_contrasenia_ajax, name='cambiar_contrasenia_ajax'),
+
     # --- GESTIÓN DE USUARIOS (SUPERADMIN) ---
     path('usuarios/', views.usuarios_list_view, name='usuarios_list'),
     path('usuarios/crear/', views.usuario_create_view, name='usuario_create'),

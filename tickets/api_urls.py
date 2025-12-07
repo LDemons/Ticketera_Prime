@@ -8,7 +8,7 @@ from rest_framework.routers import DefaultRouter
 from .api_views import (
     TicketViewSet, NotificacionViewSet, 
     CustomAuthToken, CategoriaListView, PrioridadListView,
-    user_profile, dashboard_stats
+    user_profile, dashboard_stats, change_password
 )
 
 # Router para ViewSets (genera automáticamente las URLs CRUD)
@@ -23,6 +23,7 @@ urlpatterns = [
     # ==========================================
     path('auth/login/', CustomAuthToken.as_view(), name='api-login'),
     path('auth/profile/', user_profile, name='api-profile'),
+    path('auth/change-password/', change_password, name='api-change-password'),
     
     # ==========================================
     # DATOS AUXILIARES PARA CREAR TICKETS

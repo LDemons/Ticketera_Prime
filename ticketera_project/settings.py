@@ -178,6 +178,12 @@ LOGIN_REDIRECT_URL = '/bienvenido/'
 
 LOGOUT_REDIRECT_URL = '/'
 
+# Authentication backends - Permite login con email
+AUTHENTICATION_BACKENDS = [
+    'tickets.backends.EmailBackend',  # Backend personalizado para email
+    'django.contrib.auth.backends.ModelBackend',  # Fallback al sistema estándar
+]
+
 
 # Configuración del sitio URL
 

@@ -9,17 +9,16 @@
     <style>
         body {
             background: var(--bg);
+            display: grid;
+            place-items: center;
             min-height: 100vh;
             margin: 0;
             padding: 0;
         }
-        {% block extra_styles %}{% endblock %}
     </style>
 </head>
 <body>
     {% block content %}
     {% endblock %}
-    
-    <script src="{% static 'js/theme.js' %}?v=4.0"></script>
 </body>
 </html>

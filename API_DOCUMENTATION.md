@@ -10,6 +10,8 @@ La API utiliza **Token Authentication**. Debes obtener un token mediante login y
 
 ### Login
 
+**Importante:** Usa el **email** del usuario (no el username de Django) para iniciar sesión.
+
 ```http
 POST /api/v1/auth/login/
 Content-Type: application/json
@@ -64,6 +66,36 @@ Authorization: Token {tu_token}
   "activo": true
 }
 ```
+
+#### Cambiar contraseña
+```http
+POST /api/v1/auth/change-password/
+Authorization: Token {tu_token}
+Content-Type: application/json
+
+{
+  "current_password": "contraseña_actual",
+  "new_password": "nueva_contraseña",
+  "confirm_password": "nueva_contraseña"
+}
+```
+
+**Respuesta exitosa:**
+```json
+{
+  "message": "Contraseña actualizada exitosamente",
+  "token": "nuevo_token_generado_aqui"
+}
+```
+
+**Errores posibles:**
+- `400`: Campos faltantes, contraseñas no coinciden, o contraseña muy corta (mínimo 6 caracteres)
+- `401`: Contraseña actual incorrecta
+
+**Nota importante:** 
+- Al cambiar la contraseña, se genera un **nuevo token**. 
+- Debes guardar y usar este nuevo token en las siguientes peticiones.
+- El token anterior queda invalidado por seguridad.
 
 ---
 

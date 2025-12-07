@@ -1,6 +1,8 @@
 from django import forms
 from .models import Ticket, AsignacionTicket, Usuario, Rol, Comentario, Prioridad, Categoria
 from django.contrib.auth.hashers import make_password
+from django.contrib.auth.forms import PasswordChangeForm
+from django.contrib.auth.models import User
 
 class TicketForm(forms.ModelForm):
     """
@@ -212,11 +214,80 @@ class UsuarioForm(forms.ModelForm):
     def save(self, commit=True):
         usuario = super().save(commit=False)
         
-        # Si se ingresó una nueva contraseña, hashearla
-        contrasenia = self.cleaned_data.get('contrasenia')
-        if contrasenia:
-            usuario.contrasenia_hash = make_password(contrasenia)
+        # Contraseña por defecto si no se especifica
+        contrasenia = self.cleaned_data.get('contrasenia') or 'ticketera2025'
+        
+        # Actualizar el hash en el modelo Usuario
+        # El signal crear_usuario_django se encargará de crear el Django User automáticamente
+        usuario.contrasenia_hash = make_password(contrasenia)
         
         if commit:
             usuario.save()
+            # Si es edición y cambió la contraseña, actualizar Django User
+            if not self._state.adding and self.cleaned_data.get('contrasenia'):
+                try:
+                    django_user = User.objects.get(email__iexact=usuario.email)
+                    django_user.set_password(contrasenia)
+                    django_user.save()
+                except User.DoesNotExist:
+                    pass  # El signal lo creará
+        
         return usuario
+
+
+class CambiarContraseniaForm(forms.Form):
+    """
+    Formulario para que los usuarios cambien su contraseña desde el panel web
+    """
+    contrasenia_actual = forms.CharField(
+        label='Contraseña Actual',
+        widget=forms.PasswordInput(attrs={
+            'class': 'form-input',
+            'placeholder': 'Ingresa tu contraseña actual'
+        })
+    )
+    nueva_contrasenia = forms.CharField(
+        label='Nueva Contraseña',
+        widget=forms.PasswordInput(attrs={
+            'class': 'form-input',
+            'placeholder': 'Mínimo 6 caracteres'
+        })
+    )
+    confirmar_contrasenia = forms.CharField(
+        label='Confirmar Nueva Contraseña',
+        widget=forms.PasswordInput(attrs={
+            'class': 'form-input',
+            'placeholder': 'Repite la nueva contraseña'
+        })
+    )
+
+    def __init__(self, user, *args, **kwargs):
+        self.user = user
+        super().__init__(*args, **kwargs)
+
+    def clean_contrasenia_actual(self):
+        contrasenia_actual = self.cleaned_data.get('contrasenia_actual')
+        if not self.user.check_password(contrasenia_actual):
+            raise forms.ValidationError('La contraseña actual es incorrecta.')
+        return contrasenia_actual
+
+    def clean(self):
+        cleaned_data = super().clean()
+        nueva = cleaned_data.get('nueva_contrasenia')
+        confirmar = cleaned_data.get('confirmar_contrasenia')
+
+        if nueva and confirmar:
+            if nueva != confirmar:
+                raise forms.ValidationError('Las contraseñas nuevas no coinciden.')
+            
+            if len(nueva) < 6:
+                raise forms.ValidationError('La contraseña debe tener al menos 6 caracteres.')
+
+        return cleaned_data
+
+    def save(self):
+        """Guarda la nueva contraseña para el usuario"""
+        nueva_contrasenia = self.cleaned_data['nueva_contrasenia']
+        self.user.set_password(nueva_contrasenia)
+        self.user.save()
+        return self.user

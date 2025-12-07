@@ -1,4 +1,4 @@
-{% extends 'base_fullscreen.html' %}
+{% extends 'base_public.html' %}
 
 {% block title %}Iniciar Sesión{% endblock %}
 
@@ -16,14 +16,14 @@
     </div>
 
     {% if form.errors %}
-        <p style="padding: 0 15px; color: var(--red); text-align: center;">Tu usuario o contraseña son incorrectos.</p>
+        <p style="padding: 0 15px; color: var(--red); text-align: center;">Tu email o contraseña son incorrectos.</p>
     {% endif %}
 
     <form method="post" style="padding: 15px;">
         {% csrf_token %}
         <p>
-            <label for="id_username">Usuario:</label>
-            <input type="text" name="username" autofocus autocapitalize="none" autocomplete="username" maxlength="150" required id="id_username" style="width: 100%; padding: 8px; border: 1px solid var(--line); border-radius: 8px; margin-top: 5px;">
+            <label for="id_username">Email:</label>
+            <input type="email" name="username" autofocus autocapitalize="none" autocomplete="email" required id="id_username" placeholder="usuario@colegio.cl" style="width: 100%; padding: 8px; border: 1px solid var(--line); border-radius: 8px; margin-top: 5px;">
         </p>
         <p>
             <label for="id_password">Contraseña:</label>

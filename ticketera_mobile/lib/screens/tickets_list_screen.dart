@@ -147,8 +147,8 @@ class _TicketsListScreenState extends State<TicketsListScreen> {
               final confirm = await showDialog<bool>(
                 context: context,
                 builder: (context) => AlertDialog(
-                  title: const Text('Cerrar SesiÃn'),
-                  content: const Text('Â¿EstÃ¡s seguro que deseas cerrar sesiÃn?'),
+                  title: const Text('Cerrar Sesión'),
+                  content: const Text('¿Estás seguro que deseas cerrar sesión?'),
                   actions: [
                     TextButton(
                       onPressed: () => Navigator.pop(context, false),
@@ -159,7 +159,7 @@ class _TicketsListScreenState extends State<TicketsListScreen> {
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFFea5573),
                       ),
-                      child: const Text('Cerrar SesiÃn'),
+                      child: const Text('Cerrar Sesión'),
                     ),
                   ],
                 ),
@@ -171,9 +171,9 @@ class _TicketsListScreenState extends State<TicketsListScreen> {
                 Navigator.of(context).pushNamedAndRemoveUntil('/', (route) => false);
               }
             },
-            tooltip: 'Cerrar SesiÃn',
+            tooltip: 'Cerrar Sesión',
           ),
-          // BotÃn de Refresh
+          // Botón de Refresh
           IconButton(
             icon: const Icon(Icons.refresh),
             onPressed: _loadData,
