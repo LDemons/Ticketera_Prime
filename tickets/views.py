@@ -521,12 +521,12 @@ def mis_asignaciones_detalle_view(request, ticket_id):
             ticket_seleccionado.estado = nuevo_estado
             ticket_seleccionado.save()
             
-            comentario_texto = form_gestion.cleaned_data['comentario']
+            comentario_texto = form_gestion.cleaned_data.get('contenido', '').strip()
             if comentario_texto:
                 Comentario.objects.create(
                     ticket=ticket_seleccionado,
                     autor=usuario,
-                    texto=comentario_texto
+                    contenido=comentario_texto
                 )
             
             estado_filtro = request.GET.get('estado', 'todos')
