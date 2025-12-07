@@ -1,0 +1,181 @@
+{% extends 'base.html' %}
+
+{% block title %}Cambiar Contraseña - Ticketera{% endblock %}
+
+{% block content %}
+<main class="main-content">
+    <div class="page-header">
+        <div>
+            <h1>Cambiar Contraseña</h1>
+            <p class="page-subtitle">Actualiza tu contraseña de acceso al sistema</p>
+        </div>
+    </div>
+
+    <div class="content-wrapper" style="max-width: 600px; margin: 0 auto;">
+        <!-- Mensajes de éxito/error -->
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }}" style="margin-bottom: 20px; padding: 15px; border-radius: 8px; 
+                     {% if message.tags == 'success' %}background: var(--green-50); color: var(--green-800); border: 1px solid var(--green-200);{% endif %}
+                     {% if message.tags == 'error' %}background: var(--red-50); color: var(--red-800); border: 1px solid var(--red-200);{% endif %}">
+                    <svg viewBox="0 0 24 24" style="width: 20px; height: 20px; display: inline-block; vertical-align: middle; margin-right: 8px;" fill="none" stroke="currentColor" stroke-width="2">
+                        {% if message.tags == 'success' %}
+                            <polyline points="20 6 9 17 4 12"></polyline>
+                        {% else %}
+                            <circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line>
+                        {% endif %}
+                    </svg>
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <div class="card">
+            <div class="card-head">
+                <h2 style="margin: 0;">Cambiar Contraseña</h2>
+            </div>
+
+            <form method="post" style="padding: 20px;">
+                {% csrf_token %}
+
+                <!-- Información de seguridad -->
+                <div style="background: var(--indigo-50); padding: 15px; border-radius: 8px; margin-bottom: 20px; border: 1px solid var(--indigo-200);">
+                    <div style="display: flex; align-items: start; gap: 10px;">
+                        <svg viewBox="0 0 24 24" style="width: 20px; height: 20px; margin-top: 2px; flex-shrink: 0; color: var(--indigo-600);" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line>
+                        </svg>
+                        <div>
+                            <p style="margin: 0; font-weight: 600; color: var(--indigo-800); margin-bottom: 5px;">Requisitos de seguridad:</p>
+                            <ul style="margin: 0; padding-left: 20px; color: var(--indigo-700); font-size: 14px;">
+                                <li>La contraseña debe tener al menos 6 caracteres</li>
+                                <li>Asegúrate de recordar tu nueva contraseña</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Errores generales del formulario -->
+                {% if form.non_field_errors %}
+                    <div style="background: var(--red-50); padding: 12px; border-radius: 8px; margin-bottom: 15px; color: var(--red-800); border: 1px solid var(--red-200);">
+                        {% for error in form.non_field_errors %}
+                            <p style="margin: 0;">{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+
+                <!-- Contraseña Actual -->
+                <div style="margin-bottom: 20px;">
+                    <label for="{{ form.contrasenia_actual.id_for_label }}" style="display: block; margin-bottom: 8px; font-weight: 500;">
+                        Contraseña Actual <span style="color: var(--red);">*</span>
+                    </label>
+                    {{ form.contrasenia_actual }}
+                    {% if form.contrasenia_actual.errors %}
+                        <div style="color: var(--red); font-size: 14px; margin-top: 5px;">
+                            {% for error in form.contrasenia_actual.errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- Nueva Contraseña -->
+                <div style="margin-bottom: 20px;">
+                    <label for="{{ form.nueva_contrasenia.id_for_label }}" style="display: block; margin-bottom: 8px; font-weight: 500;">
+                        Nueva Contraseña <span style="color: var(--red);">*</span>
+                    </label>
+                    {{ form.nueva_contrasenia }}
+                    {% if form.nueva_contrasenia.errors %}
+                        <div style="color: var(--red); font-size: 14px; margin-top: 5px;">
+                            {% for error in form.nueva_contrasenia.errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- Confirmar Nueva Contraseña -->
+                <div style="margin-bottom: 25px;">
+                    <label for="{{ form.confirmar_contrasenia.id_for_label }}" style="display: block; margin-bottom: 8px; font-weight: 500;">
+                        Confirmar Nueva Contraseña <span style="color: var(--red);">*</span>
+                    </label>
+                    {{ form.confirmar_contrasenia }}
+                    {% if form.confirmar_contrasenia.errors %}
+                        <div style="color: var(--red); font-size: 14px; margin-top: 5px;">
+                            {% for error in form.confirmar_contrasenia.errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- Botones -->
+                <div style="display: flex; gap: 10px;">
+                    <button type="submit" class="btn btn-primary" style="flex: 1;">
+                        <svg viewBox="0 0 24 24" style="width: 18px; height: 18px; display: inline-block; vertical-align: middle; margin-right: 6px;" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="20 6 9 17 4 12"></polyline>
+                        </svg>
+                        Cambiar Contraseña
+                    </button>
+                    <a href="{% url 'index' %}" class="btn btn-secondary" style="text-decoration: none; display: inline-flex; align-items: center; justify-content: center; flex: 1;">
+                        Cancelar
+                    </a>
+                </div>
+            </form>
+        </div>
+
+        <!-- Ayuda adicional -->
+        <div style="margin-top: 20px; padding: 15px; background: var(--bg-secondary); border-radius: 8px; text-align: center;">
+            <p style="margin: 0; color: var(--text-secondary); font-size: 14px;">
+                ¿Tienes problemas para cambiar tu contraseña? 
+                <br>
+                Contacta al administrador del sistema.
+            </p>
+        </div>
+    </div>
+</main>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Mostrar/ocultar contraseñas (opcional)
+    document.addEventListener('DOMContentLoaded', function() {
+        const passwordFields = document.querySelectorAll('input[type="password"]');
+        
+        passwordFields.forEach(field => {
+            const wrapper = field.parentElement;
+            const toggleBtn = document.createElement('button');
+            toggleBtn.type = 'button';
+            toggleBtn.innerHTML = `
+                <svg viewBox="0 0 24 24" style="width: 20px; height: 20px;" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                    <circle cx="12" cy="12" r="3"></circle>
+                </svg>
+            `;
+            toggleBtn.style.cssText = 'position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; color: var(--text-secondary); padding: 5px;';
+            
+            wrapper.style.position = 'relative';
+            wrapper.appendChild(toggleBtn);
+            
+            toggleBtn.addEventListener('click', function() {
+                if (field.type === 'password') {
+                    field.type = 'text';
+                    this.innerHTML = `
+                        <svg viewBox="0 0 24 24" style="width: 20px; height: 20px;" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                            <line x1="1" y1="1" x2="23" y2="23"></line>
+                        </svg>
+                    `;
+                } else {
+                    field.type = 'password';
+                    this.innerHTML = `
+                        <svg viewBox="0 0 24 24" style="width: 20px; height: 20px;" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                            <circle cx="12" cy="12" r="3"></circle>
+                        </svg>
+                    `;
+                }
+            });
+        });
+    });
+</script>
+{% endblock %}

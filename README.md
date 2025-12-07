@@ -64,12 +64,22 @@ El objetivo principal es solucionar la falta de un sistema formal para la gesti�
 
 ## Instalación de la App Móvil
 
-1. Descarga el archivo APK desde el repositorio o desde el enlace proporcionado
-2. Transfiere el archivo `app-release.apk` a tu dispositivo Android
-3. Abre Configuración > Seguridad y habilita "Instalar apps de origen desconocido"
-4. Localiza el archivo APK en tu dispositivo y ábrelo
-5. Sigue las instrucciones en pantalla para completar la instalación
-6. Una vez instalada, la app se conectará automáticamente al servidor en producción
+### Descargar APK
+Descarga la última versión desde la sección [Releases](https://github.com/LDemons/Ticketera_Prime/releases):
+- **Versión Actual:** v1.0.0
+- **Archivo:** `Ticketera_Prime_v1.0.0.apk` (46.9 MB)
+
+### Instalación en Android
+1. Descarga el archivo APK desde Releases
+2. Transfiere el archivo a tu dispositivo Android (si lo descargaste en PC)
+3. Abre **Configuración > Seguridad** y habilita "Instalar apps de origen desconocido" o "Fuentes desconocidas"
+4. Localiza el archivo APK en tu dispositivo usando un explorador de archivos
+5. Toca el archivo APK y sigue las instrucciones en pantalla
+6. Una vez instalada, abre la app e inicia sesión con tus credenciales
+
+### Credenciales por Defecto
+Los nuevos usuarios creados por el administrador tienen la contraseña: **ticketera2025**
+Se recomienda cambiar la contraseña después del primer inicio de sesión desde el panel web.
 
 ## Seguridad
 

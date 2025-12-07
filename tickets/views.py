@@ -2,13 +2,17 @@ from django.shortcuts import render, redirect
 from .models import Ticket, Usuario, AsignacionTicket, Comentario, Prioridad, Categoria, Notificacion, Rol
 from django.shortcuts import render, redirect, get_object_or_404, reverse
 from django.contrib.auth.decorators import login_required 
-from .forms import TicketForm, AsignacionTicketForm, GestionTicketForm, ComentarioForm, UsuarioForm
+from .forms import TicketForm, AsignacionTicketForm, GestionTicketForm, ComentarioForm, UsuarioForm, CambiarContraseniaForm
 from django.utils import timezone
 import json
 from datetime import timedelta, date, datetime
 from django.db.models import F, ExpressionWrapper, fields, Avg, Min, Func, Value, Count
 from django.views.decorators.http import require_POST
 from .utils import is_mobile_device
+from django.contrib import messages
+from django.contrib.auth import update_session_auth_hash
+from django.http import JsonResponse
+import json
 
 
 # @login_required
@@ -1383,3 +1387,78 @@ def toggle_fijar_ticket_view(request, ticket_id):
     estado_filtro = request.GET.get('estado', '')
     orden = request.GET.get('orden', 'reciente')
     return redirect(f"{reverse('mis_asignaciones')}?estado={estado_filtro}&orden={orden}")
+
+
+@login_required
+def cambiar_contrasenia_view(request):
+    """
+    Vista para cambiar la contraseña del usuario autenticado
+    """
+    try:
+        usuario_app = Usuario.objects.get(email=request.user.email)
+    except Usuario.DoesNotExist:
+        messages.error(request, 'Usuario no encontrado.')
+        return redirect('index')
+    
+    if request.method == 'POST':
+        form = CambiarContraseniaForm(request.user, request.POST)
+        if form.is_valid():
+            form.save()
+            # Mantener la sesión activa después de cambiar la contraseña
+            update_session_auth_hash(request, request.user)
+            messages.success(request, '¡Contraseña actualizada exitosamente!')
+            return redirect('index')
+    else:
+        form = CambiarContraseniaForm(request.user)
+    
+    context = {
+        'usuario': usuario_app,
+        'form': form,
+        'view_class': 'view-cambiar-contrasenia'
+    }
+    return render(request, 'cambiar_contrasenia.html', context)
+
+
+@login_required
+def cambiar_contrasenia_ajax(request):
+    """
+    Vista AJAX para cambiar la contraseña del usuario desde el modal
+    """
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'error': 'Método no permitido'}, status=405)
+    
+    try:
+        data = json.loads(request.body)
+        contrasenia_actual = data.get('contrasenia_actual', '').strip()
+        nueva_contrasenia = data.get('nueva_contrasenia', '').strip()
+        confirmar_contrasenia = data.get('confirmar_contrasenia', '').strip()
+        
+        # Validaciones
+        if not all([contrasenia_actual, nueva_contrasenia, confirmar_contrasenia]):
+            return JsonResponse({'success': False, 'error': 'Todos los campos son requeridos'})
+        
+        # Verificar contraseña actual
+        if not request.user.check_password(contrasenia_actual):
+            return JsonResponse({'success': False, 'error': 'La contraseña actual es incorrecta'})
+        
+        # Verificar que las nuevas contraseñas coincidan
+        if nueva_contrasenia != confirmar_contrasenia:
+            return JsonResponse({'success': False, 'error': 'Las contraseñas nuevas no coinciden'})
+        
+        # Verificar longitud mínima
+        if len(nueva_contrasenia) < 6:
+            return JsonResponse({'success': False, 'error': 'La contraseña debe tener al menos 6 caracteres'})
+        
+        # Cambiar la contraseña en Django User
+        request.user.set_password(nueva_contrasenia)
+        request.user.save()
+        
+        # Mantener la sesión activa después de cambiar la contraseña
+        update_session_auth_hash(request, request.user)
+        
+        return JsonResponse({'success': True, 'message': 'Contraseña actualizada exitosamente'})
+        
+    except json.JSONDecodeError:
+        return JsonResponse({'success': False, 'error': 'Datos JSON inválidos'})
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': f'Error inesperado: {str(e)}'})

@@ -1,5 +1,6 @@
 from django.db.models.signals import post_save
 from django.dispatch import receiver
+from django.contrib.auth.models import User
 from .models import AsignacionTicket, Comentario, Notificacion, Usuario, Rol
 
 @receiver(post_save, sender=AsignacionTicket)
@@ -67,3 +68,55 @@ def crear_notificacion_comentario(sender, instance, created, **kwargs):
             pass
         except Exception as e:
             print(f"Error al crear notificación: {e}")
+
+
+@receiver(post_save, sender=Usuario)
+def crear_usuario_django(sender, instance, created, **kwargs):
+    """
+    Crea automáticamente un usuario Django cuando se crea un Usuario en la app.
+    Si el Usuario tiene una contraseña específica, la usa; si no, pone una por defecto.
+    """
+    if created:
+        try:
+            # Verificar si ya existe un usuario Django con ese email
+            if User.objects.filter(email=instance.email).exists():
+                print(f"Usuario Django ya existe para {instance.email}")
+                return
+            
+            # Generar username único a partir del email
+            username_base = instance.email.split('@')[0]
+            username = username_base
+            
+            # Si el username ya existe, agregar un número
+            counter = 1
+            while User.objects.filter(username=username).exists():
+                username = f"{username_base}{counter}"
+                counter += 1
+            
+            # Determinar qué contraseña usar
+            # Si el Usuario de la app tiene una contraseña hasheada, verificamos si es válida
+            # Si no tiene o es inválida, usamos la contraseña por defecto
+            if instance.contrasenia_hash and instance.contrasenia_hash.strip():
+                # El Usuario ya tiene una contraseña hasheada (puesta por el admin)
+                # Creamos el Django User y le asignamos el mismo hash
+                django_user = User.objects.create(
+                    username=username,
+                    email=instance.email,
+                    password=instance.contrasenia_hash,  # Usar el hash del Usuario
+                    first_name=instance.nombre.split()[0] if instance.nombre else '',
+                    is_active=instance.activo
+                )
+                print(f"✓ Usuario Django creado con contraseña personalizada: {username} ({instance.email})")
+            else:
+                # No tiene contraseña, usar la por defecto
+                django_user = User.objects.create_user(
+                    username=username,
+                    email=instance.email,
+                    password='ticketera2025',  # Contraseña por defecto actualizada
+                    first_name=instance.nombre.split()[0] if instance.nombre else '',
+                    is_active=instance.activo
+                )
+                print(f"✓ Usuario Django creado con contraseña por defecto: {username} ({instance.email})")
+            
+        except Exception as e:
+            print(f"✗ Error al crear usuario Django para {instance.email}: {e}")

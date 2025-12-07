@@ -6,6 +6,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 class ApiService {
   // Lista de servidores a probar en orden de prioridad
   static const List<String> _serverUrls = [
+    'http://localhost:8000/api/v1',        // Red local (dispositivo físico)
     'https://ticketeraprime.com/api/v1',      // Producción
     'http://10.0.2.2:8000/api/v1',            // Emulador Android
   ];

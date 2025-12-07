@@ -26,6 +26,24 @@ function handleTicketClick(element, event) {
     return false;
 }
 
+// Función para manejar clic en tickets del panel admin (desktop vs móvil)
+function handleTicketClickAdmin(element, event) {
+    // En móvil (<= 768px), permitir navegación normal al detalle completo
+    if (window.innerWidth <= 768) {
+        return true; // Navegar a ticket_detail_full
+    }
+    
+    // En desktop (> 768px), prevenir navegación y abrir panel lateral
+    event.preventDefault();
+    const ticketId = element.getAttribute('data-ticket-id');
+    const estado = new URLSearchParams(window.location.search).get('estado') || 'todos';
+    const orden = new URLSearchParams(window.location.search).get('orden') || 'reciente';
+    
+    // Redirigir a la vista con panel lateral (sin /detalle/)
+    window.location.href = `/tickets/${ticketId}/?estado=${estado}&orden=${orden}`;
+    return false;
+}
+
 // Toggle del menú de opciones (3 puntos) en tickets
 document.addEventListener('DOMContentLoaded', function() {
     const menuToggles = document.querySelectorAll('.ticket-menu-toggle');

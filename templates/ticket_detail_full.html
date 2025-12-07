@@ -21,25 +21,25 @@
     <main style="padding: 16px; overflow-y: auto; height: calc(100vh - 120px); padding-bottom: 20px;">
         <!-- Info del ticket -->
         <div class="card" style="margin-bottom: 16px;">
-            <div class="card-head" style="background: var(--bg);">
-                <div style="display: flex; align-items: center; gap: 10px; width: 100%;">
-                    <div class="avatar" style="background: {{ ticket_seleccionado.usuario_creador.nombre|user_color }}; width: 42px; height: 42px; font-size: 18px;">
+            <div class="card-head" style="background: var(--bg); border-bottom: 1px solid var(--line);">
+                <div style="display: flex; align-items: center; gap: 12px; width: 100%;">
+                    <div class="avatar" style="background: {{ ticket_seleccionado.usuario_creador.nombre|user_color }}; width: 42px; height: 42px; font-size: 18px; flex-shrink: 0;">
                         {{ ticket_seleccionado.usuario_creador.nombre|first }}
                     </div>
                     <div style="flex: 1; min-width: 0;">
-                        <div style="font-weight: 700;">{{ ticket_seleccionado.usuario_creador.nombre }}</div>
+                        <div style="font-weight: 700; font-size: 15px;">{{ ticket_seleccionado.usuario_creador.nombre }}</div>
                         <div class="small muted">{{ ticket_seleccionado.fecha_creacion|date:"d/m/Y H:i" }}</div>
                     </div>
                 </div>
             </div>
             <div style="padding: 16px;">
-                <div style="margin-bottom: 12px;">
-                    <strong style="display: block; margin-bottom: 6px; color: var(--muted); font-size: 13px;">Descripción:</strong>
-                    <p style="margin: 0; line-height: 1.6;">{{ ticket_seleccionado.descripcion }}</p>
+                <div style="margin-bottom: 16px;">
+                    <strong style="display: block; margin-bottom: 8px; color: var(--muted); font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px;">Descripción</strong>
+                    <p style="margin: 0; line-height: 1.6; color: var(--text); font-size: 14px; white-space: pre-wrap; word-wrap: break-word;">{{ ticket_seleccionado.descripcion }}</p>
                 </div>
-                <div style="display: flex; flex-wrap: wrap; gap: 10px; margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--line);">
-                    <span style="font-size: 13px;">
-                        <strong>Estado:</strong>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 12px; margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--line);">
+                    <div>
+                        <strong style="display: block; font-size: 12px; color: var(--muted); margin-bottom: 6px;">ESTADO</strong>
                         {% if ticket_seleccionado.estado == 'ABIERTO' %}<b class="tag tag--open">{{ ticket_seleccionado.get_estado_display }}</b>
                         {% elif ticket_seleccionado.estado == 'EN_PROGRESO' %}<b class="tag tag--progress">{{ ticket_seleccionado.get_estado_display }}</b>
                         {% elif ticket_seleccionado.estado == 'RESUELTO' %}<b class="tag tag--resolved">{{ ticket_seleccionado.get_estado_display }}</b>
@@ -47,9 +47,9 @@
                         {% elif ticket_seleccionado.estado == 'RECHAZADO' %}<b class="tag tag--rejected">{{ ticket_seleccionado.get_estado_display }}</b>
                         {% else %}<b class="tag">{{ ticket_seleccionado.get_estado_display }}</b>
                         {% endif %}
-                    </span>
-                    <span style="font-size: 13px;">
-                        <strong>Prioridad:</strong>
+                    </div>
+                    <div>
+                        <strong style="display: block; font-size: 12px; color: var(--muted); margin-bottom: 6px;">PRIORIDAD</strong>
                         {% if ticket_seleccionado.prioridad %}
                             {% if ticket_seleccionado.prioridad.Tipo_Nivel == 'ALTO' %}<b class="tag tag--high">ALTO</b>
                             {% elif ticket_seleccionado.prioridad.Tipo_Nivel == 'MEDIO' %}<b class="tag tag--medium">MEDIO</b>
@@ -58,50 +58,59 @@
                         {% else %}
                             <span class="muted">-</span>
                         {% endif %}
-                    </span>
-                    <span style="font-size: 13px; width: 100%;">
-                        <strong>Categoría:</strong> {% if ticket_seleccionado.categoria %}{{ ticket_seleccionado.categoria.nombre }}{% else %}-{% endif %}
-                    </span>
+                    </div>
+                    <div style="grid-column: 1 / -1;">
+                        <strong style="display: block; font-size: 12px; color: var(--muted); margin-bottom: 6px;">CATEGORÍA</strong>
+                        <span style="font-size: 14px; color: var(--text);">{% if ticket_seleccionado.categoria %}{{ ticket_seleccionado.categoria.nombre }}{% else %}-{% endif %}</span>
+                    </div>
                 </div>
             </div>
         </div>
 
         <!-- Formulario de gestión -->
         <div class="card">
-            <div class="card-head">
-                <h2 style="margin: 0;">Gestionar Ticket</h2>
+            <div class="card-head" style="border-bottom: 1px solid var(--line);">
+                <h2 style="margin: 0; font-size: 16px; font-weight: 700;">Gestionar Ticket</h2>
             </div>
             <div style="padding: 16px;">
                 <form method="POST" action="{% url 'ticket_detail_full' ticket_seleccionado.ticket_id %}?estado={{ estado_actual }}&orden={{ orden_actual }}">
                     {% csrf_token %}
 
                     <div style="margin-bottom: 16px;">
-                        <label for="{{ asignacion_form.usuario_asignado.id_for_label }}" style="display: block; margin-bottom: 8px; font-weight: 600; font-size: 14px;">Asignar a técnico:</label>
+                        <label for="{{ asignacion_form.usuario_asignado.id_for_label }}" style="display: block; margin-bottom: 8px; font-weight: 600; font-size: 14px; color: var(--text);">
+                            Asignar a técnico:
+                        </label>
                         <div class="select" style="width: 100%;">
                             {{ asignacion_form.usuario_asignado }}
                         </div>
                     </div>
 
                     <div style="margin-bottom: 16px;">
-                        <label for="{{ asignacion_form.prioridad.id_for_label }}" style="display: block; margin-bottom: 8px; font-weight: 600; font-size: 14px;">Prioridad:</label>
+                        <label for="{{ asignacion_form.prioridad.id_for_label }}" style="display: block; margin-bottom: 8px; font-weight: 600; font-size: 14px; color: var(--text);">
+                            Prioridad:
+                        </label>
                         <div class="select" style="width: 100%;">
                             {{ asignacion_form.prioridad }}
                         </div>
                     </div>
 
                     <div style="margin-bottom: 16px;">
-                        <label for="{{ asignacion_form.categoria.id_for_label }}" style="display: block; margin-bottom: 8px; font-weight: 600; font-size: 14px;">Categoría:</label>
+                        <label for="{{ asignacion_form.categoria.id_for_label }}" style="display: block; margin-bottom: 8px; font-weight: 600; font-size: 14px; color: var(--text);">
+                            Categoría:
+                        </label>
                         <div class="select" style="width: 100%;">
                             {{ asignacion_form.categoria }}
                         </div>
                     </div>
 
-                    <div style="margin-bottom: 16px;">
-                        <label for="{{ asignacion_form.comentarios.id_for_label }}" style="display: block; margin-bottom: 8px; font-weight: 600; font-size: 14px;">Nota para el técnico (opcional):</label>
+                    <div style="margin-bottom: 20px;">
+                        <label for="{{ asignacion_form.comentarios.id_for_label }}" style="display: block; margin-bottom: 8px; font-weight: 600; font-size: 14px; color: var(--text);">
+                            Nota para el técnico (opcional):
+                        </label>
                         {{ asignacion_form.comentarios }}
                     </div>
 
-                    <button type="submit" class="btn-link" style="background: var(--indigo-800); color: #fff; width: 100%; padding: 14px; font-size: 15px; font-weight: 700; border: none;">
+                    <button type="submit" class="btn-link" style="background: var(--indigo-800); color: #fff; width: 100%; padding: 14px; font-size: 15px; font-weight: 700; border: none; border-radius: 8px; cursor: pointer; transition: background 0.2s;">
                         Asignar y poner "En Progreso"
                     </button>
                 </form>
