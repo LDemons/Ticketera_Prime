@@ -128,7 +128,7 @@
         </div>
 
         <!-- Formulario de gestión fijo en la parte inferior -->
-        <form class="composer" method="post" action="{% url 'mis_asignaciones_detalle' ticket_seleccionado.ticket_id %}?estado={{ estado_actual }}&orden={{ orden_actual }}">
+        <form class="composer" method="post" action="{% url 'mis_asignaciones' ticket_seleccionado.ticket_id %}?estado={{ estado_actual }}&orden={{ orden_actual }}">
             {% csrf_token %}
             <div style="padding: 10px;">
                  <p>
