@@ -74,10 +74,10 @@ def dashboard_view(request):
     """
     Vista de Dashboard con gráficos analíticos.
     """
-    # --- BLOQUE DE PERMISO (Solo Admin) ---
+    # --- BLOQUE DE PERMISO (Admin y Superadmin) ---
     try:
         usuario = Usuario.objects.get(email=request.user.email)
-        if usuario.rol.nombre != 'Admin':
+        if usuario.rol.nombre not in ['Admin', 'Superadmin']:
             return redirect('index')
     except Usuario.DoesNotExist:
         if not request.user.is_superuser:
@@ -340,9 +340,18 @@ def mis_tickets_view(request, ticket_id=None):
                 nuevo_comentario.ticket = ticket_para_comentar # Asigna el ticket
                 nuevo_comentario.autor = creador # Asigna el autor (docente)
                 nuevo_comentario.save() # Guarda en la BD
-                # ... (guardar comentario) ...
-                # Redirigimos AÑADIENDO los filtros
-                return redirect(f"{reverse('mis_tickets_detalle', args=[ticket_id])}?estado={estado_filtro}&orden={orden}")
+                
+                # Crear notificaciones para todos los TI asignados al ticket
+                asignaciones = AsignacionTicket.objects.filter(ticket=ticket_para_comentar)
+                for asignacion in asignaciones:
+                    Notificacion.objects.create(
+                        usuario_destino=asignacion.usuario_asignado,
+                        ticket=ticket_para_comentar,
+                        mensaje=f"Nuevo comentario de {creador.nombre} en el ticket #{ticket_para_comentar.ticket_id}"
+                    )
+                
+                # Redirigimos AÑADIENDO los filtros y manteniendo el ticket seleccionado
+                return redirect(f"{reverse('mis_tickets', args=[ticket_id])}?estado={estado_filtro}&orden={orden}")
             else:
                 ticket_seleccionado = ticket_para_comentar
                 comentarios = Comentario.objects.filter(ticket=ticket_seleccionado).order_by('fecha_creacion')
