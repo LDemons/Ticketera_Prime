@@ -81,6 +81,21 @@ Descarga la última versión desde la sección [Releases](https://github.com/LDe
 Los nuevos usuarios creados por el administrador tienen la contraseña: **ticketera2025**
 Se recomienda cambiar la contraseña después del primer inicio de sesión desde el panel web.
 
+### Desarrollo Local (Opcional)
+Para probar la app móvil con tu servidor local de desarrollo:
+1. Abre `ticketera_mobile/lib/services/api_service.dart`
+2. En la lista `_serverUrls`, agrega tu IP local como primer elemento:
+   ```dart
+   static const List<String> _serverUrls = [
+     'http://TU_IP_LOCAL:8000/api/v1',  // Tu IP local (ej: LOCAL_IP)
+     'https://ticketeraprime.com/api/v1',
+     'http://10.0.2.2:8000/api/v1',
+     'http://localhost:8000/api/v1',
+   ];
+   ```
+3. Recompila la aplicación
+4. **IMPORTANTE:** No subas este cambio a Git (mantén tu IP privada)
+
 ## Seguridad
 
 - Autenticación basada en tokens
