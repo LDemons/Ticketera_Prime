@@ -84,9 +84,17 @@ Se recomienda cambiar la contraseña después del primer inicio de sesión desde
 ### Desarrollo Local (Opcional)
 Para probar la app móvil con tu servidor local de desarrollo:
 1. Abre `ticketera_mobile/lib/services/api_service.dart`
-2. En la lista `_serverUrls`, agrega tu servidor local como primer elemento
+2. En la lista `_serverUrls`, agrega tu IP local como primer elemento:
+   ```dart
+   static const List<String> _serverUrls = [
+     'http://LOCAL_IP_ADDRESS:8000/api/v1',  // Reemplaza con tu dirección IP de red privada
+     'https://ticketeraprime.com/api/v1',
+     'http://10.0.2.2:8000/api/v1',
+     'http://localhost:8000/api/v1',
+   ];
+   ```
 3. Recompila la aplicación
-4. **IMPORTANTE:** No subas este cambio a Git (mantén tu configuración privada)
+4. **IMPORTANTE:** No subas este cambio a Git (mantén tu IP privada)
 
 ## Seguridad
 
