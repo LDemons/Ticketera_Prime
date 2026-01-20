@@ -34,6 +34,14 @@ El objetivo principal es solucionar la falta de un sistema formal para la gesti�
 * **Sincronización en Tiempo Real:** Cambios reflejados instantáneamente
 * **Interfaz Nativa:** Diseño Material Design alineado con la versión web
 
+## Capturas de Pantalla
+
+### Vista Dashboard Admin
+![Vista Dashboard Admin](static/img/screenshots/Vista%20Dashboard%20Admin.png)
+
+### Vista Crear Ticket Docente
+![Vista Crear Ticket Docente](static/img/screenshots/Vista%20Crear%20Ticket%20Docente.png)
+
 ## Stack de Tecnologías
 
 ### Backend
