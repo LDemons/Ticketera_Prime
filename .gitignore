@@ -58,3 +58,12 @@ ticketera_mobile/android/captures/
 *.keystore
 *.jks
 key.properties
+
+# ⚠️ NO SUBIR CONFIGURACIONES LOCALES
+ticketera_mobile/lib/services/api_service_local.dart
+local_config.dart
+*.local.dart
+
+# Capturas de pantalla con información sensible
+static/screenshots/*_debug.png
+static/screenshots/*_local.png

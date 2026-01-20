@@ -4,8 +4,10 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
 class ApiService {
-  // Lista de servidores a probar en orden de prioridad
+  // CONFIGURACIÓN DE SERVIDORES
+  // Para desarrollo local, descomenta tu IP y ponla primera
   static const List<String> _serverUrls = [
+    // 'http://TU_IP_LOCAL:8000/api/v1',      // ⚠️ SOLO PARA DESARROLLO LOCAL - NO SUBIR A GIT
     'https://ticketeraprime.com/api/v1',      // Producción
     'http://10.0.2.2:8000/api/v1',            // Emulador Android
     'http://localhost:8000/api/v1',           // Desarrollo local
